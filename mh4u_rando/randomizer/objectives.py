@@ -1,0 +1,110 @@
+"""Quest type, objectives and quest board pictures for a new lineup.
+
+Follows the patterns of retail quests (docs/game_rules.md, "Objectives"):
+* one wave, one monster      -> one objective;
+* one wave, two species      -> two objectives, one per monster;
+* one wave, same species xN  -> one objective with qty N;
+* several waves              -> HUNT_ALL, objective on the last wave's monsters.
+
+Capture objectives are turned into Hunt (kill or capture), because many
+monsters (elder dragons, Dalamadur, ...) cannot be captured.
+"""
+
+import random
+from collections import Counter
+
+from ..data import GameData
+from ..mib import MONSTER_OBJECTIVES, ObjectiveType, Objective, Quest, QuestType
+from .plan import LineupPlan
+
+NO_PICTURE = 98
+MAX_MAIN_OBJECTIVES = 2
+
+_SINGLE_TO_ALL = {QuestType.SLAY: QuestType.SLAY_ALL, QuestType.HUNT: QuestType.HUNT_ALL,
+                  QuestType.CAPTURE: QuestType.HUNT_ALL}
+_ALL_TO_SINGLE = {QuestType.SLAY_ALL: QuestType.SLAY, QuestType.HUNT_ALL: QuestType.HUNT,
+                  QuestType.CAPTURE_ALL: QuestType.HUNT}
+
+
+def main_objectives_target_large_monsters(quest: Quest) -> bool:
+    """True when every main objective is about the quest's large monsters.
+
+    Quests won by delivering items or slaying small monsters keep their objectives.
+    """
+    large = {m.monster_id for m in quest.all_large_monsters()}
+    main = quest.objectives[:quest.objective_amount]
+    return bool(main) and all(o.type in MONSTER_OBJECTIVES and (o.target_id in large or o.target_id == 0)
+                              for o in main)
+
+
+def target_monsters(plan: LineupPlan) -> list[int]:
+    """Monsters the main objective points at: the last wave, without companions and body parts."""
+    last = plan.waves[plan.last_wave_index()]
+    return [s.monster_id for s in last if s.is_choosable]
+
+
+def apply_main_objectives(quest: Quest, plan: LineupPlan) -> None:
+    targets = Counter(target_monsters(plan))
+    multi_wave = sum(1 for wave in plan.waves if wave) > 1
+    slay = quest.quest_type in (QuestType.SLAY, QuestType.SLAY_ALL)
+    verb = ObjectiveType.SLAY if slay else ObjectiveType.HUNT
+
+    quest.quest_type = _quest_type(quest.quest_type, multi_wave)
+    objectives = [Objective(verb, monster_id, qty) for monster_id, qty in targets.items()]
+    objectives = objectives[:MAX_MAIN_OBJECTIVES]
+    quest.objective_amount = len(objectives)
+    quest.objectives = objectives + [Objective() for _ in range(MAX_MAIN_OBJECTIVES - len(objectives))]
+
+
+def _quest_type(original: int, multi_wave: bool) -> int:
+    try:
+        original = QuestType(original)
+    except ValueError:
+        return original
+    if multi_wave:
+        return _SINGLE_TO_ALL.get(original, original)
+    return _ALL_TO_SINGLE.get(original, QuestType.HUNT if original is QuestType.CAPTURE else original)
+
+
+def apply_pictures(quest: Quest, plan: LineupPlan, data: GameData) -> None:
+    previews = []
+    for monster_id in dict.fromkeys(target_monsters(plan) or plan.monster_ids()):
+        preview = data.monsters[monster_id].preview_id
+        if preview is not None and preview not in previews:
+            previews.append(preview)
+    quest.pictures = (previews + [NO_PICTURE] * len(quest.pictures))[:len(quest.pictures)]
+
+
+def retarget_objectives(quest: Quest, mapping: dict[int, int]) -> None:
+    """Point monster objectives (main and sub) at replacement monsters."""
+    for objective in [*quest.objectives, quest.objective_sub]:
+        if objective.type in MONSTER_OBJECTIVES and objective.target_id in mapping:
+            objective.target_id = mapping[objective.target_id]
+
+
+def has_sub_quest(quest: Quest) -> bool:
+    return quest.get_flag("sub_quest") and quest.objective_sub.type != ObjectiveType.NONE
+
+
+def randomize_sub_quest(quest: Quest, plan: LineupPlan, data: GameData, rng: random.Random) -> tuple[int, int] | None:
+    """Turn the sub quest into "break a part" of one of the quest's monsters.
+
+    Returns (monster_id, part_id), or None when no monster has breakable parts
+    (the sub quest is then disabled).
+    """
+    candidates = [(m, part) for m in dict.fromkeys(s.monster_id for s in plan.slots() if s.is_choosable)
+                  for part in data.monsters[m].break_parts]
+    if not candidates:
+        disable_sub_quest(quest)
+        return None
+    monster_id, part = rng.choice(candidates)
+    quest.objective_sub = Objective(ObjectiveType.BREAK_PART, monster_id, part)
+    return monster_id, part
+
+
+def disable_sub_quest(quest: Quest) -> None:
+    quest.objective_sub = Objective()
+    quest.set_flag("sub_quest", False)
+    quest.set_flag("three_objectives", False)
+    quest.reward_sub = 0
+    quest.hrp_sub = 0

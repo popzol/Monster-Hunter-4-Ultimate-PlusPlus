@@ -55,9 +55,9 @@ class ItemCategory(str, Enum):
     UNKNOWN = "unknown"                        # not listed on the wiki (jewels, charms, relics...)
 
 
-GEAR_CRAFTING_CATEGORIES = frozenset({
-    ItemCategory.MONSTER_MATERIAL, ItemCategory.GATHERING_MATERIAL, ItemCategory.CRAFTING_MATERIAL,
-})
+# Only monster materials: on the wiki, "gathering materials" include fish,
+# plants and nectars, and "crafting materials" are trap and bomb components.
+GEAR_CRAFTING_CATEGORIES = frozenset({ItemCategory.MONSTER_MATERIAL})
 
 
 @dataclass(frozen=True)
@@ -116,6 +116,7 @@ class MonsterInfo:
     body_part_of: int | None = None      # e.g. Dalamadur tail -> head
     allowed_maps: tuple[int, ...] | None = None  # None = any map
     fixed_areas: dict[int, int] = field(default_factory=dict)  # map id -> forced area
+    fixed_position: Point | None = None  # scripted spawn (Dalamadur): always this position
     preview_id: int | None = None        # quest board picture
     special_variants: dict[int, str] = field(default_factory=dict)
     break_parts: dict[int, str] = field(default_factory=dict)
@@ -273,6 +274,7 @@ def _build_monsters(generated: dict, curated: dict, maps: dict[int, MapInfo],
             body_part_of=rules.get("body_part_of"),
             allowed_maps=None if allowed is None else tuple(allowed),
             fixed_areas=_int_keys(rules.get("fixed_areas", {})),
+            fixed_position=tuple(rules["fixed_position"]) if "fixed_position" in rules else None,
             preview_id=gen["preview_id"],
             special_variants=_int_keys(gen["special_variants"]),
             break_parts=_int_keys(gen["break_parts"]),

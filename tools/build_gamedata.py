@@ -177,7 +177,8 @@ def harvest_spawns(quest_dir: Path):
 
 
 def _point(monster) -> tuple[float, float, float]:
-    return (round(monster.x, 2), round(monster.y, 2), round(monster.z, 2))
+    # Exact float32 values: rounding would produce coordinates the file cannot store.
+    return (monster.x, monster.y, monster.z)
 
 
 def build_quest_enums(source: str) -> dict:
