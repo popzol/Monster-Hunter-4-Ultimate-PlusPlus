@@ -34,11 +34,11 @@ def test_unknown_header_bytes_survive(path):
         if any(p <= off < p + 4 for p in L.STATIC_POINTERS):
             continue
         assert rebuilt[off] == original[off], f"static header byte 0x{off:02X} changed"
-    # Dynamic header is identical except for the text pointer.
+    # Dynamic header is identical except for its pointers.
     hdr_old = struct.unpack_from("<I", original, 0)[0]
     hdr_new = struct.unpack_from("<I", rebuilt, 0)[0]
     for rel in range(0x54):
-        if L.DYN_PTR_TEXT <= rel < L.DYN_PTR_TEXT + 4:
+        if any(p <= rel < p + 4 for p in (L.DYN_PTR_TEXT, L.DYN_PTR_EQUIPMENT_PRESETS)):
             continue
         assert rebuilt[hdr_new + rel] == original[hdr_old + rel], f"dynamic header byte +0x{rel:02X} changed"
 

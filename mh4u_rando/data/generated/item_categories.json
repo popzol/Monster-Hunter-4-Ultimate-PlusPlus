@@ -1,0 +1,6190 @@
+{
+  "1": {
+    "category": "tool",
+    "rarity": 4
+  },
+  "2": {
+    "category": "tool",
+    "rarity": 4
+  },
+  "3": {
+    "category": "tool",
+    "rarity": 4
+  },
+  "4": {
+    "category": "tool",
+    "rarity": 5
+  },
+  "5": {
+    "category": "tool",
+    "rarity": 5
+  },
+  "6": {
+    "category": "other",
+    "rarity": 4
+  },
+  "7": {
+    "category": "other",
+    "rarity": 5
+  },
+  "8": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "9": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "10": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "11": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "12": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "13": {
+    "category": "consumable",
+    "rarity": 3
+  },
+  "14": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "15": {
+    "category": "consumable",
+    "rarity": 3
+  },
+  "16": {
+    "category": "consumable",
+    "rarity": 4
+  },
+  "17": {
+    "category": "consumable",
+    "rarity": 5
+  },
+  "18": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "19": {
+    "category": "consumable",
+    "rarity": 4
+  },
+  "20": {
+    "category": "consumable",
+    "rarity": 5
+  },
+  "21": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "22": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "23": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "24": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "25": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "26": {
+    "category": "consumable",
+    "rarity": 3
+  },
+  "27": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "28": {
+    "category": "consumable",
+    "rarity": 3
+  },
+  "29": {
+    "category": "consumable",
+    "rarity": 5
+  },
+  "30": {
+    "category": "crafting_material",
+    "rarity": 2
+  },
+  "31": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "32": {
+    "category": "crafting_material",
+    "rarity": 2
+  },
+  "33": {
+    "category": "crafting_material",
+    "rarity": 3
+  },
+  "34": {
+    "category": "consumable",
+    "rarity": 4
+  },
+  "35": {
+    "category": "crafting_material",
+    "rarity": 4
+  },
+  "40": {
+    "category": "tool",
+    "rarity": 5
+  },
+  "41": {
+    "category": "tool",
+    "rarity": 5
+  },
+  "42": {
+    "category": "tool",
+    "rarity": 5
+  },
+  "43": {
+    "category": "tool",
+    "rarity": 5
+  },
+  "44": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "45": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "46": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "47": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "48": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "49": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "50": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "51": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "52": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "53": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "54": {
+    "category": "tool",
+    "rarity": 4
+  },
+  "55": {
+    "category": "account_item",
+    "rarity": 1
+  },
+  "56": {
+    "category": "account_item",
+    "rarity": 1
+  },
+  "57": {
+    "category": "account_item",
+    "rarity": 1
+  },
+  "58": {
+    "category": "account_item",
+    "rarity": 1
+  },
+  "59": {
+    "category": "account_item",
+    "rarity": 4
+  },
+  "60": {
+    "category": "crafting_material",
+    "rarity": 1
+  },
+  "61": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "62": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "63": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "64": {
+    "category": "crafting_material",
+    "rarity": 1
+  },
+  "65": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "66": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "67": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "68": {
+    "category": "consumable",
+    "rarity": 3
+  },
+  "69": {
+    "category": "consumable",
+    "rarity": 4
+  },
+  "70": {
+    "category": "crafting_material",
+    "rarity": 1
+  },
+  "71": {
+    "category": "crafting_material",
+    "rarity": 2
+  },
+  "72": {
+    "category": "crafting_material",
+    "rarity": 3
+  },
+  "73": {
+    "category": "consumable",
+    "rarity": 3
+  },
+  "74": {
+    "category": "consumable",
+    "rarity": 3
+  },
+  "75": {
+    "category": "crafting_material",
+    "rarity": 1
+  },
+  "76": {
+    "category": "crafting_material",
+    "rarity": 2
+  },
+  "77": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "78": {
+    "category": "consumable",
+    "rarity": 4
+  },
+  "79": {
+    "category": "consumable",
+    "rarity": 3
+  },
+  "80": {
+    "category": "consumable",
+    "rarity": 4
+  },
+  "81": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "82": {
+    "category": "consumable",
+    "rarity": 4
+  },
+  "83": {
+    "category": "consumable",
+    "rarity": 4
+  },
+  "85": {
+    "category": "crafting_material",
+    "rarity": 1
+  },
+  "86": {
+    "category": "crafting_material",
+    "rarity": 2
+  },
+  "87": {
+    "category": "ammo",
+    "rarity": 1
+  },
+  "88": {
+    "category": "ammo",
+    "rarity": 1
+  },
+  "89": {
+    "category": "ammo",
+    "rarity": 2
+  },
+  "90": {
+    "category": "ammo",
+    "rarity": 2
+  },
+  "91": {
+    "category": "ammo",
+    "rarity": 2
+  },
+  "92": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "93": {
+    "category": "ammo",
+    "rarity": 2
+  },
+  "94": {
+    "category": "ammo",
+    "rarity": 2
+  },
+  "95": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "96": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "97": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "98": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "99": {
+    "category": "ammo",
+    "rarity": 2
+  },
+  "100": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "101": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "102": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "103": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "104": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "105": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "106": {
+    "category": "ammo",
+    "rarity": 5
+  },
+  "107": {
+    "category": "ammo",
+    "rarity": 2
+  },
+  "108": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "109": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "110": {
+    "category": "ammo",
+    "rarity": 4
+  },
+  "111": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "112": {
+    "category": "ammo",
+    "rarity": 4
+  },
+  "113": {
+    "category": "ammo",
+    "rarity": 2
+  },
+  "114": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "115": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "116": {
+    "category": "ammo",
+    "rarity": 4
+  },
+  "117": {
+    "category": "ammo",
+    "rarity": 4
+  },
+  "118": {
+    "category": "ammo",
+    "rarity": 1
+  },
+  "119": {
+    "category": "ammo",
+    "rarity": 2
+  },
+  "120": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "121": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "122": {
+    "category": "ammo",
+    "rarity": 1
+  },
+  "123": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "125": {
+    "category": "crafting_material",
+    "rarity": 1
+  },
+  "126": {
+    "category": "ammo",
+    "rarity": 2
+  },
+  "127": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "128": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "129": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "130": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "131": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "132": {
+    "category": "ammo",
+    "rarity": 3
+  },
+  "133": {
+    "category": "ammo",
+    "rarity": 1
+  },
+  "134": {
+    "category": "gathering_material",
+    "rarity": 3
+  },
+  "135": {
+    "category": "gathering_material",
+    "rarity": 3
+  },
+  "136": {
+    "category": "gathering_material",
+    "rarity": 3
+  },
+  "137": {
+    "category": "gathering_material",
+    "rarity": 3
+  },
+  "138": {
+    "category": "gathering_material",
+    "rarity": 3
+  },
+  "139": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "140": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "141": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "142": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "143": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "144": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "145": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "146": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "147": {
+    "category": "gathering_material",
+    "rarity": 5
+  },
+  "148": {
+    "category": "gathering_material",
+    "rarity": 5
+  },
+  "149": {
+    "category": "gathering_material",
+    "rarity": 5
+  },
+  "150": {
+    "category": "gathering_material",
+    "rarity": 5
+  },
+  "151": {
+    "category": "gathering_material",
+    "rarity": 5
+  },
+  "152": {
+    "category": "gathering_material",
+    "rarity": 5
+  },
+  "153": {
+    "category": "gathering_material",
+    "rarity": 5
+  },
+  "154": {
+    "category": "gathering_material",
+    "rarity": 5
+  },
+  "155": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "156": {
+    "category": "consumable",
+    "rarity": 3
+  },
+  "157": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "158": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "159": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "160": {
+    "category": "consumable",
+    "rarity": 4
+  },
+  "161": {
+    "category": "tool",
+    "rarity": 1
+  },
+  "162": {
+    "category": "tool",
+    "rarity": 1
+  },
+  "163": {
+    "category": "tool",
+    "rarity": 3
+  },
+  "164": {
+    "category": "tool",
+    "rarity": 1
+  },
+  "165": {
+    "category": "tool",
+    "rarity": 1
+  },
+  "166": {
+    "category": "tool",
+    "rarity": 3
+  },
+  "167": {
+    "category": "tool",
+    "rarity": 4
+  },
+  "168": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "169": {
+    "category": "tool",
+    "rarity": 1
+  },
+  "170": {
+    "category": "crafting_material",
+    "rarity": 1
+  },
+  "171": {
+    "category": "tool",
+    "rarity": 2
+  },
+  "172": {
+    "category": "tool",
+    "rarity": 4
+  },
+  "173": {
+    "category": "tool",
+    "rarity": 4
+  },
+  "174": {
+    "category": "tool",
+    "rarity": 5
+  },
+  "175": {
+    "category": "tool",
+    "rarity": 5
+  },
+  "176": {
+    "category": "gathering_material",
+    "rarity": 2
+  },
+  "177": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "178": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "179": {
+    "category": "gathering_material",
+    "rarity": 2
+  },
+  "180": {
+    "category": "gathering_material",
+    "rarity": 1
+  },
+  "181": {
+    "category": "gathering_material",
+    "rarity": 1
+  },
+  "182": {
+    "category": "gathering_material",
+    "rarity": 1
+  },
+  "183": {
+    "category": "gathering_material",
+    "rarity": 1
+  },
+  "184": {
+    "category": "gathering_material",
+    "rarity": 2
+  },
+  "185": {
+    "category": "gathering_material",
+    "rarity": 2
+  },
+  "186": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "187": {
+    "category": "gathering_material",
+    "rarity": 5
+  },
+  "188": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "189": {
+    "category": "gathering_material",
+    "rarity": 2
+  },
+  "190": {
+    "category": "gathering_material",
+    "rarity": 2
+  },
+  "191": {
+    "category": "gathering_material",
+    "rarity": 3
+  },
+  "192": {
+    "category": "gathering_material",
+    "rarity": 2
+  },
+  "193": {
+    "category": "gathering_material",
+    "rarity": 3
+  },
+  "194": {
+    "category": "gathering_material",
+    "rarity": 2
+  },
+  "195": {
+    "category": "gathering_material",
+    "rarity": 3
+  },
+  "196": {
+    "category": "gathering_material",
+    "rarity": 1
+  },
+  "197": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "198": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "199": {
+    "category": "consumable",
+    "rarity": 2
+  },
+  "200": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "201": {
+    "category": "gathering_material",
+    "rarity": 2
+  },
+  "202": {
+    "category": "gathering_material",
+    "rarity": 1
+  },
+  "203": {
+    "category": "gathering_material",
+    "rarity": 1
+  },
+  "204": {
+    "category": "gathering_material",
+    "rarity": 2
+  },
+  "205": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "206": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "207": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "208": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "209": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "210": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "211": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "212": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "213": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "214": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "215": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "216": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "217": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "218": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "219": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "220": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "221": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "222": {
+    "category": "gathering_material",
+    "rarity": 5
+  },
+  "223": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "224": {
+    "category": "crafting_material",
+    "rarity": 4
+  },
+  "225": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "226": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "227": {
+    "category": "gathering_material",
+    "rarity": 5
+  },
+  "228": {
+    "category": "gathering_material",
+    "rarity": 5
+  },
+  "229": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "230": {
+    "category": "gathering_material",
+    "rarity": 7
+  },
+  "231": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "232": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "233": {
+    "category": "gathering_material",
+    "rarity": 2
+  },
+  "234": {
+    "category": "gathering_material",
+    "rarity": 1
+  },
+  "235": {
+    "category": "gathering_material",
+    "rarity": 5
+  },
+  "236": {
+    "category": "gathering_material",
+    "rarity": 2
+  },
+  "237": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "238": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "239": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "240": {
+    "category": "consumable",
+    "rarity": 4
+  },
+  "241": {
+    "category": "consumable",
+    "rarity": 5
+  },
+  "242": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "243": {
+    "category": "gathering_material",
+    "rarity": 2
+  },
+  "244": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "245": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "246": {
+    "category": "ticket",
+    "rarity": 4
+  },
+  "247": {
+    "category": "ticket",
+    "rarity": 5
+  },
+  "248": {
+    "category": "gathering_material",
+    "rarity": 1
+  },
+  "249": {
+    "category": "ticket",
+    "rarity": 6
+  },
+  "250": {
+    "category": "gathering_material",
+    "rarity": 1
+  },
+  "251": {
+    "category": "gathering_material",
+    "rarity": 1
+  },
+  "252": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "253": {
+    "category": "consumable",
+    "rarity": 1
+  },
+  "254": {
+    "category": "gathering_material",
+    "rarity": 2
+  },
+  "255": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "256": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "257": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "258": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "259": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "260": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "261": {
+    "category": "gathering_material",
+    "rarity": 5
+  },
+  "262": {
+    "category": "gathering_material",
+    "rarity": 5
+  },
+  "263": {
+    "category": "monster_material",
+    "rarity": 3
+  },
+  "264": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "265": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "266": {
+    "category": "gathering_material",
+    "rarity": 1
+  },
+  "267": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "268": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "269": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "270": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "271": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "272": {
+    "category": "monster_material",
+    "rarity": 5
+  },
+  "273": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "274": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "275": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "276": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "277": {
+    "category": "monster_material",
+    "rarity": 3
+  },
+  "278": {
+    "category": "monster_material",
+    "rarity": 3
+  },
+  "279": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "280": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "281": {
+    "category": "monster_material",
+    "rarity": 5
+  },
+  "285": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "286": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "287": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "288": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "289": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "290": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "291": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "292": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "293": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "294": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "295": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "296": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "297": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "298": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "299": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "300": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "301": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "302": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "303": {
+    "category": "monster_material",
+    "rarity": 5
+  },
+  "304": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "305": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "306": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "307": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "308": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "309": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "310": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "311": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "312": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "313": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "314": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "315": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "316": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "317": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "318": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "319": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "320": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "321": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "322": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "323": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "324": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "325": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "326": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "327": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "328": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "329": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "330": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "331": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "332": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "333": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "334": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "335": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "336": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "337": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "338": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "339": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "340": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "341": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "342": {
+    "category": "monster_material",
+    "rarity": 5
+  },
+  "343": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "344": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "345": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "346": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "347": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "348": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "349": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "350": {
+    "category": "monster_material",
+    "rarity": 5
+  },
+  "351": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "352": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "353": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "354": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "355": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "356": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "357": {
+    "category": "monster_material",
+    "rarity": 5
+  },
+  "358": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "359": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "360": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "361": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "362": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "363": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "364": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "365": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "366": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "367": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "368": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "369": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "370": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "371": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "372": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "373": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "374": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "376": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "377": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "378": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "379": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "380": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "381": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "382": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "383": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "384": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "385": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "386": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "387": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "388": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "389": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "390": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "391": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "392": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "393": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "394": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "395": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "396": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "397": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "398": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "399": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "400": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "401": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "402": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "403": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "404": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "405": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "406": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "407": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "408": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "409": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "410": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "411": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "412": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "413": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "414": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "415": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "416": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "417": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "418": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "419": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "420": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "421": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "422": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "423": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "424": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "425": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "426": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "427": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "428": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "429": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "430": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "431": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "432": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "433": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "434": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "435": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "436": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "437": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "438": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "439": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "440": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "441": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "442": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "443": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "444": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "445": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "446": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "447": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "448": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "449": {
+    "category": "monster_material",
+    "rarity": 5
+  },
+  "450": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "451": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "452": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "453": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "454": {
+    "category": "monster_material",
+    "rarity": 5
+  },
+  "455": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "456": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "457": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "458": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "459": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "460": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "461": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "462": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "463": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "464": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "465": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "466": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "467": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "468": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "469": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "470": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "471": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "472": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "473": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "474": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "475": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "476": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "477": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "478": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "479": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "480": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "481": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "482": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "483": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "484": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "485": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "486": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "487": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "488": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "489": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "490": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "491": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "492": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "493": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "494": {
+    "category": "monster_material",
+    "rarity": 5
+  },
+  "495": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "496": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "497": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "498": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "499": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "500": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "501": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "502": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "503": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "504": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "505": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "506": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "507": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "508": {
+    "category": "monster_material",
+    "rarity": 5
+  },
+  "509": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "510": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "511": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "512": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "513": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "514": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "515": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "516": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "517": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "518": {
+    "category": "monster_material",
+    "rarity": 5
+  },
+  "519": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "520": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "521": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "522": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "523": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "524": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "525": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "526": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "527": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "528": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "529": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "530": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "531": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "532": {
+    "category": "monster_material",
+    "rarity": 5
+  },
+  "533": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "534": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "535": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "536": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "537": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "538": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "539": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "540": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "541": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "542": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "543": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "544": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "545": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "546": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "547": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "548": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "549": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "550": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "551": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "552": {
+    "category": "monster_material",
+    "rarity": 5
+  },
+  "553": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "554": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "555": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "556": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "557": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "558": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "559": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "560": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "561": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "562": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "563": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "564": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "565": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "566": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "567": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "568": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "569": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "570": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "571": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "572": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "573": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "574": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "575": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "576": {
+    "category": "monster_material",
+    "rarity": 5
+  },
+  "577": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "578": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "579": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "580": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "581": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "582": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "583": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "584": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "585": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "586": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "587": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "588": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "589": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "590": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "591": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "592": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "593": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "594": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "595": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "596": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "597": {
+    "category": "monster_material",
+    "rarity": 5
+  },
+  "598": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "599": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "600": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "601": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "602": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "603": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "604": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "605": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "606": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "607": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "608": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "609": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "610": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "611": {
+    "category": "monster_material",
+    "rarity": 5
+  },
+  "612": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "613": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "614": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "615": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "616": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "617": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "618": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "619": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "620": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "621": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "622": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "623": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "624": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "625": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "626": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "627": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "628": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "629": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "630": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "631": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "632": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "633": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "634": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "635": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "636": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "637": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "638": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "639": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "640": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "641": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "642": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "643": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "644": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "645": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "646": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "647": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "648": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "649": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "650": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "651": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "652": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "653": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "654": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "655": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "656": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "657": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "658": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "659": {
+    "category": "monster_material",
+    "rarity": 5
+  },
+  "660": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "661": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "662": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "663": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "664": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "665": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "666": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "667": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "668": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "669": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "670": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "671": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "672": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "673": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "674": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "675": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "676": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "677": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "678": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "679": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "680": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "681": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "682": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "683": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "684": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "685": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "686": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "687": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "688": {
+    "category": "monster_material",
+    "rarity": 4
+  },
+  "689": {
+    "category": "monster_material",
+    "rarity": 5
+  },
+  "690": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "691": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "692": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "693": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "694": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "695": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "696": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "697": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "698": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "699": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "700": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "701": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "702": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "703": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "704": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "705": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "706": {
+    "category": "wyporium_material",
+    "rarity": 5
+  },
+  "707": {
+    "category": "wyporium_material",
+    "rarity": 5
+  },
+  "708": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "709": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "710": {
+    "category": "wyporium_material",
+    "rarity": 5
+  },
+  "711": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "712": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "713": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "714": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "715": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "716": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "717": {
+    "category": "wyporium_material",
+    "rarity": 5
+  },
+  "718": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "719": {
+    "category": "wyporium_material",
+    "rarity": 4
+  },
+  "720": {
+    "category": "wyporium_material",
+    "rarity": 5
+  },
+  "721": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "722": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "723": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "724": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "725": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "726": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "727": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "728": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "729": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "730": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "731": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "732": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "733": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "734": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "735": {
+    "category": "wyporium_material",
+    "rarity": 7
+  },
+  "736": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "737": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "738": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "739": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "740": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "741": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "742": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "743": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "744": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "745": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "746": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "747": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "748": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "750": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "751": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "752": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "753": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "754": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "755": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "756": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "757": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "768": {
+    "category": "account_item",
+    "rarity": 1
+  },
+  "769": {
+    "category": "account_item",
+    "rarity": 1
+  },
+  "770": {
+    "category": "account_item",
+    "rarity": 2
+  },
+  "771": {
+    "category": "account_item",
+    "rarity": 1
+  },
+  "772": {
+    "category": "account_item",
+    "rarity": 1
+  },
+  "773": {
+    "category": "account_item",
+    "rarity": 1
+  },
+  "774": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "775": {
+    "category": "account_item",
+    "rarity": 2
+  },
+  "776": {
+    "category": "account_item",
+    "rarity": 2
+  },
+  "777": {
+    "category": "account_item",
+    "rarity": 2
+  },
+  "778": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "779": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "780": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "781": {
+    "category": "account_item",
+    "rarity": 6
+  },
+  "782": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "783": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "784": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "785": {
+    "category": "account_item",
+    "rarity": 1
+  },
+  "786": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "787": {
+    "category": "account_item",
+    "rarity": 2
+  },
+  "788": {
+    "category": "account_item",
+    "rarity": 4
+  },
+  "789": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "790": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "791": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "792": {
+    "category": "account_item",
+    "rarity": 2
+  },
+  "793": {
+    "category": "account_item",
+    "rarity": 1
+  },
+  "794": {
+    "category": "account_item",
+    "rarity": 4
+  },
+  "795": {
+    "category": "account_item",
+    "rarity": 2
+  },
+  "796": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "797": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "798": {
+    "category": "account_item",
+    "rarity": 2
+  },
+  "799": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "800": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "801": {
+    "category": "account_item",
+    "rarity": 4
+  },
+  "802": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "803": {
+    "category": "account_item",
+    "rarity": 6
+  },
+  "804": {
+    "category": "account_item",
+    "rarity": 2
+  },
+  "805": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "806": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "807": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "808": {
+    "category": "account_item",
+    "rarity": 2
+  },
+  "809": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "810": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "811": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "812": {
+    "category": "account_item",
+    "rarity": 4
+  },
+  "813": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "814": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "815": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "816": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "817": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "818": {
+    "category": "account_item",
+    "rarity": 2
+  },
+  "819": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "820": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "821": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "822": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "823": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "824": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "825": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "826": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "827": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "828": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "829": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "830": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "831": {
+    "category": "ticket",
+    "rarity": 4
+  },
+  "832": {
+    "category": "ticket",
+    "rarity": 5
+  },
+  "833": {
+    "category": "ticket",
+    "rarity": 6
+  },
+  "834": {
+    "category": "ticket",
+    "rarity": 4
+  },
+  "835": {
+    "category": "ticket",
+    "rarity": 4
+  },
+  "836": {
+    "category": "ticket",
+    "rarity": 4
+  },
+  "837": {
+    "category": "ticket",
+    "rarity": 6
+  },
+  "838": {
+    "category": "ticket",
+    "rarity": 6
+  },
+  "839": {
+    "category": "ticket",
+    "rarity": 4
+  },
+  "840": {
+    "category": "ticket",
+    "rarity": 6
+  },
+  "842": {
+    "category": "ticket",
+    "rarity": 4
+  },
+  "843": {
+    "category": "ticket",
+    "rarity": 5
+  },
+  "844": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "852": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "853": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "854": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "855": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "857": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "860": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "861": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "863": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "864": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "866": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "870": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "874": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "875": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "876": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "877": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "879": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "881": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "882": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "883": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "884": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "885": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "886": {
+    "category": "ticket",
+    "rarity": 4
+  },
+  "887": {
+    "category": "ticket",
+    "rarity": 5
+  },
+  "888": {
+    "category": "ticket",
+    "rarity": 6
+  },
+  "889": {
+    "category": "ticket",
+    "rarity": 7
+  },
+  "890": {
+    "category": "ticket",
+    "rarity": 5
+  },
+  "891": {
+    "category": "ticket",
+    "rarity": 5
+  },
+  "892": {
+    "category": "ticket",
+    "rarity": 5
+  },
+  "893": {
+    "category": "ticket",
+    "rarity": 5
+  },
+  "894": {
+    "category": "ticket",
+    "rarity": 5
+  },
+  "895": {
+    "category": "ticket",
+    "rarity": 5
+  },
+  "896": {
+    "category": "ticket",
+    "rarity": 5
+  },
+  "897": {
+    "category": "ticket",
+    "rarity": 4
+  },
+  "898": {
+    "category": "ticket",
+    "rarity": 4
+  },
+  "899": {
+    "category": "ticket",
+    "rarity": 4
+  },
+  "900": {
+    "category": "ticket",
+    "rarity": 4
+  },
+  "901": {
+    "category": "ticket",
+    "rarity": 4
+  },
+  "902": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "903": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "904": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "905": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "906": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "907": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "908": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "909": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "910": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "911": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "912": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "913": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "914": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "915": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "916": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "917": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "918": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "919": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "920": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "921": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "922": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "923": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "924": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "925": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "926": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "927": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "928": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "929": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "930": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "931": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "932": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "933": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "934": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "935": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "936": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "937": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "938": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "939": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "940": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "941": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "942": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "943": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "944": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "945": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "946": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "947": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "948": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "949": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "950": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "951": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "952": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "953": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "954": {
+    "category": "scrap",
+    "rarity": 4
+  },
+  "1144": {
+    "category": "other",
+    "rarity": 1
+  },
+  "1145": {
+    "category": "other",
+    "rarity": 2
+  },
+  "1148": {
+    "category": "other",
+    "rarity": 1
+  },
+  "1149": {
+    "category": "other",
+    "rarity": 1
+  },
+  "1150": {
+    "category": "other",
+    "rarity": 1
+  },
+  "1151": {
+    "category": "other",
+    "rarity": 1
+  },
+  "1152": {
+    "category": "other",
+    "rarity": 1
+  },
+  "1153": {
+    "category": "other",
+    "rarity": 2
+  },
+  "1154": {
+    "category": "other",
+    "rarity": 1
+  },
+  "1155": {
+    "category": "other",
+    "rarity": 1
+  },
+  "1156": {
+    "category": "other",
+    "rarity": 2
+  },
+  "1160": {
+    "category": "other",
+    "rarity": 2
+  },
+  "1163": {
+    "category": "other",
+    "rarity": 1
+  },
+  "1164": {
+    "category": "other",
+    "rarity": 2
+  },
+  "1165": {
+    "category": "other",
+    "rarity": 2
+  },
+  "1166": {
+    "category": "other",
+    "rarity": 2
+  },
+  "1167": {
+    "category": "other",
+    "rarity": 3
+  },
+  "1168": {
+    "category": "other",
+    "rarity": 3
+  },
+  "1171": {
+    "category": "other",
+    "rarity": 2
+  },
+  "1172": {
+    "category": "other",
+    "rarity": 2
+  },
+  "1229": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "1230": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "1231": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "1232": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "1233": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "1234": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "1235": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "1236": {
+    "category": "gathering_material",
+    "rarity": 6
+  },
+  "1237": {
+    "category": "tool",
+    "rarity": 5
+  },
+  "1238": {
+    "category": "tool",
+    "rarity": 5
+  },
+  "1239": {
+    "category": "tool",
+    "rarity": 5
+  },
+  "1240": {
+    "category": "tool",
+    "rarity": 5
+  },
+  "1241": {
+    "category": "other",
+    "rarity": 3
+  },
+  "1242": {
+    "category": "other",
+    "rarity": 3
+  },
+  "1243": {
+    "category": "other",
+    "rarity": 3
+  },
+  "1244": {
+    "category": "other",
+    "rarity": 3
+  },
+  "1245": {
+    "category": "other",
+    "rarity": 3
+  },
+  "1246": {
+    "category": "other",
+    "rarity": 3
+  },
+  "1247": {
+    "category": "other",
+    "rarity": 3
+  },
+  "1248": {
+    "category": "other",
+    "rarity": 3
+  },
+  "1250": {
+    "category": "other",
+    "rarity": 3
+  },
+  "1251": {
+    "category": "other",
+    "rarity": 3
+  },
+  "1252": {
+    "category": "other",
+    "rarity": 3
+  },
+  "1255": {
+    "category": "other",
+    "rarity": 4
+  },
+  "1257": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "1258": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "1259": {
+    "category": "gathering_material",
+    "rarity": 5
+  },
+  "1260": {
+    "category": "gathering_material",
+    "rarity": 4
+  },
+  "1261": {
+    "category": "gathering_material",
+    "rarity": 5
+  },
+  "1262": {
+    "category": "gathering_material",
+    "rarity": 5
+  },
+  "1263": {
+    "category": "other",
+    "rarity": 3
+  },
+  "1264": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1265": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1266": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1267": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1268": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1269": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1270": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1271": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1272": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1273": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1274": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1275": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1276": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1277": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1278": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1279": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1280": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1281": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1282": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1283": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1284": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1285": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1286": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1287": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1288": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1289": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1290": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1291": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1292": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1293": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1294": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1295": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1296": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1297": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1298": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1299": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1300": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1301": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1302": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1303": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1304": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1305": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1306": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1307": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1308": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1309": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1310": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1311": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1312": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1313": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1314": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1315": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1316": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1317": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1318": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1319": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1320": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1321": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1322": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1323": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1324": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1325": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1326": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1327": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1328": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1329": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1330": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1331": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1332": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1333": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1334": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1335": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1336": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "1337": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1338": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1339": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1340": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1341": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1342": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1343": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1344": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1345": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1346": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1347": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1348": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1349": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1350": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1351": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1352": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1353": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1354": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1355": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1356": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1357": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1358": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1359": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1360": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1361": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1362": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1363": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1364": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1365": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1366": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1367": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1368": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1369": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1370": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1371": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1372": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1373": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1374": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1375": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1376": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1377": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1378": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1379": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1380": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1381": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1382": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1383": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1384": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1385": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1386": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1387": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1388": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1389": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1390": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1391": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1392": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1393": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1394": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1395": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1396": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1397": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1398": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1399": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1400": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1401": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1402": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1403": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1404": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1405": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1406": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1407": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1408": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1409": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1410": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1411": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1412": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1413": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1414": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1415": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1416": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1417": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1418": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1419": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1420": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1421": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1422": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1423": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1424": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1425": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1426": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1427": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1428": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1429": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1430": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1431": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1432": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1433": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1434": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1435": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1436": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1437": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1438": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1439": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1440": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1441": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1442": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1443": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1444": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1445": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1446": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1447": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1448": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1449": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1450": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1451": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1452": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1453": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1454": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1455": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1456": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1457": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1458": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1459": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1460": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1461": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1462": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1463": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1464": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1465": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1466": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1467": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1468": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1469": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1470": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1471": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1472": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1473": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1474": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1475": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1476": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1477": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1478": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1479": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1480": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1481": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1482": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1483": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1484": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1485": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1486": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1493": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1494": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1495": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1496": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1497": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1498": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1499": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1500": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1501": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1502": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1503": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1504": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1505": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1506": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1507": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1508": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1509": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1510": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1511": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1512": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1513": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1514": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "1515": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1516": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "1517": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1518": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "1519": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1520": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "1521": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1522": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "1523": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1524": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "1525": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1526": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "1527": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1528": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1529": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1530": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1531": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1532": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1533": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1534": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1535": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1536": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1537": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1538": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1539": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1540": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1541": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "1542": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1543": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1544": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1545": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "1546": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1547": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "1548": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1549": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "1550": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1551": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "1552": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1553": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1554": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1555": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1556": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1557": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "1558": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1559": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "1560": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1561": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1562": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1563": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1564": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1565": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1566": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "1567": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1568": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "1569": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1570": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "1571": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1572": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "1573": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1574": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "1575": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1576": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1577": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "1578": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1579": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1580": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1581": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1582": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1583": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1584": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1585": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1586": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1587": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1588": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1589": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1590": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1591": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1592": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1593": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1594": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1595": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1596": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1597": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1598": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1599": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1600": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1601": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1602": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1603": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1604": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1605": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1606": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1607": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1608": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1609": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1610": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1611": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1612": {
+    "category": "gathering_material",
+    "rarity": 8
+  },
+  "1613": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1614": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1615": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1616": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1617": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1618": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1619": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1620": {
+    "category": "monster_material",
+    "rarity": 6
+  },
+  "1621": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1622": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1623": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1624": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1625": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "1626": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "1627": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "1628": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "1629": {
+    "category": "gathering_material",
+    "rarity": 8
+  },
+  "1630": {
+    "category": "gathering_material",
+    "rarity": 8
+  },
+  "1631": {
+    "category": "gathering_material",
+    "rarity": 8
+  },
+  "1632": {
+    "category": "gathering_material",
+    "rarity": 8
+  },
+  "1633": {
+    "category": "account_item",
+    "rarity": 4
+  },
+  "1634": {
+    "category": "gathering_material",
+    "rarity": 8
+  },
+  "1635": {
+    "category": "gathering_material",
+    "rarity": 8
+  },
+  "1636": {
+    "category": "gathering_material",
+    "rarity": 8
+  },
+  "1637": {
+    "category": "gathering_material",
+    "rarity": 8
+  },
+  "1638": {
+    "category": "gathering_material",
+    "rarity": 8
+  },
+  "1639": {
+    "category": "gathering_material",
+    "rarity": 8
+  },
+  "1641": {
+    "category": "gathering_material",
+    "rarity": 7
+  },
+  "1643": {
+    "category": "gathering_material",
+    "rarity": 8
+  },
+  "1644": {
+    "category": "gathering_material",
+    "rarity": 9
+  },
+  "1645": {
+    "category": "monster_material",
+    "rarity": 7
+  },
+  "1646": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1647": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1654": {
+    "category": "gathering_material",
+    "rarity": 5
+  },
+  "1655": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1656": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1657": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1658": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1659": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1660": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1661": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1662": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1663": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1664": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1665": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1666": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1667": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1668": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1669": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1670": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1671": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1672": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1673": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1674": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1675": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1676": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1677": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1678": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1679": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1680": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1681": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1682": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1683": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1684": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1685": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1686": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1687": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1688": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1689": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1690": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1691": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1692": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1693": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1694": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1695": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1696": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1697": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1698": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1699": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1700": {
+    "category": "scrap",
+    "rarity": 8
+  },
+  "1701": {
+    "category": "scrap",
+    "rarity": 8
+  },
+  "1702": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1703": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1704": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1705": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1706": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1707": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1708": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1709": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1710": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1711": {
+    "category": "scrap",
+    "rarity": 8
+  },
+  "1712": {
+    "category": "scrap",
+    "rarity": 8
+  },
+  "1713": {
+    "category": "scrap",
+    "rarity": 8
+  },
+  "1714": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1715": {
+    "category": "consumable",
+    "rarity": 5
+  },
+  "1716": {
+    "category": "ticket",
+    "rarity": 7
+  },
+  "1717": {
+    "category": "ticket",
+    "rarity": 8
+  },
+  "1718": {
+    "category": "ticket",
+    "rarity": 9
+  },
+  "1719": {
+    "category": "ticket",
+    "rarity": 4
+  },
+  "1720": {
+    "category": "ticket",
+    "rarity": 8
+  },
+  "1721": {
+    "category": "ticket",
+    "rarity": 9
+  },
+  "1722": {
+    "category": "ticket",
+    "rarity": 6
+  },
+  "1723": {
+    "category": "ticket",
+    "rarity": 7
+  },
+  "1724": {
+    "category": "ticket",
+    "rarity": 8
+  },
+  "1725": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "1726": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "1727": {
+    "category": "consumable",
+    "rarity": 5
+  },
+  "1729": {
+    "category": "consumable",
+    "rarity": 5
+  },
+  "1730": {
+    "category": "consumable",
+    "rarity": 5
+  },
+  "1731": {
+    "category": "account_item",
+    "rarity": 2
+  },
+  "1732": {
+    "category": "account_item",
+    "rarity": 2
+  },
+  "1733": {
+    "category": "account_item",
+    "rarity": 3
+  },
+  "1734": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "1735": {
+    "category": "consumable",
+    "rarity": 3
+  },
+  "1736": {
+    "category": "account_item",
+    "rarity": 9
+  },
+  "1737": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1738": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1739": {
+    "category": "monster_material",
+    "rarity": 9
+  },
+  "1740": {
+    "category": "monster_material",
+    "rarity": 8
+  },
+  "1741": {
+    "category": "gathering_material",
+    "rarity": 8
+  },
+  "1742": {
+    "category": "gathering_material",
+    "rarity": 8
+  },
+  "1743": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1744": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1745": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1746": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1747": {
+    "category": "scrap",
+    "rarity": 6
+  },
+  "1748": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "1749": {
+    "category": "wyporium_material",
+    "rarity": 6
+  },
+  "1750": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1751": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1752": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1753": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1754": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1755": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1756": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1757": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1758": {
+    "category": "wyporium_material",
+    "rarity": 9
+  },
+  "1759": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1760": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1761": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1762": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1763": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1764": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1765": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1766": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1767": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1768": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1769": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1770": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1771": {
+    "category": "wyporium_material",
+    "rarity": 9
+  },
+  "1772": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1773": {
+    "category": "wyporium_material",
+    "rarity": 9
+  },
+  "1774": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1775": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1776": {
+    "category": "wyporium_material",
+    "rarity": 9
+  },
+  "1777": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1778": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1779": {
+    "category": "wyporium_material",
+    "rarity": 9
+  },
+  "1780": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1781": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1782": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1783": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1784": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1785": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1786": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1787": {
+    "category": "wyporium_material",
+    "rarity": 9
+  },
+  "1788": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1789": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1790": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1791": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1792": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1793": {
+    "category": "wyporium_material",
+    "rarity": 9
+  },
+  "1794": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1795": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1796": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1797": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1798": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1799": {
+    "category": "wyporium_material",
+    "rarity": 9
+  },
+  "1800": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1801": {
+    "category": "wyporium_material",
+    "rarity": 9
+  },
+  "1802": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1803": {
+    "category": "wyporium_material",
+    "rarity": 9
+  },
+  "1804": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1805": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1806": {
+    "category": "wyporium_material",
+    "rarity": 9
+  },
+  "1807": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1808": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1809": {
+    "category": "wyporium_material",
+    "rarity": 9
+  },
+  "1810": {
+    "category": "wyporium_material",
+    "rarity": 9
+  },
+  "1811": {
+    "category": "wyporium_material",
+    "rarity": 8
+  },
+  "1812": {
+    "category": "wyporium_material",
+    "rarity": 9
+  },
+  "1813": {
+    "category": "tool",
+    "rarity": 6
+  },
+  "1814": {
+    "category": "tool",
+    "rarity": 6
+  },
+  "1815": {
+    "category": "tool",
+    "rarity": 6
+  },
+  "1816": {
+    "category": "tool",
+    "rarity": 6
+  },
+  "1817": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "1875": {
+    "category": "ticket",
+    "rarity": 6
+  },
+  "1876": {
+    "category": "ticket",
+    "rarity": 8
+  },
+  "1877": {
+    "category": "event_material",
+    "rarity": 8
+  },
+  "1878": {
+    "category": "event_material",
+    "rarity": 8
+  },
+  "1879": {
+    "category": "event_material",
+    "rarity": 8
+  },
+  "1880": {
+    "category": "event_material",
+    "rarity": 8
+  },
+  "1881": {
+    "category": "event_material",
+    "rarity": 8
+  },
+  "1882": {
+    "category": "event_material",
+    "rarity": 8
+  },
+  "1883": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1884": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1885": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1886": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1887": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1888": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1893": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1895": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1896": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1897": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1898": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1899": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1900": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1901": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1902": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1903": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1904": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1905": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1906": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1907": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1908": {
+    "category": "event_material",
+    "rarity": 5
+  },
+  "1917": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "1918": {
+    "category": "ticket",
+    "rarity": 8
+  },
+  "1919": {
+    "category": "ticket",
+    "rarity": 8
+  },
+  "1920": {
+    "category": "ticket",
+    "rarity": 8
+  },
+  "1921": {
+    "category": "ticket",
+    "rarity": 8
+  },
+  "1922": {
+    "category": "ticket",
+    "rarity": 8
+  },
+  "1923": {
+    "category": "ticket",
+    "rarity": 6
+  },
+  "1927": {
+    "category": "account_item",
+    "rarity": 4
+  },
+  "1928": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "1929": {
+    "category": "account_item",
+    "rarity": 4
+  },
+  "1930": {
+    "category": "account_item",
+    "rarity": 4
+  },
+  "1931": {
+    "category": "account_item",
+    "rarity": 5
+  },
+  "1932": {
+    "category": "account_item",
+    "rarity": 4
+  },
+  "1933": {
+    "category": "account_item",
+    "rarity": 4
+  },
+  "1934": {
+    "category": "account_item",
+    "rarity": 1
+  },
+  "1935": {
+    "category": "account_item",
+    "rarity": 5
+  }
+}

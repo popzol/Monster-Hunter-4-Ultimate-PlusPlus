@@ -1,0 +1,1510 @@
+{
+  "description": "Hand-maintained classification of the quests in quest01.arc (Gathering Hall). category: key (required to unlock the rank's urgent quest), urgent (rank-up quest), normal, arena (Grudge Match), expedition (Everwood expedition template, never randomized). Key/urgent status taken from monsterhunterwiki.org (MH4U/Quests/Gathering Hall Quests and G-Rank Gathering Hall Quests) on 2026-10-05. rank: 1-3 low, 4-7 high, 8-10 = G1-G3.",
+  "quests": {
+    "10101": {
+      "title": "Harvest Tour: Anc. Steppe",
+      "rank": 1,
+      "category": "normal"
+    },
+    "10102": {
+      "title": "Harvest Tour: Sunken Hollow",
+      "rank": 1,
+      "category": "normal"
+    },
+    "10103": {
+      "title": "Local Yolk",
+      "rank": 1,
+      "category": "normal"
+    },
+    "10104": {
+      "title": "Fishing's Lure",
+      "rank": 1,
+      "category": "normal"
+    },
+    "10105": {
+      "title": "Ancestral Steppe Fungus Run",
+      "rank": 1,
+      "category": "normal"
+    },
+    "10106": {
+      "title": "Konchu Collector",
+      "rank": 1,
+      "category": "normal"
+    },
+    "10107": {
+      "title": "Bnahabra Bloodbath",
+      "rank": 1,
+      "category": "normal"
+    },
+    "10108": {
+      "title": "Genprey Payback",
+      "rank": 1,
+      "category": "normal"
+    },
+    "10109": {
+      "title": "Rhenoplos Headache",
+      "rank": 1,
+      "category": "normal"
+    },
+    "10110": {
+      "title": "Field Trip",
+      "rank": 1,
+      "category": "normal"
+    },
+    "10111": {
+      "title": "Bug Burger",
+      "rank": 1,
+      "category": "key"
+    },
+    "10112": {
+      "title": "Kecha Konundrum",
+      "rank": 1,
+      "category": "key"
+    },
+    "10113": {
+      "title": "Tackling a Tetsucabra",
+      "rank": 1,
+      "category": "key"
+    },
+    "10114": {
+      "title": "The Gypceros Project",
+      "rank": 1,
+      "category": "key"
+    },
+    "10115": {
+      "title": "Operation Catch-a-Kecha",
+      "rank": 1,
+      "category": "normal"
+    },
+    "10116": {
+      "title": "Robbed Blind",
+      "rank": 1,
+      "category": "normal"
+    },
+    "10201": {
+      "title": "Web Sighting",
+      "rank": 2,
+      "category": "urgent"
+    },
+    "10202": {
+      "title": "Harvest Tour: Primal Forest",
+      "rank": 2,
+      "category": "normal"
+    },
+    "10203": {
+      "title": "Harvest Tour: Frozen Seaway",
+      "rank": 2,
+      "category": "normal"
+    },
+    "10204": {
+      "title": "Sootstone Search",
+      "rank": 2,
+      "category": "normal"
+    },
+    "10205": {
+      "title": "Bite Your Tongues",
+      "rank": 2,
+      "category": "normal"
+    },
+    "10206": {
+      "title": "Stone-cold Stones",
+      "rank": 2,
+      "category": "normal"
+    },
+    "10207": {
+      "title": "Zamite Fight",
+      "rank": 2,
+      "category": "normal"
+    },
+    "10208": {
+      "title": "Conga Bongo",
+      "rank": 2,
+      "category": "normal"
+    },
+    "10209": {
+      "title": "Gendrome Roadblock",
+      "rank": 2,
+      "category": "normal"
+    },
+    "10210": {
+      "title": "Snow with Occasional Lagombi",
+      "rank": 2,
+      "category": "normal"
+    },
+    "10211": {
+      "title": "Eau de Congalala",
+      "rank": 2,
+      "category": "normal"
+    },
+    "10212": {
+      "title": "Royal Assassination",
+      "rank": 2,
+      "category": "key"
+    },
+    "10213": {
+      "title": "Nix the Najarala",
+      "rank": 2,
+      "category": "key"
+    },
+    "10214": {
+      "title": "Zamtrios of the Deep",
+      "rank": 2,
+      "category": "key"
+    },
+    "10215": {
+      "title": "A Ghastly Gift",
+      "rank": 2,
+      "category": "key"
+    },
+    "10216": {
+      "title": "Subterranean Serenade",
+      "rank": 2,
+      "category": "normal"
+    },
+    "10217": {
+      "title": "Tails from the Sunken Hollow",
+      "rank": 2,
+      "category": "normal"
+    },
+    "10218": {
+      "title": "Snowed In",
+      "rank": 2,
+      "category": "normal"
+    },
+    "10219": {
+      "title": "Field Study: Primal Forest",
+      "rank": 2,
+      "category": "normal"
+    },
+    "10301": {
+      "title": "Dark Wings, Dark Work",
+      "rank": 3,
+      "category": "urgent"
+    },
+    "10302": {
+      "title": "Heat Exhaustion",
+      "rank": 3,
+      "category": "normal"
+    },
+    "10303": {
+      "title": "Energy Crisis",
+      "rank": 3,
+      "category": "normal"
+    },
+    "10304": {
+      "title": "Ioprey In the Way",
+      "rank": 3,
+      "category": "normal"
+    },
+    "10305": {
+      "title": "Remobra Remedy",
+      "rank": 3,
+      "category": "normal"
+    },
+    "10306": {
+      "title": "Pick Your Poison",
+      "rank": 3,
+      "category": "normal"
+    },
+    "10307": {
+      "title": "Temper Tantrum",
+      "rank": 3,
+      "category": "key"
+    },
+    "10308": {
+      "title": "Tigrex Tough Love",
+      "rank": 3,
+      "category": "key"
+    },
+    "10309": {
+      "title": "Royal Audience",
+      "rank": 3,
+      "category": "key"
+    },
+    "10310": {
+      "title": "Tuff Turf",
+      "rank": 3,
+      "category": "key"
+    },
+    "10311": {
+      "title": "The Royal Guard",
+      "rank": 3,
+      "category": "key"
+    },
+    "10312": {
+      "title": "Queen and Rook",
+      "rank": 3,
+      "category": "normal"
+    },
+    "10313": {
+      "title": "Advanced: Rock and Rolled",
+      "rank": 3,
+      "category": "normal"
+    },
+    "10314": {
+      "title": "Harvest Tour: Heaven's Mount",
+      "rank": 3,
+      "category": "normal"
+    },
+    "10315": {
+      "title": "Harvest Tour: Volcanic Hollow",
+      "rank": 3,
+      "category": "normal"
+    },
+    "10316": {
+      "title": "Rathalos Run",
+      "rank": 3,
+      "category": "normal"
+    },
+    "10317": {
+      "title": "The Angry Couple",
+      "rank": 3,
+      "category": "normal"
+    },
+    "10318": {
+      "title": "Hunters' Heaven",
+      "rank": 3,
+      "category": "normal"
+    },
+    "10319": {
+      "title": "Advanced: Purge and Binge",
+      "rank": 3,
+      "category": "normal"
+    },
+    "10320": {
+      "title": "Advanced: One-man Army",
+      "rank": 3,
+      "category": "normal"
+    },
+    "10321": {
+      "title": "Advanced: Family Business",
+      "rank": 3,
+      "category": "normal"
+    },
+    "10322": {
+      "title": "Advanced: Fearsome Rumblings",
+      "rank": 3,
+      "category": "normal"
+    },
+    "10323": {
+      "title": "Advanced: Approaching Storm",
+      "rank": 3,
+      "category": "normal"
+    },
+    "10324": {
+      "title": "Advanced: Bug Buffet",
+      "rank": 3,
+      "category": "normal"
+    },
+    "10325": {
+      "title": "Advanced: Sand Sailor",
+      "rank": 3,
+      "category": "urgent"
+    },
+    "10402": {
+      "title": "Harvest Tour: Anc. Steppe",
+      "rank": 4,
+      "category": "normal"
+    },
+    "10403": {
+      "title": "Harvest Tour: Sunken Hollow",
+      "rank": 4,
+      "category": "normal"
+    },
+    "10404": {
+      "title": "Harvest Tour: Primal Forest",
+      "rank": 4,
+      "category": "normal"
+    },
+    "10405": {
+      "title": "Rhenoplos Headache",
+      "rank": 4,
+      "category": "normal"
+    },
+    "10406": {
+      "title": "Bnahabra Bloodbath",
+      "rank": 4,
+      "category": "normal"
+    },
+    "10407": {
+      "title": "Face Two Face",
+      "rank": 4,
+      "category": "key"
+    },
+    "10408": {
+      "title": "Purple People Eater",
+      "rank": 4,
+      "category": "key"
+    },
+    "10409": {
+      "title": "Buffoonish Baboon",
+      "rank": 4,
+      "category": "key"
+    },
+    "10410": {
+      "title": "Dastardly Duo",
+      "rank": 4,
+      "category": "key"
+    },
+    "10411": {
+      "title": "Tetsucabra Bounty",
+      "rank": 4,
+      "category": "normal"
+    },
+    "10412": {
+      "title": "Operation Catch-a-Kecha",
+      "rank": 4,
+      "category": "normal"
+    },
+    "10413": {
+      "title": "Arachnophilia",
+      "rank": 4,
+      "category": "normal"
+    },
+    "10414": {
+      "title": "Seltas Romance",
+      "rank": 4,
+      "category": "normal"
+    },
+    "10415": {
+      "title": "Pack Attack",
+      "rank": 4,
+      "category": "normal"
+    },
+    "10416": {
+      "title": "Gold in Them There Fish",
+      "rank": 4,
+      "category": "normal"
+    },
+    "10417": {
+      "title": "Splendid Sootstone",
+      "rank": 4,
+      "category": "normal"
+    },
+    "10418": {
+      "title": "Apes of Wrath",
+      "rank": 4,
+      "category": "normal"
+    },
+    "10419": {
+      "title": "Material Effect",
+      "rank": 4,
+      "category": "normal"
+    },
+    "10420": {
+      "title": "Sunken Hollow Showdown",
+      "rank": 4,
+      "category": "normal"
+    },
+    "10421": {
+      "title": "Gypceros Overload",
+      "rank": 4,
+      "category": "normal"
+    },
+    "10422": {
+      "title": "Pink Stink",
+      "rank": 4,
+      "category": "normal"
+    },
+    "10423": {
+      "title": "Distress Signal",
+      "rank": 4,
+      "category": "normal"
+    },
+    "10501": {
+      "title": "Rathian's Wrath",
+      "rank": 5,
+      "category": "urgent"
+    },
+    "10502": {
+      "title": "Heat Exhaustion",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10503": {
+      "title": "Mistentoe Mission",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10504": {
+      "title": "Zamite Fight",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10505": {
+      "title": "Party Pants",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10506": {
+      "title": "Poisonous Pair",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10507": {
+      "title": "Lagombi Lair",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10508": {
+      "title": "Fin Finder",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10509": {
+      "title": "Cold-blooded Combo",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10510": {
+      "title": "Writer's Block",
+      "rank": 5,
+      "category": "key"
+    },
+    "10511": {
+      "title": "The Red Menace",
+      "rank": 5,
+      "category": "key"
+    },
+    "10512": {
+      "title": "Trader in Trouble",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10513": {
+      "title": "Harvest Tour: Frozen Seaway",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10514": {
+      "title": "Harvest Tour: Volcanic Hollow",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10515": {
+      "title": "Harvest Tour: Heaven's Mount",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10516": {
+      "title": "Electrifying Encounter",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10517": {
+      "title": "Royal Rumble",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10518": {
+      "title": "Newlywed Game Hunter",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10519": {
+      "title": "Dread Locked",
+      "rank": 5,
+      "category": "key"
+    },
+    "10520": {
+      "title": "Topple the Monarch",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10521": {
+      "title": "Queen's Academy",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10522": {
+      "title": "Advanced: Frenzied Foe",
+      "rank": 5,
+      "category": "key"
+    },
+    "10523": {
+      "title": "Pyres Beware",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10524": {
+      "title": "Temper Tantrum",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10525": {
+      "title": "Dragons' Tale",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10526": {
+      "title": "Gathering of Dragons",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10527": {
+      "title": "Primal Forest M.I.A.",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10528": {
+      "title": "Advanced: Approaching Storm",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10529": {
+      "title": "Advanced: Eerie Aerie",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10530": {
+      "title": "Advanced: Bug Bite",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10531": {
+      "title": "Tigrex by the Tail",
+      "rank": 5,
+      "category": "normal"
+    },
+    "10601": {
+      "title": "Ore D'oeuvre",
+      "rank": 6,
+      "category": "urgent"
+    },
+    "10602": {
+      "title": "Bring Down the Sky King",
+      "rank": 6,
+      "category": "key"
+    },
+    "10603": {
+      "title": "Infernal Overlord",
+      "rank": 6,
+      "category": "key"
+    },
+    "10604": {
+      "title": "Ear Ache",
+      "rank": 6,
+      "category": "key"
+    },
+    "10605": {
+      "title": "Brimstone and Brachydios",
+      "rank": 6,
+      "category": "key"
+    },
+    "10606": {
+      "title": "Advanced: Dance with Dragons",
+      "rank": 6,
+      "category": "normal"
+    },
+    "10607": {
+      "title": "Advanced: Mega Hunt-a-thon",
+      "rank": 6,
+      "category": "normal"
+    },
+    "10608": {
+      "title": "Advanced: Dragon Attack",
+      "rank": 6,
+      "category": "normal"
+    },
+    "10609": {
+      "title": "Advanced: Heaven and Earth",
+      "rank": 6,
+      "category": "normal"
+    },
+    "10610": {
+      "title": "Advanced: Forest Gone Wild",
+      "rank": 6,
+      "category": "normal"
+    },
+    "10611": {
+      "title": "Advanced: Armor Amore",
+      "rank": 6,
+      "category": "normal"
+    },
+    "10612": {
+      "title": "Advanced: Arena Emergency",
+      "rank": 6,
+      "category": "normal"
+    },
+    "10613": {
+      "title": "Advanced: Pair of Kings",
+      "rank": 6,
+      "category": "normal"
+    },
+    "10614": {
+      "title": "Advanced: Wake-up Call",
+      "rank": 6,
+      "category": "normal"
+    },
+    "10615": {
+      "title": "Advanced: Gravios Fortunes",
+      "rank": 6,
+      "category": "normal"
+    },
+    "10616": {
+      "title": "Advanced: Insecticide",
+      "rank": 6,
+      "category": "normal"
+    },
+    "10617": {
+      "title": "Advanced: Azure Alert",
+      "rank": 6,
+      "category": "normal"
+    },
+    "10618": {
+      "title": "Advanced: Bag a Brachydios",
+      "rank": 6,
+      "category": "normal"
+    },
+    "10701": {
+      "title": "Advanced: Stop the Wheel",
+      "rank": 7,
+      "category": "urgent"
+    },
+    "10702": {
+      "title": "Devil of a Problem",
+      "rank": 7,
+      "category": "normal"
+    },
+    "10703": {
+      "title": "Advanced: Grim Tidings",
+      "rank": 7,
+      "category": "key"
+    },
+    "10704": {
+      "title": "Advanced: Teostra Tangle",
+      "rank": 7,
+      "category": "key"
+    },
+    "10705": {
+      "title": "Advanced: Storm Front",
+      "rank": 7,
+      "category": "key"
+    },
+    "10706": {
+      "title": "Advanced: The Raging Rajang",
+      "rank": 7,
+      "category": "normal"
+    },
+    "10707": {
+      "title": "Advanced: Fleet Action",
+      "rank": 7,
+      "category": "key"
+    },
+    "10708": {
+      "title": "Advanced: Bet Your Life",
+      "rank": 7,
+      "category": "normal"
+    },
+    "10709": {
+      "title": "Advanced: Speartip Menace",
+      "rank": 7,
+      "category": "urgent"
+    },
+    "10710": {
+      "title": "Ring of the Silver Sol",
+      "rank": 7,
+      "category": "normal"
+    },
+    "10711": {
+      "title": "Ring of the Golden Lune",
+      "rank": 7,
+      "category": "normal"
+    },
+    "10712": {
+      "title": "Sinister Astronomy",
+      "rank": 7,
+      "category": "normal"
+    },
+    "10713": {
+      "title": "Advanced: Seek the Hide",
+      "rank": 7,
+      "category": "normal"
+    },
+    "10714": {
+      "title": "Busted Hell Hunters",
+      "rank": 7,
+      "category": "normal"
+    },
+    "10716": {
+      "title": "Advanced: Stormy Knight",
+      "rank": 7,
+      "category": "normal"
+    },
+    "10717": {
+      "title": "Advanced: More Mohran",
+      "rank": 7,
+      "category": "normal"
+    },
+    "10718": {
+      "title": "Advanced: Enraged Rajang",
+      "rank": 7,
+      "category": "normal"
+    },
+    "10719": {
+      "title": "Advanced: Naked and Afraid",
+      "rank": 7,
+      "category": "normal"
+    },
+    "10720": {
+      "title": "Advanced: Akantor Coup",
+      "rank": 7,
+      "category": "normal"
+    },
+    "10721": {
+      "title": "Advanced: Here to Eternity",
+      "rank": 7,
+      "category": "normal"
+    },
+    "10722": {
+      "title": "Advanced: Fade to Black",
+      "rank": 7,
+      "category": "normal"
+    },
+    "10723": {
+      "title": "Advanced: Queen Slayer",
+      "rank": 7,
+      "category": "normal"
+    },
+    "10724": {
+      "title": "Advanced: King Slayer",
+      "rank": 7,
+      "category": "normal"
+    },
+    "10725": {
+      "title": "Advanced: Glacial Grinder",
+      "rank": 7,
+      "category": "urgent"
+    },
+    "10801": {
+      "title": "Fashion Victim",
+      "rank": 8,
+      "category": "key"
+    },
+    "10802": {
+      "title": "Line in the Sand",
+      "rank": 8,
+      "category": "key"
+    },
+    "10803": {
+      "title": "Berserker Rage",
+      "rank": 8,
+      "category": "key"
+    },
+    "10804": {
+      "title": "Seeing Spots",
+      "rank": 8,
+      "category": "key"
+    },
+    "10805": {
+      "title": "Sculptural Seltas",
+      "rank": 8,
+      "category": "key"
+    },
+    "10807": {
+      "title": "Harvest Tour: Anc. Steppe",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10808": {
+      "title": "Harvest Tour: Sunken Hollow",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10809": {
+      "title": "Harvest Tour: Primal Forest",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10810": {
+      "title": "Harvest Tour: Dunes (Day)",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10811": {
+      "title": "Primate Plunder",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10812": {
+      "title": "Purple Pros",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10813": {
+      "title": "Chasing Tail",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10814": {
+      "title": "Lumber Support",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10815": {
+      "title": "Netting Neopterons",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10816": {
+      "title": "Birthday Berries",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10817": {
+      "title": "Advanced: Terrible Twins",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10818": {
+      "title": "Advanced: Bug-Be-Gone",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10819": {
+      "title": "Hunger Games",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10820": {
+      "title": "Hit List: Plum Daimyo Hermitaur",
+      "rank": 8,
+      "category": "key"
+    },
+    "10821": {
+      "title": "Grand Finals Confrontation",
+      "rank": 8,
+      "category": "key"
+    },
+    "10822": {
+      "title": "Serpent Serenade",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10823": {
+      "title": "Hunter In Green and Red",
+      "rank": 8,
+      "category": "key"
+    },
+    "10824": {
+      "title": "Harvest Tour: Frozen Seaway",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10825": {
+      "title": "Death and Taxidermy",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10826": {
+      "title": "Lagombi Lair",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10827": {
+      "title": "Advanced: Chumming the Waters",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10828": {
+      "title": "All-You-Can-Hunt Zamite",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10829": {
+      "title": "Advanced: Claw Clash",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10830": {
+      "title": "Advanced: Tiger-sharq",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10831": {
+      "title": "Serpentine Samba",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10832": {
+      "title": "Advanced: Frenzied Trading",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10833": {
+      "title": "Pink Problems",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10834": {
+      "title": "Royal Assassination",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10835": {
+      "title": "Hunt-a-thon: Khezu",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10836": {
+      "title": "La Vie en Rose",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10837": {
+      "title": "Advanced: Hollow Hysterics",
+      "rank": 8,
+      "category": "normal"
+    },
+    "10901": {
+      "title": "Seer of Swords",
+      "rank": 9,
+      "category": "urgent"
+    },
+    "10902": {
+      "title": "Course Correction",
+      "rank": 9,
+      "category": "key"
+    },
+    "10903": {
+      "title": "How to Zap Your Zinogre",
+      "rank": 9,
+      "category": "key"
+    },
+    "10904": {
+      "title": "Temper Tantrum",
+      "rank": 9,
+      "category": "key"
+    },
+    "10905": {
+      "title": "The Azure King and the Tyrant",
+      "rank": 9,
+      "category": "key"
+    },
+    "10906": {
+      "title": "Harvest Tour: Volcanic Hollow",
+      "rank": 9,
+      "category": "normal"
+    },
+    "10907": {
+      "title": "Harvest Tour: Heaven's Mount",
+      "rank": 9,
+      "category": "normal"
+    },
+    "10908": {
+      "title": "Harvest Tour: Dunes (Night)",
+      "rank": 9,
+      "category": "normal"
+    },
+    "10909": {
+      "title": "All-You-Can-Hunt Remobra",
+      "rank": 9,
+      "category": "normal"
+    },
+    "10910": {
+      "title": "Sovereign of the Sky",
+      "rank": 9,
+      "category": "normal"
+    },
+    "10911": {
+      "title": "Strutting the Royal Runway",
+      "rank": 9,
+      "category": "normal"
+    },
+    "10912": {
+      "title": "Out for the Count",
+      "rank": 9,
+      "category": "normal"
+    },
+    "10913": {
+      "title": "Rival Clash",
+      "rank": 9,
+      "category": "normal"
+    },
+    "10914": {
+      "title": "Advanced: Spider Study",
+      "rank": 9,
+      "category": "normal"
+    },
+    "10915": {
+      "title": "Advanced: Bolt of Pink",
+      "rank": 9,
+      "category": "normal"
+    },
+    "10916": {
+      "title": "Ring Hollow",
+      "rank": 9,
+      "category": "normal"
+    },
+    "10917": {
+      "title": "Azure Arrival",
+      "rank": 9,
+      "category": "normal"
+    },
+    "10918": {
+      "title": "Beast Not Quite Busted",
+      "rank": 9,
+      "category": "normal"
+    },
+    "10919": {
+      "title": "Advanced: Mean and Green",
+      "rank": 9,
+      "category": "normal"
+    },
+    "10920": {
+      "title": "Showdown at High Noon",
+      "rank": 9,
+      "category": "key"
+    },
+    "10921": {
+      "title": "Showdown at Midnight",
+      "rank": 9,
+      "category": "key"
+    },
+    "10922": {
+      "title": "Brute Force",
+      "rank": 9,
+      "category": "key"
+    },
+    "10923": {
+      "title": "Hollow Promise",
+      "rank": 9,
+      "category": "key"
+    },
+    "10924": {
+      "title": "Pestering Pest",
+      "rank": 9,
+      "category": "key"
+    },
+    "10925": {
+      "title": "Fire Drill",
+      "rank": 9,
+      "category": "key"
+    },
+    "10926": {
+      "title": "Locked Horns",
+      "rank": 9,
+      "category": "normal"
+    },
+    "10927": {
+      "title": "Advanced: A Black Day",
+      "rank": 9,
+      "category": "normal"
+    },
+    "10928": {
+      "title": "Advanced: Escaped Convicts",
+      "rank": 9,
+      "category": "normal"
+    },
+    "10929": {
+      "title": "Fire and Ice",
+      "rank": 9,
+      "category": "normal"
+    },
+    "10930": {
+      "title": "Mountain Rescue",
+      "rank": 9,
+      "category": "normal"
+    },
+    "11001": {
+      "title": "Advanced: A Plague Awoken",
+      "rank": 10,
+      "category": "urgent"
+    },
+    "11002": {
+      "title": "Advanced: A Formless Fiend",
+      "rank": 10,
+      "category": "key"
+    },
+    "11003": {
+      "title": "Operation Tongue Twister",
+      "rank": 10,
+      "category": "urgent"
+    },
+    "11004": {
+      "title": "Advanced: Emperor of Embers",
+      "rank": 10,
+      "category": "key"
+    },
+    "11005": {
+      "title": "Operation Fire Extinguisher",
+      "rank": 10,
+      "category": "urgent"
+    },
+    "11006": {
+      "title": "Advanced: A Storm of Steel",
+      "rank": 10,
+      "category": "key"
+    },
+    "11007": {
+      "title": "Operation Windbreaker",
+      "rank": 10,
+      "category": "urgent"
+    },
+    "11008": {
+      "title": "Advanced: Icy Investigation",
+      "rank": 10,
+      "category": "key"
+    },
+    "11009": {
+      "title": "Advanced: Fur Fixation",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11010": {
+      "title": "Into the Heavens",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11011": {
+      "title": "Advanced: The Scathing Shore",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11012": {
+      "title": "Advanced: Lab Partners",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11013": {
+      "title": "Advanced: Misty Challenge",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11014": {
+      "title": "Advanced: Quagmire Quarrel",
+      "rank": 10,
+      "category": "urgent"
+    },
+    "11015": {
+      "title": "Advanced: Wheel of Time",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11016": {
+      "title": "Grim Quartet",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11017": {
+      "title": "Advanced: Fury on the Mount",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11018": {
+      "title": "Advanced: Tigrex In Effect",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11019": {
+      "title": "Operation Tigrex Tamer",
+      "rank": 10,
+      "category": "urgent"
+    },
+    "11020": {
+      "title": "Advanced: The Wailing Devil",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11021": {
+      "title": "Advanced: Gravios Situation",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11022": {
+      "title": "Advanced: Rhapsody in Rime",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11023": {
+      "title": "Advanced: Winds of Discord",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11024": {
+      "title": "Operation Rust Remover",
+      "rank": 10,
+      "category": "urgent"
+    },
+    "11025": {
+      "title": "The Sky Is Falling",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11026": {
+      "title": "Advanced: Dark Domination",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11027": {
+      "title": "Advanced: 1,001 Shards",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11028": {
+      "title": "Operation Swordbreaker",
+      "rank": 10,
+      "category": "urgent"
+    },
+    "11029": {
+      "title": "Advanced: Wings of Woe",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11030": {
+      "title": "Advanced: Eternal Emperor",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11031": {
+      "title": "Advanced: Beyond Brawn",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11032": {
+      "title": "Operation Lionheart",
+      "rank": 10,
+      "category": "urgent"
+    },
+    "11033": {
+      "title": "Advanced: Achy Brachy Heart",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11034": {
+      "title": "Advanced: Silver Cataclysm",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11035": {
+      "title": "Advanced: Act of Gog",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11036": {
+      "title": "Advanced: A Final Battle Cry",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11037": {
+      "title": "Advanced: Monster Hunter!",
+      "rank": 10,
+      "category": "normal"
+    },
+    "11038": {
+      "title": "Advanced: Winds of Discord",
+      "rank": 10,
+      "category": "normal"
+    },
+    "20001": {
+      "title": "Grudge Match: Yian Kut-Ku",
+      "rank": 2,
+      "category": "arena"
+    },
+    "20002": {
+      "title": "Grudge Match: Kecha Wacha",
+      "rank": 2,
+      "category": "arena"
+    },
+    "20003": {
+      "title": "Grudge Match: Bug Out",
+      "rank": 3,
+      "category": "arena"
+    },
+    "21001": {
+      "title": "Grudge Match: Zamtrios",
+      "rank": 5,
+      "category": "arena"
+    },
+    "21002": {
+      "title": "Grudge Match: Brute Tigrex",
+      "rank": 5,
+      "category": "arena"
+    },
+    "21003": {
+      "title": "Grudge Match: S. Zinogre",
+      "rank": 5,
+      "category": "arena"
+    },
+    "21004": {
+      "title": "Grudge Match: Deviljho",
+      "rank": 6,
+      "category": "arena"
+    },
+    "21005": {
+      "title": "Grudge Match: Color Code",
+      "rank": 6,
+      "category": "arena"
+    },
+    "21006": {
+      "title": "Grudge Match: Dos Gravi",
+      "rank": 6,
+      "category": "arena"
+    },
+    "21007": {
+      "title": "Grudge Match: Shell Game",
+      "rank": 4,
+      "category": "arena"
+    },
+    "22001": {
+      "title": "Grudge Match: Fish Fry",
+      "rank": 8,
+      "category": "arena"
+    },
+    "22002": {
+      "title": "Grudge Match: Tidal Najarala",
+      "rank": 8,
+      "category": "arena"
+    },
+    "22003": {
+      "title": "Grudge Match: S. Nerscylla",
+      "rank": 9,
+      "category": "arena"
+    },
+    "22004": {
+      "title": "Grudge Match: Dual Devils",
+      "rank": 9,
+      "category": "arena"
+    },
+    "22005": {
+      "title": "Grudge Match: Apex Deviljho",
+      "rank": 10,
+      "category": "arena"
+    },
+    "22006": {
+      "title": "Grudge Match: Triplets",
+      "rank": 10,
+      "category": "arena"
+    },
+    "45100": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45101": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45102": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45103": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45104": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45105": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45106": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45107": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45108": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45109": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45200": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45201": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45202": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45203": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45204": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45205": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45206": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45207": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45208": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45209": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45210": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45211": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45212": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45213": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45214": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    },
+    "45215": {
+      "title": "",
+      "rank": 1,
+      "category": "expedition"
+    }
+  }
+}

@@ -17,6 +17,9 @@ PTR_UNSTABLE = 0x30
 STATIC_POINTERS = [PTR_DYNAMIC_HEADER, PTR_SUPPLIES, *PTR_LOOT.values(), PTR_LARGE, PTR_SMALL, PTR_UNSTABLE]
 
 DYN_PTR_TEXT = 0x1C
+# Fixed gear sets offered by arena quests (Grudge Matches); 0 for every other quest.
+DYN_PTR_EQUIPMENT_PRESETS = 0x44
+EQUIPMENT_PRESETS_SIZE = 0x6E0      # 5 sets x 0x160 bytes (0x100 equipment + 24 items)
 
 # --- Static header ---------------------------------------------------------
 STATIC_SCALARS = [
@@ -41,7 +44,7 @@ REFILL_FMT = "<BBBxBxxx"            # box, condition, monster, qty
 LARGE_META_OFFSET = 0x34
 LARGE_META_COUNT = 5
 SMALL_META_OFFSET = 0x5C
-META_FMT = "<HBBBBBB"               # size, size_var, hp, atk, break_res, stamina, status_res
+META_FMT = "<HBBBBBB"               # size, size_var, hp, atk, defense, stamina, status_res
 SMALL_CONDITIONS_OFFSET = 0x64
 SMALL_CONDITION_FMT = "<BxxxHBB"    # type, target, qty, group
 
@@ -113,7 +116,7 @@ def _known_static_ranges():
 
 
 def _known_dynamic_ranges():
-    ranges = [(DYN_PTR_TEXT, b"\xff" * 4)]
+    ranges = [(DYN_PTR_TEXT, b"\xff" * 4), (DYN_PTR_EQUIPMENT_PRESETS, b"\xff" * 4)]
     ranges += [(off, struct_mask(fmt)) for _, off, fmt in DYNAMIC_SCALARS]
     ranges += [(DYN_FLAGS_OFFSET, b"\xff" * 3), (DYN_REQUIREMENTS_OFFSET, b"\xff" * 2)]
     ranges += [(DYN_OBJECTIVES_OFFSET + 8 * i, struct_mask(OBJECTIVE_FMT)) for i in range(2)]

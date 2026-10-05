@@ -49,6 +49,8 @@ def parse_mib(buf: bytes) -> Quest:
     q.pictures = list(struct.unpack_from(f"<{L.PICTURE_COUNT}H", raw_dynamic, L.DYN_PICTURES_OFFSET))
 
     q.text = _parse_text(r, r.u32(hdr + L.DYN_PTR_TEXT))
+    presets_addr = r.u32(hdr + L.DYN_PTR_EQUIPMENT_PRESETS)
+    q.equipment_presets = r.bytes_at(presets_addr, L.EQUIPMENT_PRESETS_SIZE) if presets_addr else None
     q.supplies = _parse_supplies(r, r.u32(L.PTR_SUPPLIES))
     for name, off in L.PTR_LOOT.items():
         setattr(q, name, _parse_loot(r, r.u32(off)))

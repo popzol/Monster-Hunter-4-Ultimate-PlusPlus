@@ -4,7 +4,7 @@ import sys
 
 import pytest
 
-from mh4u_rando.data import MapCategory, load_game_data
+from mh4u_rando.data import ItemCategory, MapCategory, QuestCategory, load_game_data
 from mh4u_rando.data.gamedata import GENERATED_DIR
 from mh4u_rando.mib import ObjectiveType, QuestType, load_mib
 
@@ -69,6 +69,27 @@ def test_tier_weights_cover_all_quest_ranks(data):
 def test_items(data):
     assert data.item_name(8) == "Potion"
     assert not data.items[845].usable  # dummy
+    potion = data.items[8]
+    assert potion.category is ItemCategory.CONSUMABLE and not potion.is_gear_material
+    scale = next(i for i in data.items.values() if i.name == "Rathian Scale")
+    assert scale.category is ItemCategory.MONSTER_MATERIAL and scale.is_gear_material
+    assert scale.rarity is not None
+
+
+def test_quest_classification(data):
+    counts = {c: sum(1 for q in data.quests.values() if q.category is c) for c in QuestCategory}
+    assert counts == {QuestCategory.KEY: 51, QuestCategory.URGENT: 18, QuestCategory.NORMAL: 190,
+                      QuestCategory.ARENA: 16, QuestCategory.EXPEDITION: 26}
+    files = original_quest_files()
+    if files:
+        assert {load_mib(p).quest_id for p in files} == set(data.quests)
+
+
+def test_arena_quests_are_the_ones_with_equipment_presets(data):
+    for path in original_quest_files():
+        quest = load_mib(path)
+        is_arena = data.quests[quest.quest_id].category is QuestCategory.ARENA
+        assert (quest.equipment_presets is not None) == is_arena, path.stem
 
 
 def test_enums_match_editor_constants(data):

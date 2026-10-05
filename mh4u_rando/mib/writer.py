@@ -3,7 +3,7 @@
 The file is rebuilt from scratch with a deterministic layout that mirrors the
 block order of retail files:
 
-    static header | dynamic header | text | supplies | loot A/B/C |
+    static header | dynamic header | text | equipment presets | supplies | loot A/B/C |
     small monsters | large monsters | unstable monsters
 
 Blocks with identical content are written once and shared by pointer, the
@@ -43,6 +43,9 @@ def write_mib(q: Quest) -> bytes:
     hdr = w.append(_dynamic_header(q), _TABLE_ALIGN)
 
     w.put_u32(hdr + L.DYN_PTR_TEXT, _write_text(w, q.text))
+    if q.equipment_presets is not None:
+        assert len(q.equipment_presets) == L.EQUIPMENT_PRESETS_SIZE
+        w.put_u32(hdr + L.DYN_PTR_EQUIPMENT_PRESETS, w.block("equipment_presets", q.equipment_presets))
     w.put_u32(L.PTR_SUPPLIES, _write_supplies(w, q))
     for name, off in L.PTR_LOOT.items():
         w.put_u32(off, _write_loot(w, getattr(q, name)))
@@ -80,7 +83,7 @@ def _static_header(q: Quest) -> bytes:
 
 def _pack_meta(buf: bytearray, offset: int, m) -> None:
     struct.pack_into(L.META_FMT, buf, offset,
-                     m.size, m.size_var, m.hp, m.atk, m.break_res, m.stamina, m.status_res)
+                     m.size, m.size_var, m.hp, m.atk, m.defense, m.stamina, m.status_res)
 
 
 def _dynamic_header(q: Quest) -> bytes:

@@ -79,6 +79,25 @@ Dalamadur (24) and Shah Dalamadur (110) are two monster entries: head and tail
 order). When monsters are reordered, their meta entries must move with them.
 — *Retail*
 
+The hp/atk/defense/stamina bytes are small numbers (hp 17–26 in low rank,
+26–44 above). They most likely index a game-side multiplier table, and the
+final value is `species base value × multiplier`. That would explain why a
+Fatalis placed in a low-rank quest is far too tough: its base HP is several
+times a Great Jaggi's. — *Hypothesis, to be tested in-game*
+
+Planned in-game experiment: build test quests with the same monster and
+different hp indices (and the same index with different monsters) and measure
+the damage needed to kill them (for example with a fixed-damage source such as
+Large Barrel Bombs). That gives the multiplier table and lets the randomizer
+pick, for each new monster, the hp index whose final HP is closest to the
+original monster's.
+
+## Quests
+
+* Arena quests (Grudge Matches) give the player fixed gear sets
+  (equipment presets). — *Retail*
+* Everwood expedition templates (ids 45xxx) are never randomized. — *Retail*
+
 ## Maps
 
 `curated/map_rules.json`:

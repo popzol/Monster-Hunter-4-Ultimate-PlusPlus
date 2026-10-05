@@ -1,10 +1,11 @@
-"""Game knowledge base: monsters, maps, items and the rules that govern them."""
+"""Game knowledge base: monsters, maps, items, quests and the rules that govern them."""
 
 from .gamedata import (
-    AreaInfo, GameData, GameDataError, ItemInfo, MapCategory, MapInfo, MonsterInfo, load_game_data,
+    GEAR_CRAFTING_CATEGORIES, AreaInfo, GameData, GameDataError, ItemCategory, ItemInfo, MapCategory,
+    MapInfo, MonsterInfo, QuestCategory, QuestInfo, load_game_data,
 )
 
 __all__ = [
-    "AreaInfo", "GameData", "GameDataError", "ItemInfo", "MapCategory", "MapInfo", "MonsterInfo",
-    "load_game_data",
+    "GEAR_CRAFTING_CATEGORIES", "AreaInfo", "GameData", "GameDataError", "ItemCategory", "ItemInfo",
+    "MapCategory", "MapInfo", "MonsterInfo", "QuestCategory", "QuestInfo", "load_game_data",
 ]

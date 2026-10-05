@@ -4,6 +4,7 @@
 data/
   generated/            build artifacts - never edit by hand
     items.json          id -> name, usable
+    item_categories.json id -> category, rarity (from monsterhunterwiki.org)
     monsters.json       id -> name, is_large, preview_id, intro_cutscene_map,
                         special_variants, break_parts
     maps.json           id -> name, areas (bounds + retail spawn positions)
@@ -14,6 +15,8 @@ data/
     map_rules.json      category (field/arena/everwood/unused), field music,
                         areas valid for large monsters
     progression.json    tier weights per quest rank
+    quest_rules.json    category of every quest in quest01.arc
+                        (key / urgent / normal / arena / expedition)
   gamedata.py           loads and validates everything -> GameData
 ```
 
@@ -26,6 +29,23 @@ python tools/build_gamedata.py [--quests DIR]
 Sources: `Documentation/constants.js` (tables of the online quest editor) and
 the original quest files (`Scripts/og_loc/loc/quest` by default). The test
 `test_generated_files_are_up_to_date` fails if the committed files are stale.
+
+`item_categories.json` is produced separately because it needs network access:
+
+```
+python tools/fetch_item_categories.py
+```
+
+It matches items by English name against the `MH4U/Items/*` pages of
+monsterhunterwiki.org. About 330 usable items (decorations, charms, relics)
+are not listed there and get the category `unknown`.
+
+## Quest classification
+
+`quest01.arc` holds the **Gathering Hall** quests (ranks 1–3 low, 4–7 high,
+8–10 = G1–G3), the arena Grudge Matches (ids 2xxxx) and 26 Everwood
+expedition templates (ids 45xxx, no text and no large monsters). Key/urgent
+status was matched by title against monsterhunterwiki.org on 2026-10-05.
 
 ## Editing `curated/`
 

@@ -35,11 +35,40 @@ class MapCategory(str, Enum):
     UNUSED = "unused"        # map 0, never valid
 
 
+class ItemCategory(str, Enum):
+    """Item classification from monsterhunterwiki.org (generated/item_categories.json)."""
+    MONSTER_MATERIAL = "monster_material"      # carves and rewards used to craft gear
+    GATHERING_MATERIAL = "gathering_material"  # ores, bones, plants, bugs...
+    CRAFTING_MATERIAL = "crafting_material"
+    SCRAP = "scrap"
+    WYPORIUM_MATERIAL = "wyporium_material"
+    EVENT_MATERIAL = "event_material"
+    CONSUMABLE = "consumable"
+    AMMO = "ammo"
+    TOOL = "tool"
+    TICKET = "ticket"
+    ACCOUNT_ITEM = "account_item"
+    OTHER = "other"
+    UNKNOWN = "unknown"                        # not listed on the wiki (jewels, charms, relics...)
+
+
+GEAR_CRAFTING_CATEGORIES = frozenset({
+    ItemCategory.MONSTER_MATERIAL, ItemCategory.GATHERING_MATERIAL, ItemCategory.CRAFTING_MATERIAL,
+})
+
+
 @dataclass(frozen=True)
 class ItemInfo:
     item_id: int
     name: str
     usable: bool  # False for dummies, books and other items the editor hides
+    category: ItemCategory = ItemCategory.UNKNOWN
+    rarity: int | None = None
+
+    @property
+    def is_gear_material(self) -> bool:
+        """Used to craft weapons and armor."""
+        return self.usable and self.category in GEAR_CRAFTING_CATEGORIES
 
 
 @dataclass(frozen=True)
@@ -98,11 +127,33 @@ class MonsterInfo:
         return self.allowed_maps is None or map_id in self.allowed_maps
 
 
+class QuestCategory(str, Enum):
+    KEY = "key"                # required to unlock the rank's urgent quest
+    URGENT = "urgent"          # rank-up quest
+    NORMAL = "normal"
+    ARENA = "arena"            # Grudge Match: fixed gear sets (equipment presets)
+    EXPEDITION = "expedition"  # Everwood expedition template: never randomized
+
+
+@dataclass(frozen=True)
+class QuestInfo:
+    quest_id: int
+    title: str
+    rank: int  # 1-3 low rank, 4-7 high rank, 8-10 = G1-G3
+    category: QuestCategory
+
+    @property
+    def is_progression_quest(self) -> bool:
+        """Key or urgent: needed to advance through the ranks."""
+        return self.category in (QuestCategory.KEY, QuestCategory.URGENT)
+
+
 @dataclass(frozen=True)
 class GameData:
     monsters: dict[int, MonsterInfo]
     maps: dict[int, MapInfo]
     items: dict[int, ItemInfo]
+    quests: dict[int, QuestInfo]
     tier_weights_by_rank: dict[int, dict[int, int]]
     monster_groups: dict[str, tuple[int, ...]]
     quest_enums: dict[str, dict[int, str]]
@@ -138,8 +189,18 @@ def _int_keys(mapping: dict) -> dict:
     return {int(k): v for k, v in mapping.items()}
 
 
-def _build_items(generated: dict) -> dict[int, ItemInfo]:
-    return {int(k): ItemInfo(int(k), v["name"], v["usable"]) for k, v in generated.items()}
+def _build_items(generated: dict, categories: dict) -> dict[int, ItemInfo]:
+    items = {}
+    for key, info in generated.items():
+        extra = categories.get(key, {})
+        items[int(key)] = ItemInfo(
+            item_id=int(key),
+            name=info["name"],
+            usable=info["usable"],
+            category=ItemCategory(extra.get("category", ItemCategory.UNKNOWN.value)),
+            rarity=extra.get("rarity"),
+        )
+    return items
 
 
 def _build_maps(generated: dict, curated: dict) -> dict[int, MapInfo]:
@@ -209,6 +270,12 @@ def _build_monsters(generated: dict, curated: dict, maps: dict[int, MapInfo]) ->
     return monsters
 
 
+def _build_quests(curated: dict) -> dict[int, QuestInfo]:
+    return {
+        int(key): QuestInfo(int(key), info["title"], info["rank"], QuestCategory(info["category"]))
+        for key, info in curated["quests"].items()}
+
+
 def _build_tier_weights(curated: dict) -> dict[int, dict[int, int]]:
     return {int(rank): _int_keys(weights) for rank, weights in curated["tier_weights_by_rank"].items()}
 
@@ -221,7 +288,8 @@ def load_game_data(data_dir: Path = DATA_DIR) -> GameData:
     return GameData(
         monsters=_build_monsters(_read(generated / "monsters.json"), monster_rules, maps),
         maps=maps,
-        items=_build_items(_read(generated / "items.json")),
+        items=_build_items(_read(generated / "items.json"), _read(generated / "item_categories.json")),
+        quests=_build_quests(_read(curated / "quest_rules.json")),
         tier_weights_by_rank=_build_tier_weights(_read(curated / "progression.json")),
         monster_groups={name: tuple(group["monsters"]) for name, group in monster_rules["groups"].items()},
         quest_enums={name: _int_keys(values) for name, values in _read(generated / "quest_enums.json").items()},

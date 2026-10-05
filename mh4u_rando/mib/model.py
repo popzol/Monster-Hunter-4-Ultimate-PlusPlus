@@ -79,14 +79,18 @@ class Objective:
 
 @dataclass
 class MetaEntry:
-    """Size and stat multipliers. Large monsters use 5 entries, small monsters 1."""
-    size: int = 100
-    size_var: int = 0
+    """Size and stat modifiers. Large monsters use 5 entries, small monsters 1.
+
+    hp/atk/defense/stamina are believed to be indices into a game-side table of
+    multipliers rather than raw values (see docs/game_rules.md, "Stats").
+    """
+    size: int = 100       # percent
+    size_var: int = 0     # size variation table index
     hp: int = 0
     atk: int = 0
-    break_res: int = 0
+    defense: int = 0      # named break_res in mib.js; mhff documents it as defense
     stamina: int = 0
-    status_res: int = 0
+    status_res: int = 0   # unknown in mhff; mib.js calls it status resistance
 
 
 @dataclass
@@ -177,6 +181,8 @@ class Quest:
     pictures: list[int] = field(default_factory=lambda: [0] * 5)
 
     # Pointed-to blocks
+    # Arena quests only: the selectable gear sets, kept as an opaque block. None = no presets.
+    equipment_presets: bytes | None = None
     text: list[list[str]] = field(
         default_factory=lambda: [[""] * TEXT_STRINGS_PER_LANGUAGE for _ in range(TEXT_LANGUAGES)])
     supplies: list[SupplyBox] = field(default_factory=list)
