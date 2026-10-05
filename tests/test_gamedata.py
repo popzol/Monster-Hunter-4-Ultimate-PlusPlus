@@ -83,6 +83,14 @@ def test_every_randomizable_monster_has_gear_materials(data):
     assert all(data.items[i].carry_limit for i in data.monsters[1].material_ids)
 
 
+def test_every_large_monster_has_names_in_all_languages(data):
+    for m in data.large_monsters():
+        assert set(m.localized_names) == {"en", "fr", "es", "de", "it"}, m.name
+        assert all(n and "\n" not in n for n in m.localized_names.values()), m.name
+    assert data.monsters[12].name_in("es") == "Tigrex pardo"
+    assert data.monsters[83].name_in("es") == "Dalamadur"  # tail uses the head's name
+
+
 def test_quest_classification(data):
     counts = {c: sum(1 for q in data.quests.values() if q.category is c) for c in QuestCategory}
     assert counts == {QuestCategory.KEY: 51, QuestCategory.URGENT: 18, QuestCategory.NORMAL: 190,

@@ -23,6 +23,9 @@ CURATED_DIR = DATA_DIR / "curated"
 
 Point = tuple[float, float, float]
 
+# Language order of the quest text tables (Quest.text[i]).
+LANGUAGES = ("en", "fr", "es", "de", "it")
+
 
 class GameDataError(ValueError):
     """Raised when the data files are inconsistent."""
@@ -115,6 +118,10 @@ class MonsterInfo:
     special_variants: dict[int, str] = field(default_factory=dict)
     break_parts: dict[int, str] = field(default_factory=dict)
     material_ids: tuple[int, ...] = ()   # items this monster provides (carves/rewards)
+    localized_names: dict[str, str] = field(default_factory=dict)  # language code -> name
+
+    def name_in(self, language: str) -> str:
+        return self.localized_names.get(language, self.name)
 
     @property
     def has_intro_cutscene(self) -> bool:
@@ -234,7 +241,7 @@ def _build_maps(generated: dict, curated: dict) -> dict[int, MapInfo]:
 
 
 def _build_monsters(generated: dict, curated: dict, maps: dict[int, MapInfo],
-                    materials: dict) -> dict[int, MonsterInfo]:
+                    materials: dict, names: dict) -> dict[int, MonsterInfo]:
     finale = set(curated["groups"]["finale_monsters"]["monsters"])
     monsters = {}
     for key, gen in generated.items():
@@ -259,6 +266,8 @@ def _build_monsters(generated: dict, curated: dict, maps: dict[int, MapInfo],
             special_variants=_int_keys(gen["special_variants"]),
             break_parts=_int_keys(gen["break_parts"]),
             material_ids=tuple(materials.get(key, ())),
+            localized_names={lang: name for lang, name in names.get(
+                key, names.get(str(rules.get("body_part_of")), {})).items() if lang in LANGUAGES},
         )
     for key in curated["monsters"]:
         if int(key) not in monsters:
@@ -292,7 +301,8 @@ def load_game_data(data_dir: Path = DATA_DIR) -> GameData:
     monster_rules = _read(curated / "monster_rules.json")
     return GameData(
         monsters=_build_monsters(_read(generated / "monsters.json"), monster_rules, maps,
-                                 _read(generated / "monster_materials.json")),
+                                 _read(generated / "monster_materials.json"),
+                                 _read(curated / "monster_names.json")["names"]),
         maps=maps,
         items=_build_items(_read(generated / "items.json"), _read(generated / "item_categories.json")),
         quests=_build_quests(_read(curated / "quest_rules.json")),
