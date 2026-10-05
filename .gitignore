@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Legacy code: has its own git repository
+Scripts/
+
+# Game data (extracted from a personal dump; never commit)
+*.arc
+*.1BBFD18E
+
+# Generated output
+test_output/
