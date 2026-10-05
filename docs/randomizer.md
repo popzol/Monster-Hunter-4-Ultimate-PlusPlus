@@ -28,6 +28,7 @@ memory) and `mh4u_rando.pipeline.run()` (archive in, archive out).
 | `randomize_supplies` | bool | Same slots, each one a random consumable (`curated/supply_pool.json`) at its maximum capacity; the Map is kept |
 | `randomize_small_monsters` | bool | Swap small species within their group |
 | `randomize_intruders` | bool | Replace intruders (never finale or cutscene monsters) |
+| `debug_weak_monsters` | bool | Debug: health index 1 for every monster, to test quests quickly |
 
 ## What is never changed
 
@@ -41,6 +42,12 @@ memory) and `mh4u_rando.pipeline.run()` (archive in, archive out).
 ## Safety net
 
 `validation.py` checks every rule of `docs/game_rules.md` after a quest is
-randomized. A quest that breaks a rule its original did not break is restored
-and the spoiler log records a warning. The test suite runs the randomizer over
-all quests with many seeds and setting combinations.
+randomized. Quests are never left unrandomized: a failed attempt (no valid
+lineup, or a rule broken that the original did not break) is retried from the
+original with fresh random streams. After repeated failures, soft preferences
+are relaxed one at a time (tier progression, duplicates, music/arena
+preferences, random structure; `RELAXATION_STEPS` in `quest_randomizer.py`)
+and the spoiler log notes it. Engine rules are never relaxed; if a quest still
+fails, the run stops with `RandomizationError`, which would be a bug. The test
+suite runs the randomizer over all quests with many seeds and setting
+combinations and requires zero failures.

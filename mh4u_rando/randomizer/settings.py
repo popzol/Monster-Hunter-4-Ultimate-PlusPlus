@@ -86,6 +86,9 @@ class Settings:
     randomize_small_monsters: bool = False
     randomize_intruders: bool = True
 
+    # Debug
+    debug_weak_monsters: bool = False    # every monster gets the lowest health index (one-hit kills)
+
     def to_dict(self) -> dict:
         return {k: (v.value if isinstance(v, Enum) else v) for k, v in asdict(self).items()}
 

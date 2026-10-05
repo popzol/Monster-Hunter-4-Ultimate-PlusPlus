@@ -6,10 +6,16 @@ Order of operations:
   2. write monsters, positions and map-dependent data;
   3. stats, objectives, quest board pictures, sub quest and text;
   4. rewards, small monsters and intruders;
-  5. validate; a quest that breaks a rule is restored to its original state.
+  5. validate.
+
+A quest is never left unrandomized: if an attempt fails to find a lineup or
+breaks a rule, it is retried from the original with fresh random streams, and
+after a few failures the soft preferences are relaxed one by one (see
+`RELAXATION_STEPS`). The engine rules themselves are never relaxed.
 """
 
 import copy
+import dataclasses
 from dataclasses import dataclass
 
 from ..data import GameData, QuestCategory, QuestInfo
@@ -23,11 +29,24 @@ from .plan import LineupPlan
 from .report import QuestReport
 from .rng import stream
 from .selection import SelectionContext, choose_lineup, lineup_maps
-from .settings import Settings, StructureMode, SubQuestMode, TextMode
+from .settings import DuplicateMode, ProgressionMode, Settings, StructureMode, SubQuestMode, TextMode
 from .structure import original_skeleton, random_skeleton
 from .validation import validate_quest
 
-MAX_ATTEMPTS = 300
+MAX_LINEUP_TRIES = 100
+ATTEMPTS_PER_STEP = 5
+# Soft preferences relaxed, cumulatively, when a quest keeps failing.
+RELAXATION_STEPS = [
+    ("none", {}),
+    ("any tier", {"progression": ProgressionMode.NONE}),
+    ("duplicates allowed", {"duplicates": DuplicateMode.ALLOWED}),
+    ("music and arena preferences ignored", {"always_music": False, "one_monster_per_wave_on_arenas": False}),
+    ("original structure", {"structure": StructureMode.KEEP}),
+]
+
+
+class RandomizationError(RuntimeError):
+    """A quest could not be randomized even with every preference relaxed (a bug)."""
 
 
 @dataclass
@@ -35,38 +54,60 @@ class RandomizerContext:
     settings: Settings
     data: GameData
     map_profiles: MapProfiles
+    attempt: int = 0
 
 
 def randomize_quest(quest: Quest, ctx: RandomizerContext) -> QuestReport:
     """Randomize `quest` in place and describe what changed."""
-    data, settings = ctx.data, ctx.settings
-    info = data.quests.get(quest.quest_id) or QuestInfo(quest.quest_id, quest.text[0][0], quest.quest_rank,
-                                                         QuestCategory.NORMAL)
-    report = QuestReport(quest_id=quest.quest_id, title=info.title, rank=quest.quest_rank,
-                         category=info.category.value, original_map=quest.map_id, new_map=quest.map_id,
-                         original_waves=_wave_ids(quest), new_waves=_wave_ids(quest))
+    info = ctx.data.quests.get(quest.quest_id) or QuestInfo(quest.quest_id, quest.text[0][0], quest.quest_rank,
+                                                             QuestCategory.NORMAL)
     if info.category is QuestCategory.EXPEDITION:
+        report = _new_report(quest, info)
         report.skipped = "Everwood expedition template"
         return report
 
     original = copy.deepcopy(quest)
-    try:
-        if quest.all_large_monsters():
-            _randomize_large_monster_quest(quest, info, ctx, report)
-        elif settings.randomize_intruders and quest.unstable_monsters:
-            _randomize_intruders(quest, ctx, report)
-    except _NoValidLineup:
-        report.warnings.append("no lineup satisfies every rule; quest kept as original")
-        _restore(quest, original)
-
     # Retail quests may legitimately bend a rule (e.g. scripted events); only new violations count.
-    new_errors = set(validate_quest(quest, data, settings)) - set(validate_quest(original, data, settings))
-    if new_errors:
-        report.warnings += [f"rule violated, quest restored: {e}" for e in sorted(new_errors)]
-        _restore(quest, original)
-    report.new_map = quest.map_id
-    report.new_waves = _wave_ids(quest)
-    return report
+    original_errors = set(validate_quest(original, ctx.data, ctx.settings))
+    settings = ctx.settings
+    failures = []
+    for step_name, changes in RELAXATION_STEPS:
+        settings = dataclasses.replace(settings, **changes)
+        for _ in range(ATTEMPTS_PER_STEP):
+            attempt_ctx = dataclasses.replace(ctx, settings=settings, attempt=len(failures))
+            candidate = copy.deepcopy(original)
+            report = _new_report(original, info)
+            try:
+                _randomize_once(candidate, info, attempt_ctx, report)
+            except _NoValidLineup:
+                failures.append("no valid lineup")
+                continue
+            errors = set(validate_quest(candidate, ctx.data, settings)) - original_errors
+            if errors:
+                failures.append("; ".join(sorted(errors)))
+                continue
+            if step_name != "none":
+                report.notes.append(f"relaxed preferences: {step_name}")
+            if ctx.settings.debug_weak_monsters:
+                stats.make_monsters_weak(candidate)
+            quest.__dict__.update(candidate.__dict__)
+            report.new_map = quest.map_id
+            report.new_waves = _wave_ids(quest)
+            return report
+    raise RandomizationError(f"quest {quest.quest_id} could not be randomized: {failures[-3:]}")
+
+
+def _new_report(quest: Quest, info: QuestInfo) -> QuestReport:
+    return QuestReport(quest_id=quest.quest_id, title=info.title, rank=quest.quest_rank,
+                       category=info.category.value, original_map=quest.map_id, new_map=quest.map_id,
+                       original_waves=_wave_ids(quest), new_waves=_wave_ids(quest))
+
+
+def _randomize_once(quest: Quest, info: QuestInfo, ctx: RandomizerContext, report: QuestReport) -> None:
+    if quest.all_large_monsters():
+        _randomize_large_monster_quest(quest, info, ctx, report)
+    elif ctx.settings.randomize_intruders and quest.unstable_monsters:
+        _randomize_intruders(quest, ctx, report)
 
 
 class _NoValidLineup(Exception):
@@ -74,11 +115,9 @@ class _NoValidLineup(Exception):
 
 
 def _rng(ctx: RandomizerContext, quest: Quest, purpose: str):
-    return stream(ctx.settings.seed, quest.quest_id, purpose)
-
-
-def _restore(quest: Quest, original: Quest) -> None:
-    quest.__dict__.update(copy.deepcopy(original).__dict__)
+    # Attempt 0 uses the plain streams so results do not depend on retries elsewhere.
+    suffix = f"#{ctx.attempt}" if ctx.attempt else ""
+    return stream(ctx.settings.seed, quest.quest_id, purpose + suffix)
 
 
 def _wave_ids(quest: Quest) -> list[list[int]]:
@@ -188,7 +227,7 @@ def _choose_lineup_and_map(quest: Quest, info: QuestInfo, ctx: RandomizerContext
         settings.structure is StructureMode.KEEP_PROGRESSION and info.is_progression_quest)
     selection = SelectionContext(data=data, settings=settings, rng=rng_monsters,
                                  quest_rank=quest.quest_rank, candidate_maps=possible_maps)
-    for _ in range(MAX_ATTEMPTS):
+    for _ in range(MAX_LINEUP_TRIES):
         skeleton = original_skeleton(quest, data) if keep_structure else \
             random_skeleton(quest, data, rng_monsters)
         result = choose_lineup(skeleton, selection)

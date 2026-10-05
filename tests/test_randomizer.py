@@ -51,8 +51,13 @@ def test_every_quest_respects_the_rules(originals, data, options, seed):
         new_errors = set(validate_quest(quest, data, settings)) - set(validate_quest(originals[name], data, settings))
         assert not new_errors, (name, new_errors)
         assert parse_mib(write_mib(quest)) == quest  # still a valid file
-    restored = [r for r in reports if r.warnings]
-    assert len(restored) <= 3, [(r.quest_id, r.warnings) for r in restored]
+    assert not [r for r in reports if r.warnings]
+    # Every quest with large monsters is randomized (expeditions are skipped by design).
+    for r in reports:
+        if r.category != "expedition" and any(r.original_waves) and settings.randomize_monsters:
+            assert r.skipped is None
+    relaxed = [r for r in reports if r.notes]
+    assert len(relaxed) <= 5, [(r.quest_id, r.notes) for r in relaxed]
 
 
 def test_same_seed_same_result(originals, data):
@@ -146,6 +151,15 @@ def test_sub_quest_text_is_translated(originals, data):
             english = data.monsters[monster].break_parts[part]
             assert data.part_name(english, "es") in quest.text[2][6]
             assert english != "Dragonator"
+
+
+def test_debug_weak_monsters(originals, data):
+    quests, _, _ = run(originals, data, seed="WEAK", debug_weak_monsters=True)
+    for quest in quests.values():
+        if 45000 <= quest.quest_id < 46000:
+            continue
+        for meta in [*quest.large_meta, quest.small_meta]:
+            assert meta.size == 0 or meta.hp == 1
 
 
 def test_settings_round_trip(tmp_path):
