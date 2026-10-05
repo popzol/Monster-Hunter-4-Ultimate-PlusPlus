@@ -1,168 +1,232 @@
 """Declarative description of the GUI option panels.
 
 The window is generated from `SECTIONS`: each section is a tab, each group a
-titled box, each option a widget bound to a `Settings` field. To expose a new
+titled card, each option a widget bound to a `Settings` field. To expose a new
 setting, add an `Option` here; `tests/test_gui_options.py` fails if a
-`Settings` field is missing or an enum value has no label.
+`Settings` field is missing, an enum value has no choice or a text is not
+translated.
 
 This module must not import tkinter, so it can be tested headless.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 
 from ..randomizer.settings import (
     DuplicateMode, Frequency, ProgressionMode, RewardSource, StructureMode, SubQuestMode, TextMode,
 )
+from .i18n import EMPTY, T
 
 
 @dataclass(frozen=True)
 class Choice:
     value: Enum
-    label: str
-    tooltip: str = ""
+    label: T
+    tooltip: T = EMPTY
 
 
 @dataclass(frozen=True)
 class Option:
     field: str                       # Settings attribute
-    label: str
-    tooltip: str = ""
+    label: T = EMPTY
+    tooltip: T = EMPTY
     choices: tuple[Choice, ...] = ()  # radio buttons for enum fields
-    minimum: int = 0                 # spin boxes for int fields
+    minimum: int = 0                 # stepper for int fields
     maximum: int = 0
     requires: str | None = None      # bool Settings field that must be on for this option to apply
 
 
 @dataclass(frozen=True)
 class Group:
-    title: str
+    title: T
     options: tuple[Option, ...]
+    description: T = EMPTY
 
 
 @dataclass(frozen=True)
 class Section:
-    title: str
-    groups: tuple[Group, ...] = field(default_factory=tuple)
+    title: T
+    groups: tuple[Group, ...]
 
 
 SECTIONS: tuple[Section, ...] = (
-    Section("Monstruos grandes", (
-        Group("Monstruos", (
-            Option("randomize_monsters", "Randomizar monstruos grandes",
-                   "Sustituye los monstruos grandes de cada misión respetando las reglas del motor."),
-        )),
-        Group("Estructura de oleadas", (
-            Option("structure", "", requires="randomize_monsters", choices=(
-                Choice(StructureMode.KEEP, "Mantener la original",
-                       "Mismas oleadas y mismo número de monstruos por oleada."),
-                Choice(StructureMode.KEEP_PROGRESSION, "Mantener solo en Key y Urgentes",
-                       "Las misiones necesarias para subir de rango conservan su estructura; el resto es aleatoria."),
-                Choice(StructureMode.RANDOM, "Aleatoria",
-                       "Número de oleadas y de monstruos por oleada al azar."),
+    Section(T("Monstruos grandes", "Large monsters"), (
+        Group(T("Monstruos", "Monsters"), (
+            Option("randomize_monsters", T("Randomizar monstruos grandes", "Randomize large monsters"),
+                   T("Sustituye los monstruos grandes de cada misión respetando las reglas del motor del juego.",
+                     "Replaces the large monsters of every quest while respecting the game engine's rules.")),
+        ), T("Dragones de final, monstruos con cinemática y Dalamadur se colocan siempre donde el juego los admite.",
+             "Finale dragons, cutscene monsters and Dalamadur are always placed where the game supports them.")),
+        Group(T("Estructura de oleadas", "Wave structure"), (
+            Option("structure", requires="randomize_monsters", choices=(
+                Choice(StructureMode.KEEP, T("Mantener la original", "Keep the original"),
+                       T("Mismo número de oleadas y de monstruos por oleada que la misión original.",
+                         "Same number of waves and monsters per wave as the original quest.")),
+                Choice(StructureMode.KEEP_PROGRESSION, T("Mantener solo en misiones clave", "Keep only in key quests"),
+                       T("Las misiones clave y urgentes conservan su estructura; el resto se genera al azar.",
+                         "Key and urgent quests keep their structure; all others are generated at random.")),
+                Choice(StructureMode.RANDOM, T("Aleatoria", "Random"),
+                       T("Número de oleadas y de monstruos por oleada al azar.",
+                         "Random number of waves and monsters per wave.")),
             )),
         )),
-        Group("Monstruos repetidos", (
-            Option("duplicates", "", requires="randomize_monsters", choices=(
-                Choice(DuplicateMode.ONLY_IF_ORIGINAL, "Solo si la original los repetía",
-                       "Las misiones de '2 Tigrex' siguen siendo de dos iguales; en el resto, todos distintos."),
-                Choice(DuplicateMode.NEVER, "Nunca", "Siempre monstruos distintos."),
-                Choice(DuplicateMode.ALLOWED, "Permitidos", "El mismo monstruo puede salir varias veces."),
+        Group(T("Monstruos repetidos", "Repeated monsters"), (
+            Option("duplicates", requires="randomize_monsters", choices=(
+                Choice(DuplicateMode.ONLY_IF_ORIGINAL, T("Solo si la original los repetía", "Only where the original did"),
+                       T("Las misiones de dos monstruos iguales siguen siéndolo; en el resto, todos son distintos.",
+                         "Quests with two identical monsters keep that pattern; elsewhere every monster is different.")),
+                Choice(DuplicateMode.NEVER, T("Nunca", "Never"),
+                       T("Todos los monstruos de una misión son distintos.", "Every monster in a quest is different.")),
+                Choice(DuplicateMode.ALLOWED, T("Permitidos", "Allowed"),
+                       T("El mismo monstruo puede aparecer varias veces.", "The same monster may appear several times.")),
             )),
         )),
-        Group("Progresión de dificultad", (
-            Option("progression", "", requires="randomize_monsters", choices=(
-                Choice(ProgressionMode.PROGRESSIVE, "Progresiva",
-                       "Tiers ponderados según el rango de la misión."),
-                Choice(ProgressionMode.BALANCED, "Equilibrada",
-                       "Cada monstruo se sustituye por otro de tier parecido (±2)."),
-                Choice(ProgressionMode.NONE, "Sin progresión", "Cualquier monstruo en cualquier misión."),
+        Group(T("Progresión de dificultad", "Difficulty progression"), (
+            Option("progression", requires="randomize_monsters", choices=(
+                Choice(ProgressionMode.PROGRESSIVE, T("Progresiva", "Progressive"),
+                       T("La dificultad de los monstruos se pondera según el rango de la misión.",
+                         "Monster difficulty is weighted by the quest's rank.")),
+                Choice(ProgressionMode.BALANCED, T("Equilibrada", "Balanced"),
+                       T("Cada monstruo se sustituye por otro de dificultad similar (±2 niveles).",
+                         "Each monster is replaced by one of similar difficulty (±2 tiers).")),
+                Choice(ProgressionMode.NONE, T("Sin progresión", "No progression"),
+                       T("Cualquier monstruo puede aparecer en cualquier misión.",
+                         "Any monster can appear in any quest.")),
             )),
-            Option("adjust_stats", "Ajustar vida y ataque al tier (provisional)",
-                   "Baja o sube la vida y el ataque según la diferencia de tier con el monstruo original.",
+            Option("adjust_stats", T("Ajustar vida y ataque a la dificultad", "Scale health and attack to difficulty"),
+                   T("Compensa la vida y el ataque según la diferencia de dificultad con el monstruo sustituido. "
+                     "Fórmula provisional.",
+                     "Compensates health and attack for the difficulty gap with the replaced monster. "
+                     "Provisional formula."),
                    requires="randomize_monsters"),
         )),
     )),
-    Section("Mapas", (
-        Group("Mapas", (
-            Option("randomize_maps", "Randomizar mapas",
-                   "Mueve las misiones a otros mapas, con los monstruos pequeños y ajustes de ese mapa."),
-            Option("always_music", "Evitar mapas sin música",
-                   "Solo usa mapas sin música de zona si todos los monstruos tienen su propio tema.",
+    Section(T("Mapas", "Maps"), (
+        Group(T("Mapas", "Maps"), (
+            Option("randomize_maps", T("Randomizar mapas", "Randomize maps"),
+                   T("Traslada las misiones a otros mapas junto con sus monstruos pequeños y ajustes de zona.",
+                     "Moves quests to other maps together with their small monsters and area settings.")),
+            Option("always_music", T("Evitar mapas sin música", "Avoid maps without music"),
+                   T("Solo usa mapas sin música de zona si todos los monstruos tienen su propio tema.",
+                     "Only uses maps without area music if every monster has its own theme."),
                    requires="randomize_maps"),
-            Option("one_monster_per_wave_on_arenas", "Un monstruo por oleada en arenas",
-                   "No mueve a una arena misiones con varios monstruos a la vez.", requires="randomize_maps"),
+            Option("one_monster_per_wave_on_arenas", T("Un monstruo por oleada en arenas", "One monster per wave in arenas"),
+                   T("No traslada a una arena las misiones con varios monstruos simultáneos.",
+                     "Does not move quests with simultaneous monsters to an arena."),
+                   requires="randomize_maps"),
         )),
-        Group("Arenas (mapas pequeños)", (
-            Option("arena_maps", "", requires="randomize_maps", choices=(
-                Choice(Frequency.NORMAL, "Sí", "Las arenas salen tanto como cualquier otro mapa."),
-                Choice(Frequency.RARE, "Pocas veces", "Las arenas salen con menos frecuencia."),
-                Choice(Frequency.NEVER, "No", "Nunca se mueve una misión a una arena."),
+        Group(T("Arenas", "Arenas"), (
+            Option("arena_maps", requires="randomize_maps", choices=(
+                Choice(Frequency.NORMAL, T("Frecuentes", "Common"),
+                       T("Las arenas aparecen con la misma frecuencia que cualquier otro mapa.",
+                         "Arenas appear as often as any other map.")),
+                Choice(Frequency.RARE, T("Ocasionales", "Occasional"),
+                       T("Las arenas aparecen con menos frecuencia.", "Arenas appear less often.")),
+                Choice(Frequency.NEVER, T("Nunca", "Never"),
+                       T("Ninguna misión se traslada a una arena.", "No quest is moved to an arena.")),
             )),
-        )),
-        Group("Bosque Eterno (Everwood)", (
-            Option("everwood", "", requires="randomize_maps", choices=(
-                Choice(Frequency.NORMAL, "Sí", "Experimental: sus zonas se generan proceduralmente."),
-                Choice(Frequency.RARE, "Pocas veces", "Experimental."),
-                Choice(Frequency.NEVER, "No", "Recomendado mientras no se pruebe en el juego."),
-            )),
-        )),
-    )),
-    Section("Objetivos y textos", (
-        Group("Submisiones", (
-            Option("sub_quests", "", choices=(
-                Choice(SubQuestMode.RANDOMIZE, "Romper una parte",
-                       "La submisión pide romper una parte de uno de los monstruos de la misión."),
-                Choice(SubQuestMode.DISABLE, "Desactivar", "Las misiones no tienen submisión."),
-            )),
-        )),
-        Group("Textos de la misión", (
-            Option("text", "", choices=(
-                Choice(TextMode.REPLACE_NAMES, "Sustituir nombres",
-                       "Cambia los nombres de los monstruos en título, objetivo y descripción (5 idiomas)."),
-                Choice(TextMode.LIST_MONSTERS, "\"Te enfrentarás a: …\"",
-                       "El objetivo principal lista los monstruos de la misión."),
-                Choice(TextMode.KEEP, "No tocar", "El tablón muestra los textos originales."),
+        ), T("Mapas pequeños de una sola zona, como la Arena o el Gran Mar.",
+             "Small single-area maps, such as the Arena or the Great Sea.")),
+        Group(T("Bosque Eterno", "Everwood"), (
+            Option("everwood", requires="randomize_maps", choices=(
+                Choice(Frequency.NORMAL, T("Frecuente", "Common"),
+                       T("Experimental: las zonas del Bosque Eterno se generan proceduralmente.",
+                         "Experimental: Everwood areas are generated procedurally.")),
+                Choice(Frequency.RARE, T("Ocasional", "Occasional"), T("Experimental.", "Experimental.")),
+                Choice(Frequency.NEVER, T("Nunca", "Never"),
+                       T("Recomendado hasta que se compruebe en el juego.", "Recommended until verified in-game.")),
             )),
         )),
     )),
-    Section("Recompensas y suministros", (
-        Group("Recompensas", (
-            Option("randomize_rewards", "Randomizar recompensas",
-                   "Las cajas de recompensa dan materiales de monstruo en su cantidad máxima."),
-            Option("reward_source", "", requires="randomize_rewards", choices=(
-                Choice(RewardSource.QUEST_MONSTERS_AND_RANK, "Monstruos de la misión + rango",
-                       "Parte de los materiales son de los monstruos de la misión."),
-                Choice(RewardSource.RANK, "Cualquiera del rango",
-                       "Materiales al azar de la rareza del rango de la misión."),
+    Section(T("Objetivos y textos", "Objectives & text"), (
+        Group(T("Submisiones", "Subquests"), (
+            Option("sub_quests", choices=(
+                Choice(SubQuestMode.RANDOMIZE, T("Romper una parte", "Break a part"),
+                       T("La submisión consiste en romper una parte de uno de los monstruos de la misión.",
+                         "The subquest asks you to break a part of one of the quest's monsters.")),
+                Choice(SubQuestMode.DISABLE, T("Desactivadas", "Disabled"),
+                       T("Las misiones no tienen submisión.", "Quests have no subquest.")),
             )),
-            Option("reward_item_count", "Materiales distintos por caja", minimum=1, maximum=15,
-                   requires="randomize_rewards"),
         )),
-        Group("Suministros", (
-            Option("randomize_supplies", "Randomizar suministros",
-                   "Cada hueco de la caja de suministros pasa a ser un consumible al máximo. "
-                   "El Mapa se conserva."),
-        )),
-    )),
-    Section("Otros monstruos", (
-        Group("Monstruos pequeños", (
-            Option("randomize_small_monsters", "Randomizar monstruos pequeños",
-                   "Cambia especies pequeñas dentro de su grupo (herbívoros, raptores, voladores)."),
-        )),
-        Group("Intrusos", (
-            Option("randomize_intruders", "Randomizar intrusos",
-                   "Cambia los monstruos que pueden invadir la misión (nunca dragones de final ni con cinemática)."),
+        Group(T("Textos de las misiones", "Quest text"), (
+            Option("text", choices=(
+                Choice(TextMode.REPLACE_NAMES, T("Sustituir nombres", "Replace names"),
+                       T("Actualiza los nombres de los monstruos en título, objetivo y descripción, en los cinco idiomas.",
+                         "Updates monster names in title, objective and description, in all five languages.")),
+                Choice(TextMode.LIST_MONSTERS, T("Listar los monstruos", "List the monsters"),
+                       T("El objetivo principal muestra «Te enfrentarás a:» seguido de los monstruos.",
+                         "The main objective shows “You will face:” followed by the monsters.")),
+                Choice(TextMode.KEEP, T("Sin cambios", "Unchanged"),
+                       T("El tablón muestra los textos originales.", "The quest board shows the original text.")),
+            )),
         )),
     )),
-    Section("Depuración", (
-        Group("Pruebas", (
-            Option("debug_weak_monsters", "Monstruos débiles",
-                   "Vida y ataque al mínimo en todos los monstruos, para probar misiones rápido."),
+    Section(T("Recompensas y suministros", "Rewards & supplies"), (
+        Group(T("Recompensas", "Rewards"), (
+            Option("randomize_rewards", T("Randomizar recompensas", "Randomize rewards"),
+                   T("Las cajas de recompensa entregan materiales de monstruo en su cantidad máxima.",
+                     "Reward boxes hand out monster materials in their maximum quantity.")),
+            Option("reward_source", requires="randomize_rewards", choices=(
+                Choice(RewardSource.QUEST_MONSTERS_AND_RANK, T("Monstruos de la misión y rango", "Quest monsters and rank"),
+                       T("Parte de los materiales procede de los monstruos de la propia misión.",
+                         "Part of the materials comes from the quest's own monsters.")),
+                Choice(RewardSource.RANK, T("Cualquiera del rango", "Any from the rank"),
+                       T("Materiales al azar con la rareza del rango de la misión.",
+                         "Random materials with the rarity of the quest's rank.")),
+            )),
+            Option("reward_item_count", T("Materiales distintos por caja", "Different materials per box"),
+                   T("Número de materiales distintos en cada caja de recompensa.",
+                     "Number of different materials in each reward box."),
+                   minimum=1, maximum=15, requires="randomize_rewards"),
         )),
+        Group(T("Suministros", "Supplies"), (
+            Option("randomize_supplies", T("Randomizar suministros", "Randomize supplies"),
+                   T("Cada hueco de la caja de suministros contiene un consumible al azar en su cantidad máxima. "
+                     "El mapa se conserva siempre.",
+                     "Each supply box slot holds a random consumable in its maximum quantity. "
+                     "The map is always kept.")),
+        )),
+    )),
+    Section(T("Otros monstruos", "Other monsters"), (
+        Group(T("Monstruos pequeños", "Small monsters"), (
+            Option("randomize_small_monsters", T("Randomizar monstruos pequeños", "Randomize small monsters"),
+                   T("Intercambia especies pequeñas dentro de su grupo: herbívoros, raptores e insectos.",
+                     "Swaps small species within their group: herbivores, raptors and insects.")),
+        )),
+        Group(T("Intrusos", "Intruders"), (
+            Option("randomize_intruders", T("Randomizar intrusos", "Randomize intruders"),
+                   T("Cambia los monstruos que pueden irrumpir en la misión. Nunca se usan dragones de final "
+                     "ni monstruos con cinemática.",
+                     "Changes the monsters that may intrude on the quest. Finale dragons and cutscene monsters "
+                     "are never used.")),
+        )),
+    )),
+    Section(T("Depuración", "Debug"), (
+        Group(T("Pruebas", "Testing"), (
+            Option("debug_weak_monsters", T("Monstruos débiles", "Weak monsters"),
+                   T("Vida y ataque al mínimo en todos los monstruos, para probar misiones rápidamente.",
+                     "Minimum health and attack for every monster, to test quests quickly.")),
+        ), T("Opciones pensadas para probar el randomizer, no para jugar.",
+             "Options meant for testing the randomizer, not for playing.")),
     )),
 )
 
 
 def all_options() -> list[Option]:
     return [option for section in SECTIONS for group in section.groups for option in group.options]
+
+
+def all_texts() -> list[T]:
+    """Every translatable text of the option panels (for tests)."""
+    texts = []
+    for section in SECTIONS:
+        texts.append(section.title)
+        for group in section.groups:
+            texts.append(group.title)
+            if group.description is not EMPTY:
+                texts.append(group.description)
+            for option in group.options:
+                texts += [t for t in (option.label, option.tooltip) if t is not EMPTY]
+                for choice in option.choices:
+                    texts += [t for t in (choice.label, choice.tooltip) if t is not EMPTY]
+    return texts

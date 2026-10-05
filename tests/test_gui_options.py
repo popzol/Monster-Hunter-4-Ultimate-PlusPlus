@@ -1,10 +1,12 @@
 from dataclasses import fields
 from enum import Enum
 
-from mh4u_rando.gui.options import all_options
+from mh4u_rando.gui import strings
+from mh4u_rando.gui.i18n import T
+from mh4u_rando.gui.options import all_options, all_texts
 from mh4u_rando.randomizer import Settings
 
-NOT_IN_PANELS = {"seed"}  # shown in the top bar
+NOT_IN_PANELS = {"seed"}  # shown in the sidebar
 
 
 def test_every_setting_has_exactly_one_option():
@@ -20,7 +22,7 @@ def test_every_enum_value_has_a_choice():
         if isinstance(value, Enum):
             assert {c.value for c in option.choices} == set(type(value)), option.field
         elif isinstance(value, bool):
-            assert option.label and not option.choices, option.field
+            assert option.label.is_complete() and not option.choices, option.field
         elif isinstance(value, int):
             assert option.minimum <= value <= option.maximum, option.field
 
@@ -30,3 +32,18 @@ def test_requirements_point_at_boolean_settings():
     for option in all_options():
         if option.requires:
             assert isinstance(getattr(defaults, option.requires), bool), option.field
+
+
+def test_every_text_is_translated():
+    texts = all_texts() + [v for v in vars(strings).values() if isinstance(v, T)] + \
+        list(strings.APPEARANCE_MODES.values())
+    incomplete = [t for t in texts if not t.is_complete()]
+    assert not incomplete, incomplete
+
+
+def test_formatted_strings_have_the_same_placeholders():
+    import string
+    for value in vars(strings).values():
+        if isinstance(value, T):
+            names = [{f[1] for f in string.Formatter().parse(value(lang)) if f[1]} for lang in ("es", "en")]
+            assert names[0] == names[1], value

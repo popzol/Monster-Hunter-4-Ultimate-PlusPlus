@@ -12,6 +12,8 @@ class Preferences:
     original_arc: str = ""
     output_dir: str = str(Path.cwd() / "output")
     last_settings: dict = field(default_factory=dict)
+    language: str = "es"
+    appearance: str = "dark"   # system | light | dark
 
     @classmethod
     def load(cls) -> "Preferences":
