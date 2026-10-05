@@ -9,6 +9,10 @@ is done or discovered.
   random button, preset load/save, progress bar and log, run in a background
   thread, button to open the output folder. Package as an .exe with
   PyInstaller.
+* **Species base health**: retail analysis shows the stat indices depend on
+  the quest rank only (docs/game_rules.md, "Stats"). Find each monster's base
+  HP (wiki data or in-game measurement) so `stats.py` can scale indices by
+  base(old) / base(new) instead of the tier heuristic.
 * **Stats research in-game**: the hp/atk bytes are believed to index a
   multiplier table. Build test quests (same monster, different indices; same
   index, different monsters), measure in-game, then replace the provisional

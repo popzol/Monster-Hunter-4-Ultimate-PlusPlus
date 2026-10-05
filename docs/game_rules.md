@@ -112,6 +112,25 @@ final value is `species base value × multiplier`. That would explain why a
 Fatalis placed in a low-rank quest is far too tough: its base HP is several
 times a Great Jaggi's. — *Hypothesis, to be tested in-game*
 
+Retail data analysis (2026-10-05):
+
+* The indices follow the **quest rank, not the species**: G2 single-monster
+  quests use hp 61 for tier 2 and tier 6 monsters alike; 3★ quests use ~26 for
+  every tier. Capcom therefore relies on each species' base values for the
+  difference between, say, a Great Jaggi and a Rajang.
+* Multi-monster quests lower health to roughly 65 % of the single-monster
+  value of the same rank.
+* Attack climbs steeply with rank: low rank 15–34, high rank 50–76, G rank
+  72–117. Defense follows (12–16 → 31–59 → 47–133); stamina is 1 in low/high
+  rank and 4 in G rank; `monster_ai` is 1 / 3 / 5.
+* Debug test with hp index 1: monsters die almost instantly, so the index is
+  a multiplier table where low values mean very low health. — *Confirmed*
+
+To keep the original difficulty, the randomizer needs each species' **base
+health** (and ideally attack): new index ≈ old index × base(old) / base(new).
+Until that data is available, the tier-based scaling in `stats.py` is only an
+approximation.
+
 Planned in-game experiment: build test quests with the same monster and
 different hp indices (and the same index with different monsters) and measure
 the damage needed to kill them (for example with a fixed-damage source such as

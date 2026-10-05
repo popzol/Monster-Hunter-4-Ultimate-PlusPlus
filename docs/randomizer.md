@@ -1,4 +1,4 @@
-# Randomizer
+﻿# Randomizer
 
 Code: `mh4u_rando/randomizer/`. Entry points: `randomize_quests()` (in
 memory) and `mh4u_rando.pipeline.run()` (archive in, archive out).
@@ -14,7 +14,7 @@ memory) and `mh4u_rando.pipeline.run()` (archive in, archive out).
 | `randomize_monsters` | bool | Replace large monsters |
 | `structure` | keep / keep_progression / random | Waves and monsters per wave: original, original only in key and urgent quests, or random |
 | `duplicates` | only_if_original / never / allowed | Same species twice in a quest |
-| `progression` | progressive / balanced / none | Tier choice: weighted by rank (`curated/progression.json`), within ±2 tiers of the replaced monster, or any |
+| `progression` | progressive / balanced / none | Tier choice: weighted by rank (`curated/progression.json`), within Â±2 tiers of the replaced monster, or any |
 | `adjust_stats` | bool | Provisional health/attack scaling by tier difference |
 | `randomize_maps` | bool | Move quests to other maps |
 | `arena_maps`, `everwood` | normal / rare / never | How often those map categories are used |
@@ -28,7 +28,7 @@ memory) and `mh4u_rando.pipeline.run()` (archive in, archive out).
 | `randomize_supplies` | bool | Same slots, each one a random consumable (`curated/supply_pool.json`) at its maximum capacity; the Map is kept |
 | `randomize_small_monsters` | bool | Swap small species within their group |
 | `randomize_intruders` | bool | Replace intruders (never finale or cutscene monsters) |
-| `debug_weak_monsters` | bool | Debug: health index 1 for every monster, to test quests quickly |
+| `debug_weak_monsters` | bool | Debug: health and attack index 1 for every monster, to test quests quickly |
 
 ## What is never changed
 

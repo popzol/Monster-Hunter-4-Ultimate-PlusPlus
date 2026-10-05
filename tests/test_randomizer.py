@@ -1,4 +1,4 @@
-import copy
+﻿import copy
 import itertools
 
 import pytest
@@ -158,10 +158,10 @@ def test_replaced_names_do_not_damage_other_names(data):
     from mh4u_rando.randomizer.text import replace_monster_names
     quest = Quest()
     quest.text[2][1] = "Caza un Seltas y una Seltas reina"
-    quest.text[2][6] = "Rompe Seltas reina: tórax"
+    quest.text[2][6] = "Rompe Seltas reina: tÃ³rax"
     replace_monster_names(quest, {25: 38}, data, include_sub_objective=False)  # Seltas -> Basarios
     assert quest.text[2][1] == "Caza un Basarios y una Seltas reina"
-    assert quest.text[2][6] == "Rompe Seltas reina: tórax"
+    assert quest.text[2][6] == "Rompe Seltas reina: tÃ³rax"
 
 
 def test_game_text_aliases_are_replaced(data):
@@ -179,7 +179,7 @@ def test_debug_weak_monsters(originals, data):
         if 45000 <= quest.quest_id < 46000:
             continue
         for meta in [*quest.large_meta, quest.small_meta]:
-            assert meta.size == 0 or meta.hp == 1
+            assert meta.size == 0 or (meta.hp == 1 and meta.atk == 1)
 
 
 def test_settings_round_trip(tmp_path):

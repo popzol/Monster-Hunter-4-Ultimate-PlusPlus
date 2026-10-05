@@ -38,14 +38,15 @@ def apply_stats(quest: Quest, plan: LineupPlan, data: GameData, adjust: bool) ->
     quest.large_meta = (metas + extras + [MetaEntry(size=0) for _ in range(MAX_LARGE_MONSTERS)])[:MAX_LARGE_MONSTERS]
 
 
-DEBUG_HEALTH_INDEX = 1  # lowest non-zero index (0 marks unused stat blocks)
+DEBUG_STAT_INDEX = 1  # lowest non-zero index (0 marks unused stat blocks)
 
 
 def make_monsters_weak(quest: Quest) -> None:
-    """Debug: lowest health for every large, intruder and small monster stat block."""
+    """Debug: lowest health and attack for every large, intruder and small monster stat block."""
     for meta in [*quest.large_meta, quest.small_meta]:
         if meta.size:
-            meta.hp = DEBUG_HEALTH_INDEX
+            meta.hp = DEBUG_STAT_INDEX
+            meta.atk = DEBUG_STAT_INDEX
 
 
 def scale_meta(meta: MetaEntry, tier_delta: int) -> None:
