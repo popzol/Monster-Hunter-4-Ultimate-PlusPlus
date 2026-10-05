@@ -5,10 +5,8 @@ is done or discovered.
 
 ## Next
 
-* **GUI** (customtkinter): every option of `Settings`, seed field with a
-  random button, preset load/save, progress bar and log, run in a background
-  thread, button to open the output folder. Package as an .exe with
-  PyInstaller.
+* **Package the GUI** as an .exe with PyInstaller (the GUI itself is done:
+  `python -m mh4u_rando.gui`).
 * **Species base health**: retail analysis shows the stat indices depend on
   the quest rank only (docs/game_rules.md, "Stats"). Find each monster's base
   HP (wiki data or in-game measurement) so `stats.py` can scale indices by
