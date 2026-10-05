@@ -29,7 +29,7 @@ Quest randomizer for Monster Hunter 4 Ultimate (3DS), producing a modified
 
 ## Usage
 
-Graphical interface (requires `pip install customtkinter`):
+Graphical interface in Spanish and English (requires `pip install customtkinter`):
 
 ```
 python -m mh4u_rando.gui

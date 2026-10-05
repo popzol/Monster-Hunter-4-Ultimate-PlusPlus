@@ -28,7 +28,8 @@ is done or discovered.
   area 1 at (0, 0, 0) and no retail data exists. Default: never used.
 * Great Sea / Great Sea (Storm) (maps 14, 21): no retail quest in quest01.arc
   uses them, positions are (0, 0, 0). Default: rare (arena category).
-* Quests moved to Dalamadur's maps 9 and 10 (legacy knowledge only).
+* Hunt-a-thons (Khezu x99, Gypceros x99) with other species: the quantity is
+  kept, so a different monster keeps respawning.
 
 ## Ideas / smaller items
 
