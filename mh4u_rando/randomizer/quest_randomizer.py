@@ -1,4 +1,4 @@
-﻿"""Randomize one quest.
+"""Randomize one quest.
 
 Order of operations:
   1. choose the lineup (who appears in which wave) and the map together,

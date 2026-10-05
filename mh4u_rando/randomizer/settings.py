@@ -1,4 +1,4 @@
-﻿"""User-facing randomizer options.
+"""User-facing randomizer options.
 
 `Settings` is a plain dataclass so it can be saved and loaded as a JSON preset
 and edited by the GUI. Every option is documented where it is declared.
@@ -27,7 +27,7 @@ class DuplicateMode(str, Enum):
 class ProgressionMode(str, Enum):
     """How the difficulty tier of new monsters is chosen."""
     PROGRESSIVE = "progressive"  # weighted by quest rank (curated/progression.json)
-    BALANCED = "balanced"        # within Â±2 tiers of the replaced monster
+    BALANCED = "balanced"        # within ±2 tiers of the replaced monster
     NONE = "none"                # any tier, uniformly
 
 

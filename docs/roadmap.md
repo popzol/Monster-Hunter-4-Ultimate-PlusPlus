@@ -1,4 +1,4 @@
-﻿# Roadmap
+# Roadmap
 
 Pending work, roughly in priority order. Update this file whenever something
 is done or discovered.
