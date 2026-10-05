@@ -1,5 +1,5 @@
 {
-  "description": "Hand-maintained rules for large monsters. See docs/game_rules.md for the meaning of every field and group.",
+  "description": "Hand-maintained rules for large monsters. See docs/game_rules.md for the meaning of every field and group. is_apex: needs an Apex infection state. can_be_frenzied: seen frenzied in retail quests.",
   "groups": {
     "finale_monsters": {
       "description": "The game crashes if the corpse of one of these monsters despawns, so they may only appear in the last wave of a quest.",
@@ -23,22 +23,26 @@
     "1": {
       "name": "Rathian",
       "tier": 1,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "2": {
       "name": "Rathalos",
       "tier": 2,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "3": {
       "name": "Pink Rathian",
       "tier": 5,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "4": {
       "name": "Azure Rathalos",
       "tier": 4,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "5": {
       "name": "Gold Rathian",
@@ -68,17 +72,20 @@
     "10": {
       "name": "Purple Gypceros",
       "tier": 4,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "11": {
       "name": "Tigrex",
       "tier": 3,
-      "own_music": true
+      "own_music": true,
+      "can_be_frenzied": true
     },
     "12": {
       "name": "Brute Tigrex",
       "tier": 5,
-      "own_music": true
+      "own_music": true,
+      "can_be_frenzied": true
     },
     "13": {
       "name": "Gendrome",
@@ -88,7 +95,8 @@
     "14": {
       "name": "Iodrome",
       "tier": 1,
-      "own_music": true
+      "own_music": true,
+      "can_be_frenzied": true
     },
     "15": {
       "name": "Great Jaggi",
@@ -103,37 +111,44 @@
     "17": {
       "name": "Congalala",
       "tier": 1,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "18": {
       "name": "Emerald Congalala",
       "tier": 3,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "19": {
       "name": "Rajang",
       "tier": 6,
-      "own_music": true
+      "own_music": true,
+      "can_be_frenzied": true
     },
     "20": {
       "name": "Kecha Wacha",
       "tier": 1,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "21": {
       "name": "Tetsucabra",
       "tier": 1,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "22": {
       "name": "Zamtrios",
       "tier": 2,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "23": {
       "name": "Najarala",
       "tier": 2,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "24": {
       "name": "Dalamadur (Head)",
@@ -149,17 +164,20 @@
     "25": {
       "name": "Seltas",
       "tier": 1,
-      "own_music": true
+      "own_music": true,
+      "can_be_frenzied": true
     },
     "26": {
       "name": "Seltas Queen",
       "tier": 3,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "27": {
       "name": "Nerscylla",
       "tier": 2,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "28": {
       "name": "Gore Magala",
@@ -204,12 +222,14 @@
     "36": {
       "name": "Khezu",
       "tier": 2,
-      "own_music": true
+      "own_music": true,
+      "can_be_frenzied": true
     },
     "37": {
       "name": "Red Khezu",
       "tier": 4,
-      "own_music": true
+      "own_music": true,
+      "can_be_frenzied": true
     },
     "38": {
       "name": "Basarios",
@@ -224,12 +244,14 @@
     "40": {
       "name": "Gravios",
       "tier": 3,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "41": {
       "name": "Black Gravios",
       "tier": 5,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "42": {
       "name": "Deviljho",
@@ -244,7 +266,8 @@
     "44": {
       "name": "Brachydios",
       "tier": 4,
-      "own_music": true
+      "own_music": true,
+      "can_be_frenzied": true
     },
     "45": {
       "name": "Golden Rajang",
@@ -262,17 +285,20 @@
     "47": {
       "name": "Lagombi",
       "tier": 1,
-      "own_music": true
+      "own_music": true,
+      "can_be_frenzied": true
     },
     "48": {
       "name": "Zinogre",
       "tier": 3,
-      "own_music": true
+      "own_music": true,
+      "can_be_frenzied": true
     },
     "49": {
       "name": "Stygian Zinogre",
       "tier": 6,
-      "own_music": true
+      "own_music": true,
+      "can_be_frenzied": true
     },
     "77": {
       "name": "Black Fatalis",
@@ -313,7 +339,8 @@
     "88": {
       "name": "Seregios",
       "tier": 5,
-      "own_music": true
+      "own_music": true,
+      "can_be_frenzied": true
     },
     "89": {
       "name": "Gogmazios",
@@ -326,37 +353,44 @@
     "90": {
       "name": "Ash Kecha Wacha",
       "tier": 4,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "91": {
       "name": "Berserk Tetsucabra",
       "tier": 3,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "92": {
       "name": "Tigerstripe Zamtrios",
       "tier": 3,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "93": {
       "name": "Tidal Najarala",
       "tier": 5,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "94": {
       "name": "Desert Seltas",
       "tier": 2,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "95": {
       "name": "Desert Seltas Queen",
       "tier": 4,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "96": {
       "name": "Shrouded Nerscylla",
       "tier": 4,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "97": {
       "name": "Chaotic Gore Magala",
@@ -376,7 +410,8 @@
     "100": {
       "name": "Black Diablos",
       "tier": 5,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "101": {
       "name": "Monoblos",
@@ -396,17 +431,20 @@
     "105": {
       "name": "Cephadrome",
       "tier": 2,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "107": {
       "name": "Daimyo Hermitaur",
       "tier": 1,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "108": {
       "name": "Plum Daimyo Hermitaur",
       "tier": 3,
-      "own_music": false
+      "own_music": false,
+      "can_be_frenzied": true
     },
     "110": {
       "name": "Shah Dalamadur (Head)",
@@ -433,22 +471,26 @@
     "112": {
       "name": "Rajang (Apex)",
       "tier": 8,
-      "own_music": true
+      "own_music": true,
+      "is_apex": true
     },
     "113": {
       "name": "Deviljho (Apex)",
       "tier": 8,
-      "own_music": true
+      "own_music": true,
+      "is_apex": true
     },
     "114": {
       "name": "Zinogre (Apex)",
       "tier": 7,
-      "own_music": true
+      "own_music": true,
+      "is_apex": true
     },
     "115": {
       "name": "Gravios (Apex)",
       "tier": 7,
-      "own_music": false
+      "own_music": false,
+      "is_apex": true
     },
     "116": {
       "name": "Ukanlos",
@@ -463,22 +505,26 @@
     "119": {
       "name": "Diablos (Apex)",
       "tier": 7,
-      "own_music": false
+      "own_music": false,
+      "is_apex": true
     },
     "120": {
       "name": "Tidal Najarala (Apex)",
       "tier": 7,
-      "own_music": false
+      "own_music": false,
+      "is_apex": true
     },
     "121": {
       "name": "Tigrex (Apex)",
       "tier": 7,
-      "own_music": true
+      "own_music": true,
+      "is_apex": true
     },
     "122": {
       "name": "Seregios (Apex)",
       "tier": 7,
-      "own_music": true
+      "own_music": true,
+      "is_apex": true
     }
   }
 }

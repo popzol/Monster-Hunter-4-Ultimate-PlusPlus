@@ -109,6 +109,8 @@ class MonsterInfo:
     tier: int | None = None              # 1 (easy) .. 8 (hardest); None = never picked directly
     has_own_music: bool = False          # plays its own theme on maps without field music
     is_finale_monster: bool = False      # corpse despawn crashes the game: last wave only
+    is_apex: bool = False                # must spawn with an Apex infection state
+    can_be_frenzied: bool = False        # seen with a Frenzy infection state in retail quests
     intro_cutscene_map: int | None = None  # spawning in wave 1 off this map crashes the game
     spawns_with: int | None = None       # e.g. Dalamadur head -> tail
     body_part_of: int | None = None      # e.g. Dalamadur tail -> head
@@ -166,6 +168,13 @@ class GameData:
     tier_weights_by_rank: dict[int, dict[int, int]]
     monster_groups: dict[str, tuple[int, ...]]
     quest_enums: dict[str, dict[int, str]]
+    small_monster_groups: dict[str, tuple[int, ...]]  # group name -> interchangeable species
+
+    def small_monster_group_of(self, monster_id: int) -> tuple[int, ...] | None:
+        for members in self.small_monster_groups.values():
+            if monster_id in members:
+                return members
+        return None
 
     def large_monsters(self) -> list[MonsterInfo]:
         return [m for m in self.monsters.values() if m.is_large]
@@ -257,6 +266,8 @@ def _build_monsters(generated: dict, curated: dict, maps: dict[int, MapInfo],
             tier=rules.get("tier"),
             has_own_music=rules.get("own_music", False),
             is_finale_monster=monster_id in finale,
+            is_apex=rules.get("is_apex", False),
+            can_be_frenzied=rules.get("can_be_frenzied", False),
             intro_cutscene_map=gen["intro_cutscene_map"],
             spawns_with=rules.get("spawns_with"),
             body_part_of=rules.get("body_part_of"),
@@ -309,4 +320,6 @@ def load_game_data(data_dir: Path = DATA_DIR) -> GameData:
         tier_weights_by_rank=_build_tier_weights(_read(curated / "progression.json")),
         monster_groups={name: tuple(group["monsters"]) for name, group in monster_rules["groups"].items()},
         quest_enums={name: _int_keys(values) for name, values in _read(generated / "quest_enums.json").items()},
+        small_monster_groups={name: tuple(group["monsters"]) for name, group in
+                              _read(curated / "small_monster_rules.json")["groups"].items()},
     )
