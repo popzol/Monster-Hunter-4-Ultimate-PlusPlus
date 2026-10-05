@@ -122,9 +122,14 @@ class MonsterInfo:
     break_parts: dict[int, str] = field(default_factory=dict)
     material_ids: tuple[int, ...] = ()   # items this monster provides (carves/rewards)
     localized_names: dict[str, str] = field(default_factory=dict)  # language code -> name
+    # Other names the retail quest texts use (e.g. Golden Rajang is just "Rajang" there).
+    aliases: dict[str, tuple[str, ...]] = field(default_factory=dict)
 
     def name_in(self, language: str) -> str:
         return self.localized_names.get(language, self.name)
+
+    def aliases_in(self, language: str) -> tuple[str, ...]:
+        return self.aliases.get(language, ())
 
     @property
     def has_intro_cutscene(self) -> bool:
@@ -287,6 +292,7 @@ def _build_monsters(generated: dict, curated: dict, maps: dict[int, MapInfo],
             material_ids=tuple(materials.get(key, ())),
             localized_names={lang: name for lang, name in names.get(
                 key, names.get(str(rules.get("body_part_of")), {})).items() if lang in LANGUAGES},
+            aliases={lang: tuple(values) for lang, values in names.get(key, {}).get("aliases", {}).items()},
         )
     for key in curated["monsters"]:
         if int(key) not in monsters:

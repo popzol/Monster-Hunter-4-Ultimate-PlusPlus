@@ -168,7 +168,11 @@ def _randomize_large_monster_quest(quest: Quest, info: QuestInfo, ctx: Randomize
         objectives.apply_main_objectives(quest, plan)
         objectives.apply_pictures(quest, plan, data)
 
+    # Names first: the sub quest text written below must not be rewritten again.
+    text.apply_text(quest, plan, data, settings.text)
+
     if objectives.has_sub_quest(quest):
+        report.sub_quest_regenerated = True
         if settings.sub_quests is SubQuestMode.DISABLE:
             objectives.disable_sub_quest(quest)
             report.sub_quest = None
@@ -176,8 +180,6 @@ def _randomize_large_monster_quest(quest: Quest, info: QuestInfo, ctx: Randomize
         else:
             report.sub_quest = objectives.randomize_sub_quest(quest, plan, data, _rng(ctx, quest, "sub_quest"))
             text.set_sub_quest_text(quest, data, report.sub_quest)
-
-    text.apply_text(quest, plan, data, settings.text)
 
     if settings.randomize_rewards:
         report.rewards = rewards.apply_rewards(
@@ -204,7 +206,8 @@ def _randomize_intruders(quest: Quest, ctx: RandomizerContext, report: QuestRepo
     mapping = {old: new for old, new in replaced if old != new}
     objectives.retarget_objectives(quest, mapping)
     if ctx.settings.text is TextMode.REPLACE_NAMES:
-        text.replace_monster_names(quest, mapping, ctx.data)
+        text.replace_monster_names(quest, mapping, ctx.data,
+                                   include_sub_objective=not report.sub_quest_regenerated)
 
 
 def _choose_lineup_and_map(quest: Quest, info: QuestInfo, ctx: RandomizerContext,

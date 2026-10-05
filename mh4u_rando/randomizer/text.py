@@ -44,21 +44,31 @@ def _replace_names(quest: Quest, plan: LineupPlan, data: GameData) -> None:
     replace_monster_names(quest, replacement, data)
 
 
-def replace_monster_names(quest: Quest, replacement: dict[int, int], data: GameData) -> None:
-    """Replace the names of monsters `old id -> new id` in titles, objectives and descriptions."""
+def replace_monster_names(quest: Quest, replacement: dict[int, int], data: GameData,
+                          include_sub_objective: bool = True) -> None:
+    """Replace the names of monsters `old id -> new id` in titles, objectives and descriptions.
+
+    Every known monster name takes part in the match, longest first, so a name
+    that is not replaced protects itself: replacing "Seltas" never touches
+    "Seltas Queen", and replacing "Rathian" never touches "Pink Rathian".
+    """
+    slots = _REPLACED_SLOTS if include_sub_objective else tuple(s for s in _REPLACED_SLOTS
+                                                                if s != TEXT_SUB_OBJECTIVE)
     for li, lang in enumerate(LANGUAGES):
         pairs = {}
         for old_id, new_id in replacement.items():
-            old = data.monsters[old_id].name_in(lang) if old_id in data.monsters else None
-            if old and old_id != new_id:
-                pairs[old] = data.monsters[new_id].name_in(lang)
+            if old_id == new_id or old_id not in data.monsters:
+                continue
+            old = data.monsters[old_id]
+            for name in (old.name_in(lang), *old.aliases_in(lang)):
+                pairs[name] = data.monsters[new_id].name_in(lang)
         if not pairs:
             continue
-        # Longest names first so "Rathian" does not match inside "Pink Rathian".
-        pattern = re.compile("|".join(re.escape(n) for n in sorted(pairs, key=len, reverse=True)))
-        for slot_index in _REPLACED_SLOTS:
+        protected = {m.name_in(lang) for m in data.large_monsters()} | set(pairs)
+        pattern = re.compile("|".join(re.escape(n) for n in sorted(protected, key=len, reverse=True)))
+        for slot_index in slots:
             text = quest.text[li][slot_index]
-            quest.text[li][slot_index] = pattern.sub(lambda m: pairs[m.group(0)], text)
+            quest.text[li][slot_index] = pattern.sub(lambda m: pairs.get(m.group(0), m.group(0)), text)
 
 
 def set_sub_quest_text(quest: Quest, data: GameData, target: tuple[int, int] | None) -> None:

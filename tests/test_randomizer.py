@@ -153,6 +153,26 @@ def test_sub_quest_text_is_translated(originals, data):
             assert english != "Dragonator"
 
 
+def test_replaced_names_do_not_damage_other_names(data):
+    from mh4u_rando.mib import Quest
+    from mh4u_rando.randomizer.text import replace_monster_names
+    quest = Quest()
+    quest.text[2][1] = "Caza un Seltas y una Seltas reina"
+    quest.text[2][6] = "Rompe Seltas reina: tórax"
+    replace_monster_names(quest, {25: 38}, data, include_sub_objective=False)  # Seltas -> Basarios
+    assert quest.text[2][1] == "Caza un Basarios y una Seltas reina"
+    assert quest.text[2][6] == "Rompe Seltas reina: tórax"
+
+
+def test_game_text_aliases_are_replaced(data):
+    from mh4u_rando.mib import Quest
+    from mh4u_rando.randomizer.text import replace_monster_names
+    quest = Quest()
+    quest.text[2][1] = "Caza un Rajang"
+    replace_monster_names(quest, {45: 11}, data)  # Golden Rajang (called "Rajang" in the game text) -> Tigrex
+    assert quest.text[2][1] == "Caza un Tigrex"
+
+
 def test_debug_weak_monsters(originals, data):
     quests, _, _ = run(originals, data, seed="WEAK", debug_weak_monsters=True)
     for quest in quests.values():

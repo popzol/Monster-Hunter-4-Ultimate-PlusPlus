@@ -18,6 +18,7 @@ class QuestReport:
     original_waves: list[list[int]] = field(default_factory=list)
     new_waves: list[list[int]] = field(default_factory=list)
     sub_quest: tuple[int, int] | None = None   # (monster id, part id)
+    sub_quest_regenerated: bool = False        # sub quest rewritten (or disabled) by the randomizer
     rewards: list[int] = field(default_factory=list)
     supplies: list[int] = field(default_factory=list)
     intruders: list[int] = field(default_factory=list)

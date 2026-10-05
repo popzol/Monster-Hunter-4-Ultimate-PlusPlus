@@ -1,5 +1,5 @@
 {
-  "description": "Monster names in the five languages of the quest text (en, fr, es, de, it). verified=true: extracted automatically from the main objectives of the retail quests; verified=false: written or corrected by hand, please confirm in-game. Apex monsters keep their base species name, as the game does.",
+  "description": "Monster names in the five languages of the quest text (en, fr, es, de, it). verified=true: extracted automatically from the main objectives of the retail quests; verified=false: written or corrected by hand, please confirm in-game. Apex monsters keep their base species name, as the game does. aliases: other names the retail quest texts use for the monster (matched when replacing names).",
   "names": {
     "1": {
       "en": "Rathian",
@@ -359,7 +359,24 @@
       "es": "Rajang furioso",
       "de": "Wütender Rajang",
       "it": "Rajang furioso",
-      "verified": false
+      "verified": false,
+      "aliases": {
+        "en": [
+          "Rajang"
+        ],
+        "fr": [
+          "Rajang"
+        ],
+        "es": [
+          "Rajang"
+        ],
+        "de": [
+          "Rajang"
+        ],
+        "it": [
+          "Rajang"
+        ]
+      }
     },
     "46": {
       "en": "Dah'ren Mohran",
@@ -511,7 +528,24 @@
       "es": "Gore Magala caótico",
       "de": "Chaos-Gore Magala",
       "it": "Gore Magala caotico",
-      "verified": false
+      "verified": false,
+      "aliases": {
+        "en": [
+          "Gore Magala"
+        ],
+        "fr": [
+          "Gore Magala"
+        ],
+        "es": [
+          "Gore Magala"
+        ],
+        "de": [
+          "Gore Magala"
+        ],
+        "it": [
+          "Gore Magala"
+        ]
+      }
     },
     "98": {
       "en": "Raging Brachydios",
@@ -519,7 +553,24 @@
       "es": "Brachydios furioso",
       "de": "Rasender Brachydios",
       "it": "Brachydios furioso",
-      "verified": false
+      "verified": false,
+      "aliases": {
+        "en": [
+          "Brachydios"
+        ],
+        "fr": [
+          "Brachydios"
+        ],
+        "es": [
+          "Brachydios"
+        ],
+        "de": [
+          "Brachydios"
+        ],
+        "it": [
+          "Brachydios"
+        ]
+      }
     },
     "99": {
       "en": "Diablos",

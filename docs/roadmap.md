@@ -34,6 +34,10 @@ is done or discovered.
 * Arena quests keep their map; decide later whether they may move.
 * Sub quest text is "Break <monster>: <part>"; a more natural sentence would
   need grammatical gender per language.
+* Replacing names keeps the original articles: "Caza una Rathian" becomes
+  "Caza una Tigrex". Fixing it means regenerating objective texts per language.
+* Capture quests become Hunt, but their text still says "Captura un X"
+  (capturing still works, killing also completes the quest).
 * Encrypted DLC quests (`Documentation/mib.js` has the Blowfish keys).
 
 ## Unknown format fields
