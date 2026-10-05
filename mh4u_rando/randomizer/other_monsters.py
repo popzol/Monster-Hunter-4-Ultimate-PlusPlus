@@ -70,6 +70,8 @@ def randomize_intruders(quest: Quest, settings: Settings, data: GameData,
 
 def _pick_intruder(candidates: list[MonsterInfo], original: MonsterInfo | None, quest_rank: int,
                    settings: Settings, data: GameData, rng: random.Random) -> MonsterInfo:
+    if original is not None:  # a randomized intruder should visibly change
+        candidates = [c for c in candidates if c.monster_id != original.monster_id] or candidates
     if settings.progression is ProgressionMode.PROGRESSIVE:
         weights = {t: w for t, w in data.tier_weights(quest_rank).items()
                    if any(c.tier == t for c in candidates)}
@@ -112,8 +114,9 @@ def prepare_monster(template: Monster | None, monster_id: int) -> Monster:
     """A fresh monster entry for `monster_id`, keeping the template's non species-specific fields."""
     if template is None:
         return Monster(monster_id=monster_id, condition=255)
+    # Quantity > 1 only makes sense for swarm species (companions are never rebuilt here).
     return Monster(
-        monster_id=monster_id, qty=template.qty, condition=template.condition, area=template.area,
+        monster_id=monster_id, qty=1, condition=template.condition, area=template.area,
         crashflag=template.crashflag, special=0, unk2=template.unk2, unk3=template.unk3, unk4=template.unk4,
         infection=template.infection, x=template.x, y=template.y, z=template.z,
         x_rot=template.x_rot, y_rot=template.y_rot, z_rot=template.z_rot)

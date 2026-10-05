@@ -21,10 +21,26 @@ class QuestReport:
     sub_quest_regenerated: bool = False        # sub quest rewritten (or disabled) by the randomizer
     rewards: list[int] = field(default_factory=list)
     supplies: list[int] = field(default_factory=list)
+    original_intruders: list[int] = field(default_factory=list)
     intruders: list[int] = field(default_factory=list)
     small_monsters: dict[int, int] = field(default_factory=dict)
     warnings: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)  # e.g. preferences relaxed to satisfy the rules
+
+
+def unrandomized_quests(reports: list[QuestReport], settings) -> list[QuestReport]:
+    """Quests that the settings say should change but did not (should always be empty)."""
+    missing = []
+    for r in reports:
+        if r.skipped:
+            continue
+        has_large = any(r.original_waves)
+        if settings.randomize_monsters and has_large and r.new_waves == r.original_waves:
+            missing.append(r)
+        elif settings.randomize_intruders and not has_large and r.original_intruders \
+                and r.intruders == r.original_intruders:
+            missing.append(r)
+    return missing
 
 
 def write_spoiler_text(reports: list[QuestReport], data: GameData, seed: str, settings: dict) -> str:

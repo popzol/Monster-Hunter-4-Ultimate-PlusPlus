@@ -24,6 +24,12 @@ class Slot:
     is_companion: bool = False
     # Automatically added part of another monster (Dalamadur tail).
     is_body_part: bool = False
+    # Spawn count: > 1 only for hunt-a-thon slots (one monster respawning, e.g. Khezu x99).
+    quantity: int = 1
+
+    @property
+    def is_hunt_a_thon(self) -> bool:
+        return self.quantity > 1 and not self.is_companion
 
     @property
     def is_choosable(self) -> bool:

@@ -59,10 +59,18 @@ randomizer gives replacements the Apex state only when they are Apex
 (`is_apex`) and keeps Frenzy (1–3) only on species seen frenzied in retail
 quests (`can_be_frenzied`). Elder dragons are never frenzied. — *Retail*
 
-### Companions
+### Quantities above 1
 
-Entries with quantity > 1 (Seltas ×5 or ×99 escorting a Seltas Queen) are a
-swarm, not a single monster. The randomizer keeps them unchanged. — *Retail*
+Retail quests use a monster quantity above 1 in two ways:
+
+* **Escorts**: a swarm species next to another monster (Seltas ×5/×99 with a
+  Seltas Queen). Kept unchanged (`can_swarm` in `curated/monster_rules.json`).
+* **Hunt-a-thons**: a single entry that keeps respawning (Khezu ×99,
+  Gypceros ×99), won by delivering tokens. Randomized keeping the quantity,
+  never with a monster that cannot respawn safely: finale monsters (earlier
+  corpses despawn), intro-cutscene monsters, or head/tail monsters.
+
+Any other quantity above 1 is invalid input and becomes 1. — *Retail*
 
 ### Scripted positions
 
@@ -73,8 +81,9 @@ Dalamadur and Shah Dalamadur (head and tail) always spawn in area 1 at
 
 `allowed_maps` in `curated/monster_rules.json`:
 
-* Dah'ren Mohran only works on the Great Desert (6). — *Legacy knowledge*
-* Dalamadur / Shah Dalamadur: maps 8, 9, 10. — *Legacy knowledge*
+* Dah'ren Mohran only works on the Great Desert (6). — *Confirmed by user*
+* Dalamadur / Shah Dalamadur only work on Speartip Crag (8), always head and
+  tail together. — *Confirmed by user*
 * Gogmazios must use area 3 on Battlequarters (`fixed_areas`). — *Legacy knowledge*
 
 ## Objectives

@@ -73,10 +73,15 @@ class MapProfiles:
 
 
 def candidate_maps(settings: Settings, data: GameData, current_map: int) -> frozenset[int]:
-    """Maps allowed by the settings (before monster-specific constraints)."""
+    """Maps allowed by the settings (before monster-specific constraints).
+
+    The quest's own map is always allowed: map frequencies only govern moving
+    a quest somewhere else.
+    """
     if not settings.randomize_maps:
         return frozenset({current_map})
-    return frozenset(m.map_id for m in data.maps.values() if _category_weight(m, settings) > 0)
+    allowed = {m.map_id for m in data.maps.values() if _category_weight(m, settings) > 0}
+    return frozenset(allowed | {current_map})
 
 
 def _category_weight(map_info: MapInfo, settings: Settings) -> float:
@@ -106,7 +111,8 @@ def choose_map(plan: LineupPlan, possible: frozenset[int], settings: Settings, d
             continue
         if moved and settings.one_monster_per_wave_on_arenas and map_info.is_arena and _has_crowded_wave(plan):
             continue
-        weights[map_id] = _category_weight(map_info, settings) if settings.randomize_maps else 1.0
+        weight = _category_weight(map_info, settings) if settings.randomize_maps else 1.0
+        weights[map_id] = weight if weight > 0 else FREQUENCY_WEIGHT[Frequency.RARE]  # staying is always valid
     if not weights:
         return None
     return weighted_choice(rng, weights)

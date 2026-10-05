@@ -61,15 +61,17 @@ def choose_lineup(skeleton: LineupPlan, ctx: SelectionContext) -> tuple[LineupPl
             if ctx.settings.duplicates is DuplicateMode.ONLY_IF_ORIGINAL and original_id in same_as_original:
                 pick = ctx.data.monsters[same_as_original[original_id]]
                 if not _is_valid(pick, wave_index, wave_index == last_wave, feasible_maps, plan, ctx, chosen,
-                                 allow_duplicate=True):
+                                 allow_duplicate=True, respawns=slot.is_hunt_a_thon):
                     return None
             else:
                 candidates = [m for m in ctx.data.randomizable_monsters()
                               if _is_valid(m, wave_index, wave_index == last_wave, feasible_maps, plan, ctx,
-                                           chosen, allow_duplicate=False)]
+                                           chosen, allow_duplicate=False, respawns=slot.is_hunt_a_thon)]
                 if not candidates:
                     return None
-                pick = _pick_by_progression(candidates, slot, ctx)
+                # A randomized slot should visibly change: avoid the original species when possible.
+                changed = [m for m in candidates if m.monster_id != original_id]
+                pick = _pick_by_progression(changed or candidates, slot, ctx)
             same_as_original[original_id] = pick.monster_id
             slot.monster_id = pick.monster_id
             chosen.append(pick.monster_id)
@@ -92,9 +94,18 @@ def lineup_maps(plan: LineupPlan, data: GameData, candidate_maps: frozenset[int]
     return maps
 
 
+def can_respawn(monster: MonsterInfo) -> bool:
+    """May fill a hunt-a-thon slot (the monster respawns, so earlier corpses despawn)."""
+    return not monster.is_finale_monster and not monster.has_intro_cutscene and monster.spawns_with is None \
+        and monster.body_part_of is None
+
+
 def _is_valid(monster: MonsterInfo, wave_index: int, is_last_wave: bool, feasible_maps: frozenset[int],
-              plan: LineupPlan, ctx: SelectionContext, chosen: list[int], allow_duplicate: bool) -> bool:
+              plan: LineupPlan, ctx: SelectionContext, chosen: list[int], allow_duplicate: bool,
+              respawns: bool = False) -> bool:
     if monster.is_finale_monster and not is_last_wave:
+        return False
+    if respawns and not can_respawn(monster):
         return False
     if not maps_for(monster, wave_index, ctx.candidate_maps) & feasible_maps:
         return False

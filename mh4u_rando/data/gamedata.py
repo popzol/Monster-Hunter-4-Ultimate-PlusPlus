@@ -110,6 +110,7 @@ class MonsterInfo:
     has_own_music: bool = False          # plays its own theme on maps without field music
     is_finale_monster: bool = False      # corpse despawn crashes the game: last wave only
     is_apex: bool = False                # must spawn with an Apex infection state
+    can_swarm: bool = False              # appears with quantity > 1 in retail quests (escort / hunt-a-thon)
     can_be_frenzied: bool = False        # seen with a Frenzy infection state in retail quests
     intro_cutscene_map: int | None = None  # spawning in wave 1 off this map crashes the game
     spawns_with: int | None = None       # e.g. Dalamadur head -> tail
@@ -158,6 +159,7 @@ class QuestInfo:
     title: str
     rank: int  # 1-3 low rank, 4-7 high rank, 8-10 = G1-G3
     category: QuestCategory
+    original_monsters: tuple[int, ...] = ()  # retail large monster lineup (flattened)
 
     @property
     def is_progression_quest(self) -> bool:
@@ -172,6 +174,7 @@ class GameData:
     items: dict[int, ItemInfo]
     quests: dict[int, QuestInfo]
     tier_weights_by_rank: dict[int, dict[int, int]]
+    default_stats_by_rank: dict[int, dict[str, int]]  # retail median stat block per rank
     monster_groups: dict[str, tuple[int, ...]]
     quest_enums: dict[str, dict[int, str]]
     small_monster_groups: dict[str, tuple[int, ...]]  # group name -> interchangeable species
@@ -205,9 +208,15 @@ class GameData:
 
     def tier_weights(self, quest_rank: int) -> dict[int, int]:
         """Tier weights for a rank, clamped to the closest defined rank."""
-        ranks = sorted(self.tier_weights_by_rank)
-        closest = min(ranks, key=lambda r: (abs(r - quest_rank), r))
-        return self.tier_weights_by_rank[closest]
+        return _closest(self.tier_weights_by_rank, quest_rank)
+
+    def default_stats(self, quest_rank: int) -> dict[str, int]:
+        """A typical stat block for a rank (used to replace invalid input stat blocks)."""
+        return dict(_closest(self.default_stats_by_rank, quest_rank))
+
+
+def _closest(by_rank: dict, rank: int):
+    return by_rank[min(by_rank, key=lambda r: (abs(r - rank), r))]
 
 
 def _read(path: Path) -> dict:
@@ -279,6 +288,7 @@ def _build_monsters(generated: dict, curated: dict, maps: dict[int, MapInfo],
             has_own_music=rules.get("own_music", False),
             is_finale_monster=monster_id in finale,
             is_apex=rules.get("is_apex", False),
+            can_swarm=rules.get("can_swarm", False),
             can_be_frenzied=rules.get("can_be_frenzied", False),
             intro_cutscene_map=gen["intro_cutscene_map"],
             spawns_with=rules.get("spawns_with"),
@@ -311,7 +321,8 @@ def _build_monsters(generated: dict, curated: dict, maps: dict[int, MapInfo],
 
 def _build_quests(curated: dict) -> dict[int, QuestInfo]:
     return {
-        int(key): QuestInfo(int(key), info["title"], info["rank"], QuestCategory(info["category"]))
+        int(key): QuestInfo(int(key), info["title"], info["rank"], QuestCategory(info["category"]),
+                            tuple(info.get("original_monsters", ())))
         for key, info in curated["quests"].items()}
 
 
@@ -325,6 +336,7 @@ def load_game_data(data_dir: Path = DATA_DIR) -> GameData:
     maps = _build_maps(_read(generated / "maps.json"), _read(curated / "map_rules.json"))
     monster_rules = _read(curated / "monster_rules.json")
     part_names = _read(curated / "part_names.json")
+    progression = _read(curated / "progression.json")
     return GameData(
         monsters=_build_monsters(_read(generated / "monsters.json"), monster_rules, maps,
                                  _read(generated / "monster_materials.json"),
@@ -332,7 +344,8 @@ def load_game_data(data_dir: Path = DATA_DIR) -> GameData:
         maps=maps,
         items=_build_items(_read(generated / "items.json"), _read(generated / "item_categories.json")),
         quests=_build_quests(_read(curated / "quest_rules.json")),
-        tier_weights_by_rank=_build_tier_weights(_read(curated / "progression.json")),
+        tier_weights_by_rank=_build_tier_weights(progression),
+        default_stats_by_rank=_int_keys(progression["default_stats_by_rank"]),
         monster_groups={name: tuple(group["monsters"]) for name, group in monster_rules["groups"].items()},
         quest_enums={name: _int_keys(values) for name, values in _read(generated / "quest_enums.json").items()},
         small_monster_groups={name: tuple(group["monsters"]) for name, group in

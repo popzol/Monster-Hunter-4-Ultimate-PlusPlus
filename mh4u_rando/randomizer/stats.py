@@ -24,11 +24,19 @@ HEALTH_INDEX_RANGE = (14, 95)
 ATTACK_INDEX_RANGE = (13, 117)
 
 
+def is_valid_meta(meta: MetaEntry | None) -> bool:
+    """Retail stat blocks of real monsters never have zero size, health or attack."""
+    return meta is not None and meta.size > 0 and meta.hp > 0 and meta.atk > 0
+
+
 def apply_stats(quest: Quest, plan: LineupPlan, data: GameData, adjust: bool) -> None:
     slots = plan.slots()
     metas = []
     for slot in slots:
-        meta = copy.deepcopy(slot.meta) if slot.meta is not None else MetaEntry()
+        if is_valid_meta(slot.meta):
+            meta = copy.deepcopy(slot.meta)
+        else:  # broken input (e.g. an archive edited by another tool): typical values for the rank
+            meta = MetaEntry(**data.default_stats(quest.quest_rank))
         new_tier = data.monsters[slot.monster_id].tier
         if adjust and slot.is_choosable and slot.original_tier and new_tier:
             scale_meta(meta, slot.original_tier - new_tier)

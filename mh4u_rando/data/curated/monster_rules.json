@@ -1,5 +1,5 @@
 {
-  "description": "Hand-maintained rules for large monsters. See docs/game_rules.md for the meaning of every field and group. is_apex: needs an Apex infection state. can_be_frenzied: seen frenzied in retail quests.",
+  "description": "Hand-maintained rules for large monsters. See docs/game_rules.md for the meaning of every field and group. is_apex: needs an Apex infection state. can_be_frenzied: seen frenzied in retail quests. can_swarm: appears with quantity > 1 (escort swarm) in retail quests.",
   "groups": {
     "finale_monsters": {
       "description": "The game crashes if the corpse of one of these monsters despawns, so they may only appear in the last wave of a quest.",
@@ -67,7 +67,8 @@
     "9": {
       "name": "Gypceros",
       "tier": 2,
-      "own_music": false
+      "own_music": false,
+      "can_swarm": true
     },
     "10": {
       "name": "Purple Gypceros",
@@ -156,9 +157,7 @@
       "own_music": true,
       "spawns_with": 83,
       "allowed_maps": [
-        8,
-        9,
-        10
+        8
       ],
       "fixed_position": [
         0.0,
@@ -170,7 +169,8 @@
       "name": "Seltas",
       "tier": 1,
       "own_music": true,
-      "can_be_frenzied": true
+      "can_be_frenzied": true,
+      "can_swarm": true
     },
     "26": {
       "name": "Seltas Queen",
@@ -228,7 +228,8 @@
       "name": "Khezu",
       "tier": 2,
       "own_music": true,
-      "can_be_frenzied": true
+      "can_be_frenzied": true,
+      "can_swarm": true
     },
     "37": {
       "name": "Red Khezu",
@@ -336,9 +337,7 @@
       "own_music": true,
       "body_part_of": 24,
       "allowed_maps": [
-        8,
-        9,
-        10
+        8
       ],
       "fixed_position": [
         0.0,
@@ -388,7 +387,8 @@
       "name": "Desert Seltas",
       "tier": 2,
       "own_music": false,
-      "can_be_frenzied": true
+      "can_be_frenzied": true,
+      "can_swarm": true
     },
     "95": {
       "name": "Desert Seltas Queen",
@@ -462,9 +462,7 @@
       "own_music": true,
       "spawns_with": 111,
       "allowed_maps": [
-        8,
-        9,
-        10
+        8
       ],
       "fixed_position": [
         0.0,
@@ -478,9 +476,7 @@
       "own_music": true,
       "body_part_of": 110,
       "allowed_maps": [
-        8,
-        9,
-        10
+        8
       ],
       "fixed_position": [
         0.0,

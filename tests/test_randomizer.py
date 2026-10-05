@@ -7,7 +7,7 @@ from mh4u_rando.data import load_game_data
 from mh4u_rando.mib import load_mib, parse_mib, write_mib
 from mh4u_rando.randomizer import (
     DuplicateMode, Frequency, ProgressionMode, RewardSource, Settings, StructureMode, SubQuestMode, TextMode,
-    randomize_quests, validate_quest,
+    randomize_quests, unrandomized_quests, validate_quest,
 )
 
 from conftest import original_quest_files
@@ -52,6 +52,8 @@ def test_every_quest_respects_the_rules(originals, data, options, seed):
         assert not new_errors, (name, new_errors)
         assert parse_mib(write_mib(quest)) == quest  # still a valid file
     assert not [r for r in reports if r.warnings]
+    missing = unrandomized_quests(reports, settings)
+    assert not missing, [(r.quest_id, r.original_waves, r.new_waves) for r in missing]
     # Every quest with large monsters is randomized (expeditions are skipped by design).
     for r in reports:
         if r.category != "expedition" and any(r.original_waves) and settings.randomize_monsters:

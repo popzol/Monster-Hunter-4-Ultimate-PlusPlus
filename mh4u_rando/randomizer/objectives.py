@@ -12,6 +12,7 @@ monsters (elder dragons, Dalamadur, ...) cannot be captured.
 
 import random
 from collections import Counter
+from dataclasses import dataclass, field
 
 from ..data import GameData
 from ..mib import MONSTER_OBJECTIVES, ObjectiveType, Objective, Quest, QuestType
@@ -100,6 +101,74 @@ def randomize_sub_quest(quest: Quest, plan: LineupPlan, data: GameData, rng: ran
     monster_id, part = rng.choice(candidates)
     quest.objective_sub = Objective(ObjectiveType.BREAK_PART, monster_id, part)
     return monster_id, part
+
+
+@dataclass
+class RepairResult:
+    renamed: dict[int, int] = field(default_factory=dict)  # old target -> new target (for texts)
+    sub_rewritten: bool = False
+    sub_target: tuple[int, int] | None = None              # new break-part target, if regenerated
+
+
+def present_monsters(quest: Quest) -> tuple[set[int], set[int], set[int]]:
+    """(large, small, intruder) species currently in the quest."""
+    large = {m.monster_id for m in quest.all_large_monsters()}
+    small = {m.monster_id for g in quest.small_monsters for monsters in g for m in monsters}
+    intruders = {u.monster.monster_id for u in quest.unstable_monsters}
+    return large, small, intruders
+
+
+def repair_objectives(quest: Quest, plan: LineupPlan | None, data: GameData, rng: random.Random) -> RepairResult:
+    """Re-point every monster objective whose target is no longer in the quest.
+
+    This can happen when the input quest is unusual (e.g. an already modified
+    archive) or when a target lived in a table replaced by the randomizer
+    (small monsters after a map change, intruders). Never leaves an objective
+    pointing at an absent monster, so randomization cannot fail on it.
+    """
+    result = RepairResult()
+    large, small, intruders = present_monsters(quest)
+    present = large | small | intruders
+
+    def absent(objective: Objective) -> bool:
+        return objective.type in MONSTER_OBJECTIVES and objective.target_id and objective.target_id not in present
+
+    main = quest.objectives[:quest.objective_amount]
+    if any(absent(o) for o in main):
+        if plan is not None and large:
+            old = [o.target_id for o in main if absent(o)]
+            apply_main_objectives(quest, plan)
+            new_target = quest.objectives[0].target_id
+            result.renamed.update({o: new_target for o in old})
+        else:
+            for objective in main:
+                if absent(objective):
+                    _substitute_target(objective, large, small, intruders, data, rng, result)
+
+    sub = quest.objective_sub
+    if quest.get_flag("sub_quest") and absent(sub):
+        result.sub_rewritten = True
+        if plan is not None and large:
+            result.sub_target = randomize_sub_quest(quest, plan, data, rng)
+        elif not _substitute_target(sub, large, small, intruders, data, rng, result):
+            disable_sub_quest(quest)
+    return result
+
+
+def _substitute_target(objective: Objective, large: set[int], small: set[int], intruders: set[int],
+                       data: GameData, rng: random.Random, result: RepairResult) -> bool:
+    old = objective.target_id
+    old_is_large = data.monsters[old].is_large if old in data.monsters else True
+    same_kind = (large | intruders) if old_is_large else small
+    candidates = sorted(same_kind or (large | intruders | small))
+    if not candidates:
+        return False
+    new = rng.choice(candidates)
+    if objective.type not in (ObjectiveType.HUNT, ObjectiveType.SLAY, ObjectiveType.CAPTURE):
+        objective.type, objective.qty = ObjectiveType.HUNT, 1  # part ids do not carry over to other species
+    objective.target_id = new
+    result.renamed[old] = new
+    return True
 
 
 def disable_sub_quest(quest: Quest) -> None:

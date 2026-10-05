@@ -39,6 +39,23 @@ memory) and `mh4u_rando.pipeline.run()` (archive in, archive out).
 * Quests that end up on a field map always have a Map in their first supply
   box (retail quests only omit it on single-area arenas).
 
+## Unusual inputs
+
+The randomizer must work even on archives already modified by other tools
+(e.g. the legacy randomizer). `pipeline.check_input()` compares the input
+against the retail lineups (`original_monsters` in `curated/quest_rules.json`)
+and the GUI warns when the archive does not look original. Whatever the input:
+
+* stat blocks with zero size, health or attack are replaced by the retail
+  median for the quest rank (`default_stats_by_rank` in
+  `curated/progression.json`);
+* objectives pointing at monsters that are not in the quest are re-pointed
+  (`objectives.repair_objectives`);
+* invalid quantities are normalised (see docs/game_rules.md).
+
+After every run, `unrandomized_quests()` lists quests that should have changed
+and did not; it must always be empty (tests and stress runs check it).
+
 ## Safety net
 
 `validation.py` checks every rule of `docs/game_rules.md` after a quest is

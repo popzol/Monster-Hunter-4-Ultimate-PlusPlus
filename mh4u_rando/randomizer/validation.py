@@ -7,6 +7,7 @@ original state instead of risking a crash in-game.
 
 from ..data import GameData
 from ..mib import MONSTER_OBJECTIVES, Quest
+from .selection import can_respawn
 from .settings import Settings
 from .structure import MAX_LARGE_MONSTERS
 
@@ -25,6 +26,14 @@ def validate_quest(quest: Quest, data: GameData, settings: Settings) -> list[str
 
     if len(all_ids) > MAX_LARGE_MONSTERS:
         errors.append(f"{len(all_ids)} large monsters (max {MAX_LARGE_MONSTERS})")
+    for index, meta in enumerate(quest.large_meta[:len(all_ids)]):
+        if meta.size == 0 or meta.hp == 0 or meta.atk == 0:
+            errors.append(f"large monster {index + 1} has an empty stat block")
+    for wave in waves:
+        for monster in wave:
+            info = data.monsters.get(monster.monster_id)
+            if monster.qty > 1 and info is not None and not can_respawn(info):
+                errors.append(f"{info.name} with quantity {monster.qty} (cannot respawn safely)")
     for wave_index, wave in enumerate(waves):
         ids = [m.monster_id for m in wave]
         for monster in wave:

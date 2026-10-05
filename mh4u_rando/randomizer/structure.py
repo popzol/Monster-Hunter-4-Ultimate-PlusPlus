@@ -18,7 +18,14 @@ def original_skeleton(quest: Quest, data: GameData) -> LineupPlan:
     """Same waves and slots as the original quest.
 
     Body parts (Dalamadur tails) are dropped: they are re-added only if the new
-    monster needs them. Swarm entries (quantity > 1) are kept as companions.
+    monster needs them. Quantities above 1 come in two retail patterns:
+
+    * escort: a swarm species next to another monster (Seltas x99 with a
+      Seltas Queen) -> kept unchanged as a companion;
+    * hunt-a-thon: a single entry respawning (Khezu x99) -> randomized,
+      keeping its quantity.
+
+    Any other quantity above 1 is invalid input and becomes 1.
     """
     plan = LineupPlan()
     meta_index = 0
@@ -30,12 +37,17 @@ def original_skeleton(quest: Quest, data: GameData) -> LineupPlan:
             meta_index += 1
             if info is not None and info.body_part_of is not None:
                 continue
+            alone = all(other is monster or (data.monsters.get(other.monster_id) and
+                                             data.monsters[other.monster_id].body_part_of is not None)
+                        for other in wave)
+            escort = monster.qty > 1 and not alone and info is not None and info.can_swarm
             slots.append(Slot(
                 monster_id=monster.monster_id,
                 template=monster,
                 meta=meta,
                 original_tier=info.tier if info else None,
-                is_companion=monster.qty > 1,
+                is_companion=escort,
+                quantity=monster.qty if (escort or (alone and monster.qty > 1)) else 1,
             ))
         plan.waves.append(slots)
     return plan

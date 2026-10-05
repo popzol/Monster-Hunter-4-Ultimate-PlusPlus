@@ -42,6 +42,7 @@ RELAXATION_STEPS = [
     ("duplicates allowed", {"duplicates": DuplicateMode.ALLOWED}),
     ("music and arena preferences ignored", {"always_music": False, "one_monster_per_wave_on_arenas": False}),
     ("original structure", {"structure": StructureMode.KEEP}),
+    ("map kept", {"randomize_maps": False}),
 ]
 
 
@@ -93,14 +94,17 @@ def randomize_quest(quest: Quest, ctx: RandomizerContext) -> QuestReport:
             quest.__dict__.update(candidate.__dict__)
             report.new_map = quest.map_id
             report.new_waves = _wave_ids(quest)
+            report.intruders = [u.monster.monster_id for u in quest.unstable_monsters]
             return report
     raise RandomizationError(f"quest {quest.quest_id} could not be randomized: {failures[-3:]}")
 
 
 def _new_report(quest: Quest, info: QuestInfo) -> QuestReport:
+    intruders = [u.monster.monster_id for u in quest.unstable_monsters]
     return QuestReport(quest_id=quest.quest_id, title=info.title, rank=quest.quest_rank,
                        category=info.category.value, original_map=quest.map_id, new_map=quest.map_id,
-                       original_waves=_wave_ids(quest), new_waves=_wave_ids(quest))
+                       original_waves=_wave_ids(quest), new_waves=_wave_ids(quest),
+                       original_intruders=intruders, intruders=list(intruders))
 
 
 def _randomize_once(quest: Quest, info: QuestInfo, ctx: RandomizerContext, report: QuestReport) -> None:
@@ -108,6 +112,7 @@ def _randomize_once(quest: Quest, info: QuestInfo, ctx: RandomizerContext, repor
         _randomize_large_monster_quest(quest, info, ctx, report)
     elif ctx.settings.randomize_intruders and quest.unstable_monsters:
         _randomize_intruders(quest, ctx, report)
+        _repair_objectives(quest, None, ctx, report)
 
 
 class _NoValidLineup(Exception):
@@ -148,6 +153,7 @@ def _randomize_large_monster_quest(quest: Quest, info: QuestInfo, ctx: Randomize
                 monster = prepare_monster(slot.template, slot.monster_id)
                 monster.infection = infection_for(data.monsters[slot.monster_id],
                                                   slot.template.infection if slot.template else 0)
+            monster.qty = slot.quantity
             needs_placement = map_changed or data.monsters[slot.monster_id].fixed_position is not None \
                 or new_map in data.monsters[slot.monster_id].fixed_areas
             if needs_placement:
@@ -198,6 +204,23 @@ def _randomize_large_monster_quest(quest: Quest, info: QuestInfo, ctx: Randomize
         if map_changed:
             relocate_intruders(quest, map_info, data, rng_maps)
 
+    _repair_objectives(quest, plan, ctx, report)
+
+
+def _repair_objectives(quest: Quest, plan: LineupPlan | None, ctx: RandomizerContext, report: QuestReport) -> None:
+    """Last step: no objective may point at a monster that is not in the quest."""
+    result = objectives.repair_objectives(quest, plan, ctx.data, _rng(ctx, quest, "repair"))
+    if result.sub_rewritten:
+        report.sub_quest = result.sub_target
+        report.sub_quest_regenerated = True
+        if result.sub_target is not None or not quest.get_flag("sub_quest"):
+            text.set_sub_quest_text(quest, ctx.data, result.sub_target)
+    if result.renamed and ctx.settings.text is TextMode.REPLACE_NAMES:
+        text.replace_monster_names(quest, result.renamed, ctx.data,
+                                   include_sub_objective=not report.sub_quest_regenerated)
+    if result.renamed or result.sub_rewritten:
+        report.notes.append("objectives re-pointed at monsters present in the quest")
+
 
 def _randomize_intruders(quest: Quest, ctx: RandomizerContext, report: QuestReport) -> None:
     """Replace intruders and re-point any objective that asked for the old intruder."""
@@ -222,11 +245,12 @@ def _choose_lineup_and_map(quest: Quest, info: QuestInfo, ctx: RandomizerContext
         _readd_body_parts(plan, quest, data)
         new_map = choose_map(plan, lineup_maps(plan, data, possible_maps), settings, data, rng_maps,
                              quest.map_id)
-        if new_map is None:
-            raise _NoValidLineup()
-        return plan, new_map
+        # Monsters are not randomized, so the lineup is the input's: staying on its map is always possible.
+        return plan, quest.map_id if new_map is None else new_map
 
-    keep_structure = settings.structure is StructureMode.KEEP or (
+    # Hunt-a-thons (one respawning monster, won by delivering tokens) always keep their shape.
+    hunt_a_thon = any(s.is_hunt_a_thon for s in original_skeleton(quest, data).slots())
+    keep_structure = hunt_a_thon or settings.structure is StructureMode.KEEP or (
         settings.structure is StructureMode.KEEP_PROGRESSION and info.is_progression_quest)
     selection = SelectionContext(data=data, settings=settings, rng=rng_monsters,
                                  quest_rank=quest.quest_rank, candidate_maps=possible_maps)

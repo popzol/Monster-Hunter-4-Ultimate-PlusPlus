@@ -1,5 +1,5 @@
 {
-  "description": "Relative weight of each monster tier, per quest rank (stars). Used by the 'progression' setting.",
+  "description": "Relative weight of each monster tier, per quest rank (stars). Used by the 'progression' setting. default_stats_by_rank: median stat block of retail single-monster quests per rank, used when an input stat block is invalid.",
   "tier_weights_by_rank": {
     "1": {
       "8": 2,
@@ -100,6 +100,98 @@
       "3": 5,
       "2": 3,
       "1": 2
+    }
+  },
+  "default_stats_by_rank": {
+    "1": {
+      "size": 100,
+      "size_var": 2,
+      "hp": 20,
+      "atk": 16,
+      "defense": 14,
+      "stamina": 1,
+      "status_res": 2
+    },
+    "2": {
+      "size": 100,
+      "size_var": 4,
+      "hp": 23,
+      "atk": 23,
+      "defense": 15,
+      "stamina": 1,
+      "status_res": 2
+    },
+    "3": {
+      "size": 100,
+      "size_var": 2,
+      "hp": 26,
+      "atk": 29,
+      "defense": 16,
+      "stamina": 1,
+      "status_res": 2
+    },
+    "4": {
+      "size": 100,
+      "size_var": 11,
+      "hp": 36,
+      "atk": 52,
+      "defense": 34,
+      "stamina": 1,
+      "status_res": 2
+    },
+    "5": {
+      "size": 100,
+      "size_var": 4,
+      "hp": 37,
+      "atk": 58,
+      "defense": 55,
+      "stamina": 1,
+      "status_res": 2
+    },
+    "6": {
+      "size": 100,
+      "size_var": 11,
+      "hp": 42,
+      "atk": 67,
+      "defense": 56,
+      "stamina": 1,
+      "status_res": 2
+    },
+    "7": {
+      "size": 100,
+      "size_var": 11,
+      "hp": 45,
+      "atk": 76,
+      "defense": 57,
+      "stamina": 0,
+      "status_res": 2
+    },
+    "8": {
+      "size": 100,
+      "size_var": 28,
+      "hp": 60,
+      "atk": 100,
+      "defense": 82,
+      "stamina": 4,
+      "status_res": 2
+    },
+    "9": {
+      "size": 100,
+      "size_var": 28,
+      "hp": 61,
+      "atk": 102,
+      "defense": 82,
+      "stamina": 4,
+      "status_res": 2
+    },
+    "10": {
+      "size": 100,
+      "size_var": 28,
+      "hp": 70,
+      "atk": 109,
+      "defense": 87,
+      "stamina": 0,
+      "status_res": 1
     }
   }
 }
