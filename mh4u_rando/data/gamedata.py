@@ -64,6 +64,7 @@ class ItemInfo:
     usable: bool  # False for dummies, books and other items the editor hides
     category: ItemCategory = ItemCategory.UNKNOWN
     rarity: int | None = None
+    carry_limit: int | None = None  # max stack in the item pouch
 
     @property
     def is_gear_material(self) -> bool:
@@ -113,6 +114,7 @@ class MonsterInfo:
     preview_id: int | None = None        # quest board picture
     special_variants: dict[int, str] = field(default_factory=dict)
     break_parts: dict[int, str] = field(default_factory=dict)
+    material_ids: tuple[int, ...] = ()   # items this monster provides (carves/rewards)
 
     @property
     def has_intro_cutscene(self) -> bool:
@@ -199,6 +201,7 @@ def _build_items(generated: dict, categories: dict) -> dict[int, ItemInfo]:
             usable=info["usable"],
             category=ItemCategory(extra.get("category", ItemCategory.UNKNOWN.value)),
             rarity=extra.get("rarity"),
+            carry_limit=extra.get("carry_limit"),
         )
     return items
 
@@ -230,7 +233,8 @@ def _build_maps(generated: dict, curated: dict) -> dict[int, MapInfo]:
     return maps
 
 
-def _build_monsters(generated: dict, curated: dict, maps: dict[int, MapInfo]) -> dict[int, MonsterInfo]:
+def _build_monsters(generated: dict, curated: dict, maps: dict[int, MapInfo],
+                    materials: dict) -> dict[int, MonsterInfo]:
     finale = set(curated["groups"]["finale_monsters"]["monsters"])
     monsters = {}
     for key, gen in generated.items():
@@ -254,6 +258,7 @@ def _build_monsters(generated: dict, curated: dict, maps: dict[int, MapInfo]) ->
             preview_id=gen["preview_id"],
             special_variants=_int_keys(gen["special_variants"]),
             break_parts=_int_keys(gen["break_parts"]),
+            material_ids=tuple(materials.get(key, ())),
         )
     for key in curated["monsters"]:
         if int(key) not in monsters:
@@ -286,7 +291,8 @@ def load_game_data(data_dir: Path = DATA_DIR) -> GameData:
     maps = _build_maps(_read(generated / "maps.json"), _read(curated / "map_rules.json"))
     monster_rules = _read(curated / "monster_rules.json")
     return GameData(
-        monsters=_build_monsters(_read(generated / "monsters.json"), monster_rules, maps),
+        monsters=_build_monsters(_read(generated / "monsters.json"), monster_rules, maps,
+                                 _read(generated / "monster_materials.json")),
         maps=maps,
         items=_build_items(_read(generated / "items.json"), _read(generated / "item_categories.json")),
         quests=_build_quests(_read(curated / "quest_rules.json")),

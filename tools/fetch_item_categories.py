@@ -48,16 +48,21 @@ def fetch_wikitext(page: str) -> str:
 
 
 def parse_item_rows(wikitext: str):
-    """Yield (name, rarity) for every GenericItemRow template."""
+    """Yield (name, rarity, carry_limit) for every GenericItemRow template.
+
+    Rows list their cells as bare `|value` lines in the order of the page
+    header: Rarity, Sell price (e.g. "350z"), Carry limit.
+    """
     for row in re.findall(r"\{\{GenericItemRow\|(.*?)\n\}\}", wikitext, re.S):
         icon = re.search(r"\{\{IPUClassicSmall\|MH4U\|[^|}]*\|([^|}]*)", row)
         if icon:
             name = icon.group(1).strip()
         else:
             name = re.search(r"\|ID=([^\n]*)", row).group(1).replace("_", " ").strip()
-        values = re.findall(r"^\|([^=\n|]*)$", row, re.M)
-        rarity = next((int(v) for v in values if v.strip().isdigit()), None)
-        yield name, rarity
+        numbers = [int(v) for v in re.findall(r"^\|([^=\n|]*)$", row, re.M) if v.strip().isdigit()]
+        rarity = numbers[0] if numbers else None
+        carry = numbers[1] if len(numbers) > 1 else None
+        yield name, rarity, carry
 
 
 def normalize(name: str) -> str:
@@ -66,11 +71,11 @@ def normalize(name: str) -> str:
 
 def main() -> None:
     items = json.loads((GENERATED_DIR / "items.json").read_text(encoding="utf-8"))
-    by_name: dict[str, list[tuple[str, int | None]]] = {}
+    by_name: dict[str, list[tuple[str, int | None, int | None]]] = {}
     for page, category in CATEGORY_PAGES.items():
         text = fetch_wikitext(f"MH4U/Items/{page}")
-        for name, rarity in parse_item_rows(text):
-            by_name.setdefault(normalize(name), []).append((category, rarity))
+        for name, rarity, carry in parse_item_rows(text):
+            by_name.setdefault(normalize(name), []).append((category, rarity, carry))
         print(f"fetched {page}")
 
     result, unmatched = {}, 0
@@ -79,8 +84,8 @@ def main() -> None:
         if not matches:
             unmatched += info["usable"]
             continue
-        category, rarity = min(matches, key=lambda m: CATEGORY_PRIORITY.index(m[0]))
-        result[item_id] = {"category": category, "rarity": rarity}
+        category, rarity, carry = min(matches, key=lambda m: CATEGORY_PRIORITY.index(m[0]))
+        result[item_id] = {"category": category, "rarity": rarity, "carry_limit": carry}
 
     path = GENERATED_DIR / "item_categories.json"
     path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")

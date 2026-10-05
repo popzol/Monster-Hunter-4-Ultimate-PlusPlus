@@ -76,6 +76,13 @@ def test_items(data):
     assert scale.rarity is not None
 
 
+def test_every_randomizable_monster_has_gear_materials(data):
+    for m in data.randomizable_monsters():
+        materials = [data.items[i] for i in m.material_ids]
+        assert any(i.is_gear_material for i in materials), m.name
+    assert all(data.items[i].carry_limit for i in data.monsters[1].material_ids)
+
+
 def test_quest_classification(data):
     counts = {c: sum(1 for q in data.quests.values() if q.category is c) for c in QuestCategory}
     assert counts == {QuestCategory.KEY: 51, QuestCategory.URGENT: 18, QuestCategory.NORMAL: 190,

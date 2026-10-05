@@ -4,7 +4,8 @@
 data/
   generated/            build artifacts - never edit by hand
     items.json          id -> name, usable
-    item_categories.json id -> category, rarity (from monsterhunterwiki.org)
+    item_categories.json id -> category, rarity, carry_limit (monsterhunterwiki.org)
+    monster_materials.json monster id -> material item ids (monsterhunterwiki.org)
     monsters.json       id -> name, is_large, preview_id, intro_cutscene_map,
                         special_variants, break_parts
     maps.json           id -> name, areas (bounds + retail spawn positions)
@@ -30,11 +31,18 @@ Sources: `Documentation/constants.js` (tables of the online quest editor) and
 the original quest files (`Scripts/og_loc/loc/quest` by default). The test
 `test_generated_files_are_up_to_date` fails if the committed files are stale.
 
-`item_categories.json` is produced separately because it needs network access:
+`item_categories.json` and `monster_materials.json` are produced separately
+because they need network access:
 
 ```
 python tools/fetch_item_categories.py
+python tools/fetch_monster_materials.py
 ```
+
+Monster materials come from the wiki categories `MH4U <Monster> Materials`.
+Apex monsters use their base species' materials; Black Fatalis is "Fatalis",
+White Fatalis is "Old Fatalis" and Golden Rajang is "Furious Rajang" on the
+wiki.
 
 It matches items by English name against the `MH4U/Items/*` pages of
 monsterhunterwiki.org. About 330 usable items (decorations, charms, relics)
