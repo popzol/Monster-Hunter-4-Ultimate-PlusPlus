@@ -1,0 +1,484 @@
+{
+  "description": "Hand-maintained rules for large monsters. See docs/game_rules.md for the meaning of every field and group.",
+  "groups": {
+    "finale_monsters": {
+      "description": "The game crashes if the corpse of one of these monsters despawns, so they may only appear in the last wave of a quest.",
+      "monsters": [
+        77,
+        78,
+        79,
+        117,
+        24,
+        83,
+        110,
+        111,
+        89,
+        46,
+        33,
+        116
+      ]
+    }
+  },
+  "monsters": {
+    "1": {
+      "name": "Rathian",
+      "tier": 1,
+      "own_music": false
+    },
+    "2": {
+      "name": "Rathalos",
+      "tier": 2,
+      "own_music": false
+    },
+    "3": {
+      "name": "Pink Rathian",
+      "tier": 5,
+      "own_music": false
+    },
+    "4": {
+      "name": "Azure Rathalos",
+      "tier": 4,
+      "own_music": false
+    },
+    "5": {
+      "name": "Gold Rathian",
+      "tier": 6,
+      "own_music": false
+    },
+    "6": {
+      "name": "Silver Rathalos",
+      "tier": 6,
+      "own_music": false
+    },
+    "7": {
+      "name": "Yian Kut-Ku",
+      "tier": 1,
+      "own_music": false
+    },
+    "8": {
+      "name": "Blue Yian Kut-Ku",
+      "tier": 2,
+      "own_music": false
+    },
+    "9": {
+      "name": "Gypceros",
+      "tier": 2,
+      "own_music": false
+    },
+    "10": {
+      "name": "Purple Gypceros",
+      "tier": 4,
+      "own_music": false
+    },
+    "11": {
+      "name": "Tigrex",
+      "tier": 3,
+      "own_music": true
+    },
+    "12": {
+      "name": "Brute Tigrex",
+      "tier": 5,
+      "own_music": true
+    },
+    "13": {
+      "name": "Gendrome",
+      "tier": 1,
+      "own_music": true
+    },
+    "14": {
+      "name": "Iodrome",
+      "tier": 1,
+      "own_music": true
+    },
+    "15": {
+      "name": "Great Jaggi",
+      "tier": 1,
+      "own_music": true
+    },
+    "16": {
+      "name": "Velocidrome",
+      "tier": 1,
+      "own_music": true
+    },
+    "17": {
+      "name": "Congalala",
+      "tier": 1,
+      "own_music": false
+    },
+    "18": {
+      "name": "Emerald Congalala",
+      "tier": 3,
+      "own_music": false
+    },
+    "19": {
+      "name": "Rajang",
+      "tier": 6,
+      "own_music": true
+    },
+    "20": {
+      "name": "Kecha Wacha",
+      "tier": 1,
+      "own_music": false
+    },
+    "21": {
+      "name": "Tetsucabra",
+      "tier": 1,
+      "own_music": false
+    },
+    "22": {
+      "name": "Zamtrios",
+      "tier": 2,
+      "own_music": false
+    },
+    "23": {
+      "name": "Najarala",
+      "tier": 2,
+      "own_music": false
+    },
+    "24": {
+      "name": "Dalamadur (Head)",
+      "tier": 8,
+      "own_music": true,
+      "spawns_with": 83,
+      "allowed_maps": [
+        8,
+        9,
+        10
+      ]
+    },
+    "25": {
+      "name": "Seltas",
+      "tier": 1,
+      "own_music": true
+    },
+    "26": {
+      "name": "Seltas Queen",
+      "tier": 3,
+      "own_music": false
+    },
+    "27": {
+      "name": "Nerscylla",
+      "tier": 2,
+      "own_music": false
+    },
+    "28": {
+      "name": "Gore Magala",
+      "tier": 4,
+      "own_music": true
+    },
+    "29": {
+      "name": "Shagaru Magala",
+      "tier": 5,
+      "own_music": true
+    },
+    "30": {
+      "name": "Yian Garuga",
+      "tier": 4,
+      "own_music": true
+    },
+    "31": {
+      "name": "Kushala Daora",
+      "tier": 6,
+      "own_music": true
+    },
+    "32": {
+      "name": "Teostra",
+      "tier": 6,
+      "own_music": true
+    },
+    "33": {
+      "name": "Akantor",
+      "tier": 7,
+      "own_music": true
+    },
+    "34": {
+      "name": "Kirin",
+      "tier": 6,
+      "own_music": true
+    },
+    "35": {
+      "name": "Oroshi Kirin",
+      "tier": 7,
+      "own_music": true
+    },
+    "36": {
+      "name": "Khezu",
+      "tier": 2,
+      "own_music": true
+    },
+    "37": {
+      "name": "Red Khezu",
+      "tier": 4,
+      "own_music": true
+    },
+    "38": {
+      "name": "Basarios",
+      "tier": 2,
+      "own_music": false
+    },
+    "39": {
+      "name": "Ruby Basarios",
+      "tier": 4,
+      "own_music": false
+    },
+    "40": {
+      "name": "Gravios",
+      "tier": 3,
+      "own_music": false
+    },
+    "41": {
+      "name": "Black Gravios",
+      "tier": 5,
+      "own_music": false
+    },
+    "42": {
+      "name": "Deviljho",
+      "tier": 5,
+      "own_music": true
+    },
+    "43": {
+      "name": "Savage Deviljho",
+      "tier": 7,
+      "own_music": true
+    },
+    "44": {
+      "name": "Brachydios",
+      "tier": 4,
+      "own_music": true
+    },
+    "45": {
+      "name": "Golden Rajang",
+      "tier": 7,
+      "own_music": true
+    },
+    "46": {
+      "name": "Dah'ren Mohran",
+      "tier": 8,
+      "own_music": true,
+      "allowed_maps": [
+        6
+      ]
+    },
+    "47": {
+      "name": "Lagombi",
+      "tier": 1,
+      "own_music": true
+    },
+    "48": {
+      "name": "Zinogre",
+      "tier": 3,
+      "own_music": true
+    },
+    "49": {
+      "name": "Stygian Zinogre",
+      "tier": 6,
+      "own_music": true
+    },
+    "77": {
+      "name": "Black Fatalis",
+      "tier": 8,
+      "own_music": true
+    },
+    "78": {
+      "name": "Crimson Fatalis",
+      "tier": 8,
+      "own_music": true
+    },
+    "79": {
+      "name": "White Fatalis",
+      "tier": 8,
+      "own_music": true
+    },
+    "80": {
+      "name": "Molten Tigrex",
+      "tier": 8,
+      "own_music": true
+    },
+    "82": {
+      "name": "Rusted Kushala Daora",
+      "tier": 7,
+      "own_music": true
+    },
+    "83": {
+      "name": "Dalamadur (Tail)",
+      "tier": null,
+      "own_music": true,
+      "body_part_of": 24,
+      "allowed_maps": [
+        8,
+        9,
+        10
+      ]
+    },
+    "88": {
+      "name": "Seregios",
+      "tier": 5,
+      "own_music": true
+    },
+    "89": {
+      "name": "Gogmazios",
+      "tier": 8,
+      "own_music": true,
+      "fixed_areas": {
+        "19": 3
+      }
+    },
+    "90": {
+      "name": "Ash Kecha Wacha",
+      "tier": 4,
+      "own_music": false
+    },
+    "91": {
+      "name": "Berserk Tetsucabra",
+      "tier": 3,
+      "own_music": false
+    },
+    "92": {
+      "name": "Tigerstripe Zamtrios",
+      "tier": 3,
+      "own_music": false
+    },
+    "93": {
+      "name": "Tidal Najarala",
+      "tier": 5,
+      "own_music": false
+    },
+    "94": {
+      "name": "Desert Seltas",
+      "tier": 2,
+      "own_music": false
+    },
+    "95": {
+      "name": "Desert Seltas Queen",
+      "tier": 4,
+      "own_music": false
+    },
+    "96": {
+      "name": "Shrouded Nerscylla",
+      "tier": 4,
+      "own_music": false
+    },
+    "97": {
+      "name": "Chaotic Gore Magala",
+      "tier": 5,
+      "own_music": true
+    },
+    "98": {
+      "name": "Raging Brachydios",
+      "tier": 7,
+      "own_music": true
+    },
+    "99": {
+      "name": "Diablos",
+      "tier": 3,
+      "own_music": false
+    },
+    "100": {
+      "name": "Black Diablos",
+      "tier": 5,
+      "own_music": false
+    },
+    "101": {
+      "name": "Monoblos",
+      "tier": 3,
+      "own_music": false
+    },
+    "102": {
+      "name": "White Monoblos",
+      "tier": 4,
+      "own_music": false
+    },
+    "103": {
+      "name": "Chameleos",
+      "tier": 6,
+      "own_music": true
+    },
+    "105": {
+      "name": "Cephadrome",
+      "tier": 2,
+      "own_music": false
+    },
+    "107": {
+      "name": "Daimyo Hermitaur",
+      "tier": 1,
+      "own_music": false
+    },
+    "108": {
+      "name": "Plum Daimyo Hermitaur",
+      "tier": 3,
+      "own_music": false
+    },
+    "110": {
+      "name": "Shah Dalamadur (Head)",
+      "tier": 8,
+      "own_music": true,
+      "spawns_with": 111,
+      "allowed_maps": [
+        8,
+        9,
+        10
+      ]
+    },
+    "111": {
+      "name": "Shah Dalamadur (Tail)",
+      "tier": null,
+      "own_music": true,
+      "body_part_of": 110,
+      "allowed_maps": [
+        8,
+        9,
+        10
+      ]
+    },
+    "112": {
+      "name": "Rajang (Apex)",
+      "tier": 8,
+      "own_music": true
+    },
+    "113": {
+      "name": "Deviljho (Apex)",
+      "tier": 8,
+      "own_music": true
+    },
+    "114": {
+      "name": "Zinogre (Apex)",
+      "tier": 7,
+      "own_music": true
+    },
+    "115": {
+      "name": "Gravios (Apex)",
+      "tier": 7,
+      "own_music": false
+    },
+    "116": {
+      "name": "Ukanlos",
+      "tier": 7,
+      "own_music": true
+    },
+    "117": {
+      "name": "Crimson Fatalis (Super)",
+      "tier": 8,
+      "own_music": true
+    },
+    "119": {
+      "name": "Diablos (Apex)",
+      "tier": 7,
+      "own_music": false
+    },
+    "120": {
+      "name": "Tidal Najarala (Apex)",
+      "tier": 7,
+      "own_music": false
+    },
+    "121": {
+      "name": "Tigrex (Apex)",
+      "tier": 7,
+      "own_music": true
+    },
+    "122": {
+      "name": "Seregios (Apex)",
+      "tier": 7,
+      "own_music": true
+    }
+  }
+}

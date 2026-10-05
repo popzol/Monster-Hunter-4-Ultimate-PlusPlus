@@ -1,0 +1,1538 @@
+{
+  "1": {
+    "name": "Rathian",
+    "is_large": true,
+    "preview_id": 1,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Head",
+      "3": "Wings",
+      "4": "Back",
+      "7": "Tail"
+    }
+  },
+  "2": {
+    "name": "Rathalos",
+    "is_large": true,
+    "preview_id": 4,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Head",
+      "3": "Wings",
+      "4": "Back",
+      "7": "Tail"
+    }
+  },
+  "3": {
+    "name": "Pink Rathian",
+    "is_large": true,
+    "preview_id": 2,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Head",
+      "3": "Wings",
+      "4": "Back",
+      "7": "Tail"
+    }
+  },
+  "4": {
+    "name": "Azure Rathalos",
+    "is_large": true,
+    "preview_id": 5,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Head",
+      "3": "Wings",
+      "4": "Back",
+      "7": "Tail"
+    }
+  },
+  "5": {
+    "name": "Gold Rathian",
+    "is_large": true,
+    "preview_id": 3,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "1": "Head",
+      "2": "Wings",
+      "3": "Back",
+      "7": "Tail"
+    }
+  },
+  "6": {
+    "name": "Silver Rathalos",
+    "is_large": true,
+    "preview_id": 6,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "1": "Head",
+      "2": "Wings",
+      "3": "Back",
+      "7": "Tail"
+    }
+  },
+  "7": {
+    "name": "Yian Kut-Ku",
+    "is_large": true,
+    "preview_id": 7,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "100": "Alternate"
+    },
+    "break_parts": {
+      "2": "Ears"
+    }
+  },
+  "8": {
+    "name": "Blue Yian Kut-Ku",
+    "is_large": true,
+    "preview_id": 8,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "100": "Alternate"
+    },
+    "break_parts": {
+      "2": "Ears"
+    }
+  },
+  "9": {
+    "name": "Gypceros",
+    "is_large": true,
+    "preview_id": 9,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Horn",
+      "7": "Tail"
+    }
+  },
+  "10": {
+    "name": "Purple Gypceros",
+    "is_large": true,
+    "preview_id": 10,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Horn",
+      "7": "Tail"
+    }
+  },
+  "11": {
+    "name": "Tigrex",
+    "is_large": true,
+    "preview_id": 11,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Head",
+      "3": "Claws",
+      "7": "Tail"
+    }
+  },
+  "12": {
+    "name": "Brute Tigrex",
+    "is_large": true,
+    "preview_id": 12,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Head",
+      "3": "Claws",
+      "7": "Tail"
+    }
+  },
+  "13": {
+    "name": "Gendrome",
+    "is_large": true,
+    "preview_id": 14,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Head"
+    }
+  },
+  "14": {
+    "name": "Iodrome",
+    "is_large": true,
+    "preview_id": 15,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "100": "Alternate"
+    },
+    "break_parts": {
+      "2": "Head"
+    }
+  },
+  "15": {
+    "name": "Great Jaggi",
+    "is_large": true,
+    "preview_id": 16,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "5": "Alternate"
+    },
+    "break_parts": {
+      "2": "Head"
+    }
+  },
+  "16": {
+    "name": "Velocidrome",
+    "is_large": true,
+    "preview_id": 17,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "100": "Alternate"
+    },
+    "break_parts": {
+      "2": "Head"
+    }
+  },
+  "17": {
+    "name": "Congalala",
+    "is_large": true,
+    "preview_id": 18,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Yellow Mushroom",
+      "3": "Purple Mushroom",
+      "100": "Mario Mushroom",
+      "101": "Cha-Cha's Mask"
+    },
+    "break_parts": {
+      "2": "Comb",
+      "3": "Claws",
+      "7": "Tail"
+    }
+  },
+  "18": {
+    "name": "Emerald Congalala",
+    "is_large": true,
+    "preview_id": 19,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Purple Mushroom",
+      "2": "Pink Mushroom",
+      "100": "Mario Mushroom",
+      "4": "Yellow Mushroom"
+    },
+    "break_parts": {
+      "2": "Comb",
+      "3": "Claws",
+      "7": "Tail"
+    }
+  },
+  "19": {
+    "name": "Rajang",
+    "is_large": true,
+    "preview_id": 20,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "1": "Horns",
+      "3": "Tail"
+    }
+  },
+  "20": {
+    "name": "Kecha Wacha",
+    "is_large": true,
+    "preview_id": 22,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "1": "Alternate"
+    },
+    "break_parts": {
+      "2": "Ears",
+      "3": "Claws",
+      "7": "Tail"
+    }
+  },
+  "21": {
+    "name": "Tetsucabra",
+    "is_large": true,
+    "preview_id": 23,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "100": "Alternate"
+    },
+    "break_parts": {
+      "2": "Jaw",
+      "3": "Back Legs",
+      "4": "Back"
+    }
+  },
+  "22": {
+    "name": "Zamtrios",
+    "is_large": true,
+    "preview_id": 24,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "100": "Alternate"
+    },
+    "break_parts": {
+      "2": "Nosetip",
+      "3": "Back Fin",
+      "4": "Front Legs",
+      "5": "Tail"
+    }
+  },
+  "23": {
+    "name": "Najarala",
+    "is_large": true,
+    "preview_id": 25,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "1": "Alternate"
+    },
+    "break_parts": {
+      "2": "Beak",
+      "3": "Back Legs",
+      "4": "Back",
+      "5": "Tail"
+    }
+  },
+  "24": {
+    "name": "Dalamadur (Head)",
+    "is_large": true,
+    "preview_id": 72,
+    "intro_cutscene_map": 8,
+    "special_variants": {},
+    "break_parts": {
+      "0": "Head",
+      "1": "Breast",
+      "2": "Back",
+      "3": "Front Claws"
+    }
+  },
+  "25": {
+    "name": "Seltas",
+    "is_large": true,
+    "preview_id": 26,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Horn"
+    }
+  },
+  "26": {
+    "name": "Seltas Queen",
+    "is_large": true,
+    "preview_id": 27,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Head",
+      "3": "Pectus",
+      "4": "Legs",
+      "5": "Tail"
+    }
+  },
+  "27": {
+    "name": "Nerscylla",
+    "is_large": true,
+    "preview_id": 28,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Claw",
+      "3": "Back/Crystals",
+      "4": "Hide"
+    }
+  },
+  "28": {
+    "name": "Gore Magala",
+    "is_large": true,
+    "preview_id": 29,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "1": "Alternate"
+    },
+    "break_parts": {
+      "2": "Feeler",
+      "3": "Head",
+      "4": "Wingbones/Claws",
+      "5": "Wings",
+      "7": "Tail"
+    }
+  },
+  "29": {
+    "name": "Shagaru Magala",
+    "is_large": true,
+    "preview_id": 30,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "0": "Horn",
+      "2": "Wingbones/Claws",
+      "3": "Wings",
+      "7": "Tail"
+    }
+  },
+  "30": {
+    "name": "Yian Garuga",
+    "is_large": true,
+    "preview_id": 31,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Beak",
+      "3": "Ears",
+      "4": "Wings",
+      "5": "Back",
+      "7": "Tail"
+    }
+  },
+  "31": {
+    "name": "Kushala Daora",
+    "is_large": true,
+    "preview_id": 32,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "1": "Alternate"
+    },
+    "break_parts": {
+      "0": "Horn",
+      "1": "Wings",
+      "7": "Tail"
+    }
+  },
+  "32": {
+    "name": "Teostra",
+    "is_large": true,
+    "preview_id": 34,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "0": "Horn",
+      "1": "Wings",
+      "7": "Tail"
+    }
+  },
+  "33": {
+    "name": "Akantor",
+    "is_large": true,
+    "preview_id": 35,
+    "intro_cutscene_map": 9,
+    "special_variants": {
+      "0": "Normal",
+      "1": "Permanent Enraged"
+    },
+    "break_parts": {
+      "0": "Jaw",
+      "1": "Back",
+      "2": "Belly",
+      "3": "Front Legs",
+      "7": "Tail"
+    }
+  },
+  "34": {
+    "name": "Kirin",
+    "is_large": true,
+    "preview_id": 36,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "100": "Alternate"
+    },
+    "break_parts": {
+      "0": "Horn"
+    }
+  },
+  "35": {
+    "name": "Oroshi Kirin",
+    "is_large": true,
+    "preview_id": 37,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "100": "Alternate"
+    },
+    "break_parts": {
+      "0": "Horn"
+    }
+  },
+  "36": {
+    "name": "Khezu",
+    "is_large": true,
+    "preview_id": 38,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Head",
+      "3": "Body"
+    }
+  },
+  "37": {
+    "name": "Red Khezu",
+    "is_large": true,
+    "preview_id": 39,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Head",
+      "3": "Body"
+    }
+  },
+  "38": {
+    "name": "Basarios",
+    "is_large": true,
+    "preview_id": 40,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Back",
+      "3": "Belly",
+      "7": "Tail"
+    }
+  },
+  "39": {
+    "name": "Ruby Basarios",
+    "is_large": true,
+    "preview_id": 41,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Fire Attacks",
+      "1": "Poison/Sleep Attacks"
+    },
+    "break_parts": {
+      "2": "Back",
+      "3": "Belly",
+      "7": "Tail"
+    }
+  },
+  "40": {
+    "name": "Gravios",
+    "is_large": true,
+    "preview_id": 42,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "100": "Alternate"
+    },
+    "break_parts": {
+      "2": "Head",
+      "3": "Back",
+      "4": "Belly",
+      "5": "Wings",
+      "7": "Tail"
+    }
+  },
+  "41": {
+    "name": "Black Gravios",
+    "is_large": true,
+    "preview_id": 43,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Head",
+      "3": "Back",
+      "4": "Belly",
+      "5": "Wings",
+      "7": "Tail"
+    }
+  },
+  "42": {
+    "name": "Deviljho",
+    "is_large": true,
+    "preview_id": 44,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Head",
+      "7": "Tail"
+    }
+  },
+  "43": {
+    "name": "Savage Deviljho",
+    "is_large": true,
+    "preview_id": 45,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "5": "Alternate"
+    },
+    "break_parts": {
+      "1": "Head",
+      "7": "Tail"
+    }
+  },
+  "44": {
+    "name": "Brachydios",
+    "is_large": true,
+    "preview_id": 46,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "10": "Alternate"
+    },
+    "break_parts": {
+      "2": "Head",
+      "3": "Pounder",
+      "7": "Tail"
+    }
+  },
+  "45": {
+    "name": "Golden Rajang",
+    "is_large": true,
+    "preview_id": 21,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "1": "Horns"
+    }
+  },
+  "46": {
+    "name": "Dah'ren Mohran",
+    "is_large": true,
+    "preview_id": 47,
+    "intro_cutscene_map": 6,
+    "special_variants": {
+      "0": "Normal",
+      "1": "Alternate"
+    },
+    "break_parts": {
+      "0": "Horn",
+      "1": "Neckshield",
+      "2": "Blowhole",
+      "3": "Arms"
+    }
+  },
+  "47": {
+    "name": "Lagombi",
+    "is_large": true,
+    "preview_id": 48,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "100": "Alternate"
+    },
+    "break_parts": {
+      "2": "Ears"
+    }
+  },
+  "48": {
+    "name": "Zinogre",
+    "is_large": true,
+    "preview_id": 49,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Spawn Uncharged",
+      "1": "Spawn Charged Up"
+    },
+    "break_parts": {
+      "2": "Horns",
+      "3": "Front Legs",
+      "4": "Back",
+      "7": "Tail"
+    }
+  },
+  "49": {
+    "name": "Stygian Zinogre",
+    "is_large": true,
+    "preview_id": 50,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Horns",
+      "3": "Front Legs",
+      "4": "Back",
+      "7": "Tail"
+    }
+  },
+  "50": {
+    "name": "Gargwa",
+    "is_large": false,
+    "preview_id": 51,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "1": "1"
+    },
+    "break_parts": {}
+  },
+  "51": {
+    "name": "Rhenoplos",
+    "is_large": false,
+    "preview_id": 52,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {}
+  },
+  "52": {
+    "name": "Aptonoth",
+    "is_large": false,
+    "preview_id": 53,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "2": "2",
+      "1": "1"
+    },
+    "break_parts": {}
+  },
+  "53": {
+    "name": "Popo",
+    "is_large": false,
+    "preview_id": 54,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "1": "1"
+    },
+    "break_parts": {}
+  },
+  "54": {
+    "name": "Slagtoth",
+    "is_large": false,
+    "preview_id": 55,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {}
+  },
+  "55": {
+    "name": "Slagtoth (Red)",
+    "is_large": false,
+    "preview_id": 56,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {}
+  },
+  "56": {
+    "name": "Jaggi",
+    "is_large": false,
+    "preview_id": 57,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "1": "1"
+    },
+    "break_parts": {}
+  },
+  "57": {
+    "name": "Jaggia",
+    "is_large": false,
+    "preview_id": 58,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {}
+  },
+  "58": {
+    "name": "Velociprey",
+    "is_large": false,
+    "preview_id": 59,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {}
+  },
+  "59": {
+    "name": "Genprey",
+    "is_large": false,
+    "preview_id": 60,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {}
+  },
+  "60": {
+    "name": "Ioprey",
+    "is_large": false,
+    "preview_id": 61,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {}
+  },
+  "61": {
+    "name": "Remobra",
+    "is_large": false,
+    "preview_id": 62,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "1": "1"
+    },
+    "break_parts": {}
+  },
+  "62": {
+    "name": "Delex",
+    "is_large": false,
+    "preview_id": 63,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "2": "2",
+      "1": "1"
+    },
+    "break_parts": {}
+  },
+  "63": {
+    "name": "Conga",
+    "is_large": false,
+    "preview_id": 64,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "2": "2"
+    },
+    "break_parts": {}
+  },
+  "64": {
+    "name": "Kelbi",
+    "is_large": false,
+    "preview_id": 65,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Male",
+      "1": "Female"
+    },
+    "break_parts": {}
+  },
+  "65": {
+    "name": "Felyne",
+    "is_large": false,
+    "preview_id": 66,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "1": "Ignore Player",
+      "2": "2"
+    },
+    "break_parts": {}
+  },
+  "66": {
+    "name": "Melynx",
+    "is_large": false,
+    "preview_id": 67,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "1": "Ignore Player",
+      "2": "2"
+    },
+    "break_parts": {}
+  },
+  "67": {
+    "name": "Altaroth",
+    "is_large": false,
+    "preview_id": 68,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "1": "1"
+    },
+    "break_parts": {}
+  },
+  "68": {
+    "name": "Bnahabra (Blue wings)",
+    "is_large": false,
+    "preview_id": 69,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "2": "2",
+      "100": "100",
+      "1": "1"
+    },
+    "break_parts": {}
+  },
+  "69": {
+    "name": "Bnahabra (Yellow wings)",
+    "is_large": false,
+    "preview_id": 69,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "2": "2"
+    },
+    "break_parts": {}
+  },
+  "70": {
+    "name": "Bnahabra (Green wings)",
+    "is_large": false,
+    "preview_id": 69,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "2": "2"
+    },
+    "break_parts": {}
+  },
+  "71": {
+    "name": "Bnahabra (Red wings)",
+    "is_large": false,
+    "preview_id": 69,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "2": "2",
+      "1": "1"
+    },
+    "break_parts": {}
+  },
+  "72": {
+    "name": "Zamite",
+    "is_large": false,
+    "preview_id": 70,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "1": "1"
+    },
+    "break_parts": {}
+  },
+  "73": {
+    "name": "Konchu (Yellow)",
+    "is_large": false,
+    "preview_id": 71,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "1": "1",
+      "2": "2",
+      "3": "3",
+      "100": "Large"
+    },
+    "break_parts": {}
+  },
+  "74": {
+    "name": "Konchu (Green)",
+    "is_large": false,
+    "preview_id": 71,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "12": "12",
+      "13": "13"
+    },
+    "break_parts": {}
+  },
+  "75": {
+    "name": "Konchu (Blue)",
+    "is_large": false,
+    "preview_id": 71,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "1": "1"
+    },
+    "break_parts": {}
+  },
+  "76": {
+    "name": "Konchu (Red)",
+    "is_large": false,
+    "preview_id": 71,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "1": "1"
+    },
+    "break_parts": {}
+  },
+  "77": {
+    "name": "Black Fatalis",
+    "is_large": true,
+    "preview_id": 0,
+    "intro_cutscene_map": 10,
+    "special_variants": {},
+    "break_parts": {
+      "0": "Head",
+      "1": "Eye",
+      "2": "Wings",
+      "3": "Breast"
+    }
+  },
+  "78": {
+    "name": "Crimson Fatalis",
+    "is_large": true,
+    "preview_id": 0,
+    "intro_cutscene_map": 9,
+    "special_variants": {},
+    "break_parts": {
+      "0": "Head",
+      "1": "Eye",
+      "2": "Wings",
+      "3": "Breast"
+    }
+  },
+  "79": {
+    "name": "White Fatalis",
+    "is_large": true,
+    "preview_id": 0,
+    "intro_cutscene_map": 10,
+    "special_variants": {},
+    "break_parts": {
+      "0": "Head",
+      "1": "Eye",
+      "2": "Wings",
+      "3": "Breast"
+    }
+  },
+  "80": {
+    "name": "Molten Tigrex",
+    "is_large": true,
+    "preview_id": 13,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "1": "Head",
+      "2": "Claws",
+      "7": "Tail"
+    }
+  },
+  "81": {
+    "name": "Rock (Large, light grey w/ green spots)",
+    "is_large": false,
+    "preview_id": 90,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "3": "3",
+      "0": "Normal",
+      "19": "19"
+    },
+    "break_parts": {}
+  },
+  "82": {
+    "name": "Rusted Kushala Daora",
+    "is_large": true,
+    "preview_id": 33,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "0": "Horn",
+      "1": "Wings",
+      "7": "Tail"
+    }
+  },
+  "83": {
+    "name": "Dalamadur (Tail)",
+    "is_large": true,
+    "preview_id": 73,
+    "intro_cutscene_map": 8,
+    "special_variants": {},
+    "break_parts": {
+      "7": "Tail"
+    }
+  },
+  "84": {
+    "name": "Rock (Large, dark grey w/ dirty spots)",
+    "is_large": false,
+    "preview_id": 90,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "3": "3",
+      "0": "Normal",
+      "19": "19"
+    },
+    "break_parts": {}
+  },
+  "85": {
+    "name": "Rock (Large, almost black)",
+    "is_large": false,
+    "preview_id": 90,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "11": "11",
+      "4": "4"
+    },
+    "break_parts": {}
+  },
+  "86": {
+    "name": "Rock (Large, icy)",
+    "is_large": false,
+    "preview_id": 90,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {}
+  },
+  "87": {
+    "name": "Rock (Large, icy ver 2)",
+    "is_large": false,
+    "preview_id": 90,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "18": "18",
+      "19": "19"
+    },
+    "break_parts": {}
+  },
+  "88": {
+    "name": "Seregios",
+    "is_large": true,
+    "preview_id": 99,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Horn",
+      "3": "Wings",
+      "4": "Legs",
+      "7": "Tail"
+    }
+  },
+  "89": {
+    "name": "Gogmazios",
+    "is_large": true,
+    "preview_id": 0,
+    "intro_cutscene_map": 19,
+    "special_variants": {
+      "0": "Normal",
+      "1": "Alternate",
+      "2": "Explosive Oil"
+    },
+    "break_parts": {
+      "0": "Head",
+      "1": "Wings",
+      "2": "Breast",
+      "3": "Dragonator",
+      "7": "Tail"
+    }
+  },
+  "90": {
+    "name": "Ash Kecha Wacha",
+    "is_large": true,
+    "preview_id": 100,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "1": "1"
+    },
+    "break_parts": {
+      "2": "Ears",
+      "3": "Claws",
+      "4": "Tail"
+    }
+  },
+  "91": {
+    "name": "Berserk Tetsucabra",
+    "is_large": true,
+    "preview_id": 101,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Jaw",
+      "3": "Back Legs",
+      "4": "Back"
+    }
+  },
+  "92": {
+    "name": "Tigerstripe Zamtrios",
+    "is_large": true,
+    "preview_id": 102,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Nosetip",
+      "3": "Back Fin",
+      "4": "Front Legs",
+      "5": "Tail"
+    }
+  },
+  "93": {
+    "name": "Tidal Najarala",
+    "is_large": true,
+    "preview_id": 103,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Beak",
+      "3": "Back Legs",
+      "4": "Back",
+      "5": "Tail"
+    }
+  },
+  "94": {
+    "name": "Desert Seltas",
+    "is_large": true,
+    "preview_id": 104,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Horn"
+    }
+  },
+  "95": {
+    "name": "Desert Seltas Queen",
+    "is_large": true,
+    "preview_id": 105,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Head",
+      "3": "Pectus",
+      "4": "Legs",
+      "5": "Tail"
+    }
+  },
+  "96": {
+    "name": "Shrouded Nerscylla",
+    "is_large": true,
+    "preview_id": 106,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "100": "Alternate"
+    },
+    "break_parts": {
+      "2": "Claw",
+      "3": "Back/Crystals",
+      "4": "Hide"
+    }
+  },
+  "97": {
+    "name": "Chaotic Gore Magala",
+    "is_large": true,
+    "preview_id": 107,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "1": "Alternate"
+    },
+    "break_parts": {
+      "2": "Feeler",
+      "3": "Wings",
+      "4": "Shagaru Claw",
+      "5": "Gore Claw",
+      "7": "Tail"
+    }
+  },
+  "98": {
+    "name": "Raging Brachydios",
+    "is_large": true,
+    "preview_id": 108,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "1": "Horn",
+      "2": "Pounder",
+      "7": "Tail"
+    }
+  },
+  "99": {
+    "name": "Diablos",
+    "is_large": true,
+    "preview_id": 109,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Horns",
+      "3": "Back",
+      "7": "Tail"
+    }
+  },
+  "100": {
+    "name": "Black Diablos",
+    "is_large": true,
+    "preview_id": 110,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Horns",
+      "3": "Back",
+      "7": "Tail"
+    }
+  },
+  "101": {
+    "name": "Monoblos",
+    "is_large": true,
+    "preview_id": 111,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Horns",
+      "3": "Back",
+      "7": "Tail"
+    }
+  },
+  "102": {
+    "name": "White Monoblos",
+    "is_large": true,
+    "preview_id": 112,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Horns",
+      "3": "Back",
+      "7": "Tail"
+    }
+  },
+  "103": {
+    "name": "Chameleos",
+    "is_large": true,
+    "preview_id": 113,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "0": "Horn",
+      "1": "Wings",
+      "7": "Tail"
+    }
+  },
+  "104": {
+    "name": "Rock (Large, brown)",
+    "is_large": false,
+    "preview_id": 90,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "2": "2",
+      "19": "19",
+      "34": "34"
+    },
+    "break_parts": {}
+  },
+  "105": {
+    "name": "Cephadrome",
+    "is_large": true,
+    "preview_id": 114,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Fin",
+      "3": "Head",
+      "4": "Tail"
+    }
+  },
+  "106": {
+    "name": "Cephalos",
+    "is_large": false,
+    "preview_id": 115,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Spawn Above Ground",
+      "1": "Spawn Underground"
+    },
+    "break_parts": {}
+  },
+  "107": {
+    "name": "Daimyo Hermitaur",
+    "is_large": true,
+    "preview_id": 116,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "1": "Alternate"
+    },
+    "break_parts": {
+      "2": "Shell",
+      "3": "Claws"
+    }
+  },
+  "108": {
+    "name": "Plum Daimyo Hermitaur",
+    "is_large": true,
+    "preview_id": 117,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "100": "Alternate"
+    },
+    "break_parts": {
+      "2": "Shell",
+      "3": "Claws"
+    }
+  },
+  "109": {
+    "name": "Hermitaur",
+    "is_large": false,
+    "preview_id": 118,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "2": "2",
+      "1": "1"
+    },
+    "break_parts": {}
+  },
+  "110": {
+    "name": "Shah Dalamadur (Head)",
+    "is_large": true,
+    "preview_id": 121,
+    "intro_cutscene_map": 8,
+    "special_variants": {},
+    "break_parts": {
+      "0": "Head",
+      "1": "Breast",
+      "2": "Back",
+      "3": "Front Claws"
+    }
+  },
+  "111": {
+    "name": "Shah Dalamadur (Tail)",
+    "is_large": true,
+    "preview_id": 122,
+    "intro_cutscene_map": 8,
+    "special_variants": {},
+    "break_parts": {
+      "7": "Tail"
+    }
+  },
+  "112": {
+    "name": "Rajang (Apex)",
+    "is_large": true,
+    "preview_id": 20,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "1": "Horns",
+      "3": "Tail"
+    }
+  },
+  "113": {
+    "name": "Deviljho (Apex)",
+    "is_large": true,
+    "preview_id": 44,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "1": "Head",
+      "7": "Tail"
+    }
+  },
+  "114": {
+    "name": "Zinogre (Apex)",
+    "is_large": true,
+    "preview_id": 49,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Horns",
+      "3": "Front Legs",
+      "4": "Back",
+      "7": "Tail"
+    }
+  },
+  "115": {
+    "name": "Gravios (Apex)",
+    "is_large": true,
+    "preview_id": 42,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "100": "Alternate"
+    },
+    "break_parts": {
+      "2": "Head",
+      "3": "Back",
+      "4": "Belly",
+      "5": "Wings",
+      "7": "Tail"
+    }
+  },
+  "116": {
+    "name": "Ukanlos",
+    "is_large": true,
+    "preview_id": 119,
+    "intro_cutscene_map": 20,
+    "special_variants": {
+      "0": "Normal",
+      "1": "Permanent Enraged"
+    },
+    "break_parts": {
+      "0": "Jaw",
+      "1": "Breast",
+      "2": "Back",
+      "3": "Front Legs",
+      "7": "Tail"
+    }
+  },
+  "117": {
+    "name": "Crimson Fatalis (Super)",
+    "is_large": true,
+    "preview_id": 0,
+    "intro_cutscene_map": 9,
+    "special_variants": {
+      "0": "Normal",
+      "1": "Permanent Enraged"
+    },
+    "break_parts": {
+      "0": "Head",
+      "1": "Eye",
+      "2": "Wings",
+      "3": "Breast"
+    }
+  },
+  "118": {
+    "name": "Apceros",
+    "is_large": false,
+    "preview_id": 120,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {}
+  },
+  "119": {
+    "name": "Diablos (Apex)",
+    "is_large": true,
+    "preview_id": 109,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Horns",
+      "3": "Back",
+      "7": "Tail"
+    }
+  },
+  "120": {
+    "name": "Tidal Najarala (Apex)",
+    "is_large": true,
+    "preview_id": 103,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Beak",
+      "3": "Back Legs",
+      "4": "Back",
+      "5": "Tail"
+    }
+  },
+  "121": {
+    "name": "Tigrex (Apex)",
+    "is_large": true,
+    "preview_id": 11,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Head",
+      "3": "Claws",
+      "7": "Tail"
+    }
+  },
+  "122": {
+    "name": "Seregios (Apex)",
+    "is_large": true,
+    "preview_id": 99,
+    "intro_cutscene_map": null,
+    "special_variants": {},
+    "break_parts": {
+      "2": "Horn",
+      "3": "Wings",
+      "4": "Legs",
+      "7": "Tail"
+    }
+  },
+  "123": {
+    "name": "Rock (Large, light grey no spots)",
+    "is_large": false,
+    "preview_id": null,
+    "intro_cutscene_map": null,
+    "special_variants": {
+      "0": "Normal",
+      "19": "19"
+    },
+    "break_parts": {}
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "description": "Hand-maintained rules for maps. category: field | arena | everwood | unused. large_monster_areas: areas where a large monster may be placed (null = unknown).",
+  "maps": {
+    "0": {
+      "category": "unused",
+      "field_music": false,
+      "large_monster_areas": null
+    },
+    "1": {
+      "category": "field",
+      "field_music": true,
+      "large_monster_areas": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    "2": {
+      "category": "field",
+      "field_music": true,
+      "large_monster_areas": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    "3": {
+      "category": "field",
+      "field_music": true,
+      "large_monster_areas": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    "4": {
+      "category": "field",
+      "field_music": true,
+      "large_monster_areas": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9
+      ]
+    },
+    "5": {
+      "category": "field",
+      "field_music": true,
+      "large_monster_areas": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    "6": {
+      "category": "arena",
+      "field_music": false,
+      "large_monster_areas": [
+        1
+      ]
+    },
+    "7": {
+      "category": "arena",
+      "field_music": true,
+      "large_monster_areas": [
+        1
+      ]
+    },
+    "8": {
+      "category": "arena",
+      "field_music": true,
+      "large_monster_areas": [
+        1
+      ]
+    },
+    "9": {
+      "category": "arena",
+      "field_music": false,
+      "large_monster_areas": [
+        1
+      ]
+    },
+    "10": {
+      "category": "arena",
+      "field_music": true,
+      "large_monster_areas": [
+        1
+      ]
+    },
+    "11": {
+      "category": "arena",
+      "field_music": true,
+      "large_monster_areas": [
+        1
+      ]
+    },
+    "12": {
+      "category": "arena",
+      "field_music": true,
+      "large_monster_areas": [
+        1
+      ]
+    },
+    "13": {
+      "category": "everwood",
+      "field_music": true,
+      "large_monster_areas": null
+    },
+    "14": {
+      "category": "arena",
+      "field_music": false,
+      "large_monster_areas": [
+        1
+      ]
+    },
+    "15": {
+      "category": "field",
+      "field_music": true,
+      "large_monster_areas": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    "16": {
+      "category": "arena",
+      "field_music": false,
+      "large_monster_areas": [
+        1
+      ]
+    },
+    "17": {
+      "category": "field",
+      "field_music": true,
+      "large_monster_areas": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        10
+      ]
+    },
+    "18": {
+      "category": "field",
+      "field_music": true,
+      "large_monster_areas": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        10
+      ]
+    },
+    "19": {
+      "category": "arena",
+      "field_music": false,
+      "large_monster_areas": [
+        2,
+        3
+      ]
+    },
+    "20": {
+      "category": "arena",
+      "field_music": false,
+      "large_monster_areas": [
+        1
+      ]
+    },
+    "21": {
+      "category": "arena",
+      "field_music": false,
+      "large_monster_areas": [
+        1
+      ]
+    }
+  }
+}
