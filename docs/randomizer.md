@@ -25,7 +25,7 @@ memory) and `mh4u_rando.pipeline.run()` (archive in, archive out).
 | `randomize_rewards` | bool | Reward boxes become full stacks of monster materials |
 | `reward_source` | quest_monsters_and_rank / rank | Materials partly from the quest's monsters, or any of the rank |
 | `reward_item_count` | int | Different materials per reward box |
-| `randomize_supplies` | bool | Not implemented yet |
+| `randomize_supplies` | bool | Same slots, each one a random consumable (`curated/supply_pool.json`) at its maximum capacity; the Map is kept |
 | `randomize_small_monsters` | bool | Swap small species within their group |
 | `randomize_intruders` | bool | Replace intruders (never finale or cutscene monsters) |
 
@@ -35,6 +35,8 @@ memory) and `mh4u_rando.pipeline.run()` (archive in, archive out).
 * Quests without large monsters: only their intruders are randomized.
 * Arena quests (Grudge Matches) keep their arena and gear sets; their monsters
   are randomized.
+* Quests that end up on a field map always have a Map in their first supply
+  box (retail quests only omit it on single-area arenas).
 
 ## Safety net
 

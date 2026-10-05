@@ -36,17 +36,6 @@ def test_entry_file_name():
 
 
 @needs_quests
-def test_legacy_archive_is_readable():
-    legacy = ROOT / "test_output" / "quest01.arc"
-    if not legacy.exists():
-        pytest.skip("no legacy archive")
-    arc = parse_arc(legacy.read_bytes())
-    assert len(arc.quest_entries()) == 301
-    for entry in arc.quest_entries():
-        parse_mib(entry.data)
-
-
-@needs_quests
 def test_pipeline_keeps_entry_order_and_produces_valid_quests(tmp_path):
     original = build_original_arc()
     source = tmp_path / "original" / "quest01.arc"

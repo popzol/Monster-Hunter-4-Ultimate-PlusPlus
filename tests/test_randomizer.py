@@ -117,6 +117,37 @@ def test_rewards_are_full_stacks_of_monster_materials(originals, data):
                     assert item.qty == (info.carry_limit or 99)
 
 
+def test_supplies_keep_slots_and_use_full_stacks(originals, data):
+    quests, _, _ = run(originals, data, seed="SUP", randomize_supplies=True)
+    capacity = dict(data.supply_pool)
+    for name, quest in quests.items():
+        if not originals[name].all_large_monsters():
+            continue
+        assert [len(b.items) for b in quest.supplies] == [len(b.items) for b in originals[name].supplies]
+        for box in quest.supplies:
+            for slot in box.items:
+                if slot.item_id not in (0, 768):
+                    assert slot.qty == capacity[slot.item_id], data.item_name(slot.item_id)
+
+
+def test_field_maps_always_have_a_map(originals, data):
+    quests, _, _ = run(originals, data, seed="MAP", arena_maps=Frequency.NORMAL)
+    for name, quest in quests.items():
+        if data.maps[quest.map_id].category.value == "field" and quest.all_large_monsters():
+            assert any(s.item_id == 768 for b in quest.supplies for s in b.items), name
+
+
+def test_sub_quest_text_is_translated(originals, data):
+    quests, reports, _ = run(originals, data, seed="SUBTXT")
+    for r in reports:
+        if r.sub_quest:
+            monster, part = r.sub_quest
+            quest = next(q for q in quests.values() if q.quest_id == r.quest_id)
+            english = data.monsters[monster].break_parts[part]
+            assert data.part_name(english, "es") in quest.text[2][6]
+            assert english != "Dragonator"
+
+
 def test_settings_round_trip(tmp_path):
     settings = Settings(seed="XYZ", structure=StructureMode.RANDOM, arena_maps=Frequency.NEVER,
                         reward_item_count=7)

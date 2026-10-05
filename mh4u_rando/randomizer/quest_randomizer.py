@@ -14,7 +14,7 @@ from dataclasses import dataclass
 
 from ..data import GameData, QuestCategory, QuestInfo
 from ..mib import Quest
-from . import objectives, rewards, stats, text
+from . import objectives, rewards, stats, supplies, text
 from .maps import MapProfiles, candidate_maps, choose_map, place_monster
 from .other_monsters import (
     infection_for, prepare_monster, randomize_intruders, randomize_small_monsters, relocate_intruders,
@@ -144,6 +144,10 @@ def _randomize_large_monster_quest(quest: Quest, info: QuestInfo, ctx: Randomize
         report.rewards = rewards.apply_rewards(
             quest, list(dict.fromkeys(plan.monster_ids())), settings.reward_source, settings.reward_item_count,
             data, _rng(ctx, quest, "rewards"))
+
+    if settings.randomize_supplies:
+        report.supplies = supplies.randomize_supplies(quest, data, _rng(ctx, quest, "supplies"))
+    supplies.ensure_map(quest, map_info)
 
     if settings.randomize_small_monsters:
         report.small_monsters = randomize_small_monsters(quest, data, _rng(ctx, quest, "small_monsters"))

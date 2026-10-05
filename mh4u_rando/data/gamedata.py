@@ -170,6 +170,12 @@ class GameData:
     monster_groups: dict[str, tuple[int, ...]]
     quest_enums: dict[str, dict[int, str]]
     small_monster_groups: dict[str, tuple[int, ...]]  # group name -> interchangeable species
+    supply_pool: tuple[tuple[int, int], ...]          # (item id, max capacity) for supply boxes
+    part_names: dict[str, dict[str, str]]             # English part name -> language -> name
+    unbreakable_parts: frozenset[str]                 # listed as parts but not real breaks
+
+    def part_name(self, part: str, language: str) -> str:
+        return part if language == "en" else self.part_names.get(part, {}).get(language, part)
 
     def small_monster_group_of(self, monster_id: int) -> tuple[int, ...] | None:
         for members in self.small_monster_groups.values():
@@ -312,6 +318,7 @@ def load_game_data(data_dir: Path = DATA_DIR) -> GameData:
     generated, curated = data_dir / "generated", data_dir / "curated"
     maps = _build_maps(_read(generated / "maps.json"), _read(curated / "map_rules.json"))
     monster_rules = _read(curated / "monster_rules.json")
+    part_names = _read(curated / "part_names.json")
     return GameData(
         monsters=_build_monsters(_read(generated / "monsters.json"), monster_rules, maps,
                                  _read(generated / "monster_materials.json"),
@@ -324,4 +331,7 @@ def load_game_data(data_dir: Path = DATA_DIR) -> GameData:
         quest_enums={name: _int_keys(values) for name, values in _read(generated / "quest_enums.json").items()},
         small_monster_groups={name: tuple(group["monsters"]) for name, group in
                               _read(curated / "small_monster_rules.json")["groups"].items()},
+        supply_pool=tuple((i["item_id"], i["capacity"]) for i in _read(curated / "supply_pool.json")["items"]),
+        part_names=part_names["names"],
+        unbreakable_parts=frozenset(part_names["not_breakable"]),
     )

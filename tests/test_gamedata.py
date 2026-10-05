@@ -91,6 +91,21 @@ def test_every_large_monster_has_names_in_all_languages(data):
     assert data.monsters[83].name_in("es") == "Dalamadur"  # tail uses the head's name
 
 
+def test_every_break_part_is_translated(data):
+    for m in data.monsters.values():
+        for part in m.break_parts.values():
+            assert set(data.part_names[part]) == {"fr", "es", "de", "it"}, part
+    assert data.part_name("Legs", "es") == "patas"
+    assert data.part_name("Legs", "en") == "Legs"
+
+
+def test_supply_pool(data):
+    assert len(data.supply_pool) > 50
+    for item_id, capacity in data.supply_pool:
+        assert data.items[item_id].usable and capacity >= 1
+        assert data.items[item_id].name != "Map"
+
+
 def test_quest_classification(data):
     counts = {c: sum(1 for q in data.quests.values() if q.category is c) for c in QuestCategory}
     assert counts == {QuestCategory.KEY: 51, QuestCategory.URGENT: 18, QuestCategory.NORMAL: 190,

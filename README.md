@@ -24,6 +24,7 @@ Quest randomizer for Monster Hunter 4 Ultimate (3DS), producing a modified
 * [docs/game_rules.md](docs/game_rules.md) - engine rules the randomizer must respect
 * [docs/data.md](docs/data.md) - knowledge base structure and maintenance
 * [docs/randomizer.md](docs/randomizer.md) - settings and behaviour
+* [docs/roadmap.md](docs/roadmap.md) - pending work and open questions
 
 ## Usage
 

@@ -1,0 +1,360 @@
+{
+ "description": "Consumables that may appear in randomized supply boxes, with their maximum carry capacity (from fandom MH4U: Item List). Hand-picked: healing, buffs, bombs, traps, knives and whetstones. The Map is never replaced and is not part of the pool.",
+ "items": [
+  {
+   "item_id": 8,
+   "name": "Potion",
+   "capacity": 10
+  },
+  {
+   "item_id": 9,
+   "name": "Mega Potion",
+   "capacity": 10
+  },
+  {
+   "item_id": 10,
+   "name": "Nutrients",
+   "capacity": 5
+  },
+  {
+   "item_id": 11,
+   "name": "Mega Nutrients",
+   "capacity": 5
+  },
+  {
+   "item_id": 12,
+   "name": "Antidote",
+   "capacity": 10
+  },
+  {
+   "item_id": 13,
+   "name": "Immunizer",
+   "capacity": 10
+  },
+  {
+   "item_id": 14,
+   "name": "Dash Juice",
+   "capacity": 5
+  },
+  {
+   "item_id": 15,
+   "name": "Mega Dash Juice",
+   "capacity": 5
+  },
+  {
+   "item_id": 16,
+   "name": "Demondrug",
+   "capacity": 5
+  },
+  {
+   "item_id": 17,
+   "name": "Mega Demondrug",
+   "capacity": 5
+  },
+  {
+   "item_id": 18,
+   "name": "Might Pill",
+   "capacity": 5
+  },
+  {
+   "item_id": 19,
+   "name": "Armorskin",
+   "capacity": 5
+  },
+  {
+   "item_id": 20,
+   "name": "Mega Armorskin",
+   "capacity": 5
+  },
+  {
+   "item_id": 21,
+   "name": "Adamant Pill",
+   "capacity": 5
+  },
+  {
+   "item_id": 22,
+   "name": "Cool Drink",
+   "capacity": 5
+  },
+  {
+   "item_id": 23,
+   "name": "Hot Drink",
+   "capacity": 5
+  },
+  {
+   "item_id": 24,
+   "name": "Cleanser",
+   "capacity": 10
+  },
+  {
+   "item_id": 25,
+   "name": "Deodorant",
+   "capacity": 10
+  },
+  {
+   "item_id": 26,
+   "name": "Psychoserum",
+   "capacity": 10
+  },
+  {
+   "item_id": 27,
+   "name": "Herbal Medicine",
+   "capacity": 10
+  },
+  {
+   "item_id": 28,
+   "name": "Max Potion",
+   "capacity": 2
+  },
+  {
+   "item_id": 29,
+   "name": "Ancient Potion",
+   "capacity": 1
+  },
+  {
+   "item_id": 31,
+   "name": "Energy Drink",
+   "capacity": 10
+  },
+  {
+   "item_id": 34,
+   "name": "Lifepowder",
+   "capacity": 3
+  },
+  {
+   "item_id": 1715,
+   "name": "Dust of Life",
+   "capacity": 2
+  },
+  {
+   "item_id": 1728,
+   "name": "Disposable Earplugs",
+   "capacity": 3
+  },
+  {
+   "item_id": 1727,
+   "name": "Portable Steam Bomb",
+   "capacity": 3
+  },
+  {
+   "item_id": 769,
+   "name": "First-aid Med",
+   "capacity": 10
+  },
+  {
+   "item_id": 770,
+   "name": "First-aid Med+",
+   "capacity": 10
+  },
+  {
+   "item_id": 771,
+   "name": "Ration",
+   "capacity": 10
+  },
+  {
+   "item_id": 772,
+   "name": "Portable Spit",
+   "capacity": 1
+  },
+  {
+   "item_id": 773,
+   "name": "Mini Whetstone",
+   "capacity": 10
+  },
+  {
+   "item_id": 774,
+   "name": "EZ Shock Trap",
+   "capacity": 1
+  },
+  {
+   "item_id": 775,
+   "name": "EZ Flash Bomb",
+   "capacity": 1
+  },
+  {
+   "item_id": 776,
+   "name": "EZ Sonic Bomb",
+   "capacity": 1
+  },
+  {
+   "item_id": 1731,
+   "name": "EZ Farcaster",
+   "capacity": 1
+  },
+  {
+   "item_id": 777,
+   "name": "EZ Max Potion",
+   "capacity": 3
+  },
+  {
+   "item_id": 1733,
+   "name": "EZ Dust of Life",
+   "capacity": 2
+  },
+  {
+   "item_id": 778,
+   "name": "EZ Pitfall Trap",
+   "capacity": 1
+  },
+  {
+   "item_id": 779,
+   "name": "EZ Barrel Bomb L",
+   "capacity": 1
+  },
+  {
+   "item_id": 55,
+   "name": "Throwing Knife",
+   "capacity": 5
+  },
+  {
+   "item_id": 56,
+   "name": "Poison Knife",
+   "capacity": 5
+  },
+  {
+   "item_id": 57,
+   "name": "Sleep Knife",
+   "capacity": 5
+  },
+  {
+   "item_id": 58,
+   "name": "Paralysis Knife",
+   "capacity": 5
+  },
+  {
+   "item_id": 59,
+   "name": "Tranq Knife",
+   "capacity": 5
+  },
+  {
+   "item_id": 45,
+   "name": "Poisoned Meat",
+   "capacity": 10
+  },
+  {
+   "item_id": 46,
+   "name": "Tinged Meat",
+   "capacity": 10
+  },
+  {
+   "item_id": 47,
+   "name": "Drugged Meat",
+   "capacity": 10
+  },
+  {
+   "item_id": 48,
+   "name": "Rare Steak",
+   "capacity": 10
+  },
+  {
+   "item_id": 49,
+   "name": "Well-done Steak",
+   "capacity": 10
+  },
+  {
+   "item_id": 53,
+   "name": "Mosswine Jerky",
+   "capacity": 5
+  },
+  {
+   "item_id": 54,
+   "name": "Boomerang",
+   "capacity": 5
+  },
+  {
+   "item_id": 61,
+   "name": "Paintball",
+   "capacity": 99
+  },
+  {
+   "item_id": 62,
+   "name": "Flash Bomb",
+   "capacity": 5
+  },
+  {
+   "item_id": 63,
+   "name": "Sonic Bomb",
+   "capacity": 10
+  },
+  {
+   "item_id": 65,
+   "name": "Dung Bomb",
+   "capacity": 10
+  },
+  {
+   "item_id": 66,
+   "name": "Smoke Bomb",
+   "capacity": 10
+  },
+  {
+   "item_id": 67,
+   "name": "Poison Smoke Bomb",
+   "capacity": 10
+  },
+  {
+   "item_id": 68,
+   "name": "Farcaster",
+   "capacity": 1
+  },
+  {
+   "item_id": 69,
+   "name": "Tranq Bomb",
+   "capacity": 8
+  },
+  {
+   "item_id": 73,
+   "name": "Pitfall Trap",
+   "capacity": 1
+  },
+  {
+   "item_id": 74,
+   "name": "Shock Trap",
+   "capacity": 1
+  },
+  {
+   "item_id": 77,
+   "name": "Barrel Bomb S",
+   "capacity": 10
+  },
+  {
+   "item_id": 78,
+   "name": "Barrel Bomb S+",
+   "capacity": 5
+  },
+  {
+   "item_id": 79,
+   "name": "Barrel Bomb L",
+   "capacity": 3
+  },
+  {
+   "item_id": 80,
+   "name": "Barrel Bomb L+",
+   "capacity": 2
+  },
+  {
+   "item_id": 81,
+   "name": "Bounce Bomb",
+   "capacity": 10
+  },
+  {
+   "item_id": 82,
+   "name": "Bounce Bomb+",
+   "capacity": 10
+  },
+  {
+   "item_id": 83,
+   "name": "Felvine Bomb",
+   "capacity": 10
+  },
+  {
+   "item_id": 168,
+   "name": "Whetstone",
+   "capacity": 20
+  },
+  {
+   "item_id": 1732,
+   "name": "EZ Lifepowder",
+   "capacity": 2
+  }
+ ]
+}

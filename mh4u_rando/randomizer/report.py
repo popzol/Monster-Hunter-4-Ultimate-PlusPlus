@@ -19,6 +19,7 @@ class QuestReport:
     new_waves: list[list[int]] = field(default_factory=list)
     sub_quest: tuple[int, int] | None = None   # (monster id, part id)
     rewards: list[int] = field(default_factory=list)
+    supplies: list[int] = field(default_factory=list)
     intruders: list[int] = field(default_factory=list)
     small_monsters: dict[int, int] = field(default_factory=dict)
     warnings: list[str] = field(default_factory=list)
@@ -50,6 +51,8 @@ def write_spoiler_text(reports: list[QuestReport], data: GameData, seed: str, se
                 lines.append(f"    intruders: {names(r.intruders)}")
             if r.rewards:
                 lines.append("    rewards: " + ", ".join(data.item_name(i) for i in dict.fromkeys(r.rewards)))
+            if r.supplies:
+                lines.append("    supplies: " + ", ".join(data.item_name(i) for i in dict.fromkeys(r.supplies)))
         for warning in r.warnings:
             lines.append(f"    WARNING: {warning}")
     return "\n".join(lines) + "\n"

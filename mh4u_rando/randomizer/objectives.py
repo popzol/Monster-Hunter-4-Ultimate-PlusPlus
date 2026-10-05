@@ -93,7 +93,7 @@ def randomize_sub_quest(quest: Quest, plan: LineupPlan, data: GameData, rng: ran
     (the sub quest is then disabled).
     """
     candidates = [(m, part) for m in dict.fromkeys(s.monster_id for s in plan.slots() if s.is_choosable)
-                  for part in data.monsters[m].break_parts]
+                  for part, name in data.monsters[m].break_parts.items() if name not in data.unbreakable_parts]
     if not candidates:
         disable_sub_quest(quest)
         return None

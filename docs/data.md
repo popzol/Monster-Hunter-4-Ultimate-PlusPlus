@@ -18,6 +18,10 @@ data/
     progression.json    tier weights per quest rank
     quest_rules.json    category of every quest in quest01.arc
                         (key / urgent / normal / arena / expedition)
+    monster_names.json  monster names in the 5 quest languages
+    part_names.json     breakable part names in the 5 quest languages
+    small_monster_rules.json  interchangeable small monster groups
+    supply_pool.json    consumables for supply boxes, with max capacity
   gamedata.py           loads and validates everything -> GameData
 ```
 

@@ -15,7 +15,6 @@ from .settings import TextMode
 YOU_WILL_FACE = {"en": "You will face:", "fr": "Vous affronterez :", "es": "Te enfrentarás a:",
                  "de": "Du triffst auf:", "it": "Affronterai:"}
 NO_SUB_QUEST = {"en": "None", "fr": "Aucun", "es": "Ninguno", "de": "-", "it": "Nessuno"}
-# Part names are only known in English.
 BREAK_PART = {"en": "Break {monster}: {part}", "fr": "Briser {monster} : {part}",
               "es": "Rompe {monster}: {part}", "de": "{monster}: {part} brechen",
               "it": "Rompi {monster}: {part}"}
@@ -70,4 +69,4 @@ def set_sub_quest_text(quest: Quest, data: GameData, target: tuple[int, int] | N
             monster_id, part = target
             info = data.monsters[monster_id]
             quest.text[li][TEXT_SUB_OBJECTIVE] = BREAK_PART[lang].format(
-                monster=info.name_in(lang), part=info.break_parts[part])
+                monster=info.name_in(lang), part=data.part_name(info.break_parts[part], lang))
