@@ -51,6 +51,24 @@ Dalamadur (24) and Shah Dalamadur (110) are two monster entries: head and tail
 (`spawns_with` / `body_part_of`). Tails are never chosen on their own.
 — *Retail*
 
+### Apex and Frenzy
+
+The monster entry's `infection` byte holds its Frenzy/Apex state. Apex
+monsters always use an Apex value (9, 18 or 20) in retail quests; the
+randomizer gives replacements the Apex state only when they are Apex
+(`is_apex`) and keeps Frenzy (1–3) only on species seen frenzied in retail
+quests (`can_be_frenzied`). Elder dragons are never frenzied. — *Retail*
+
+### Companions
+
+Entries with quantity > 1 (Seltas ×5 or ×99 escorting a Seltas Queen) are a
+swarm, not a single monster. The randomizer keeps them unchanged. — *Retail*
+
+### Scripted positions
+
+Dalamadur and Shah Dalamadur (head and tail) always spawn in area 1 at
+(0, 0, 0) in retail quests (`fixed_position`). — *Retail*
+
 ### Map-bound monsters
 
 `allowed_maps` in `curated/monster_rules.json`:
@@ -72,6 +90,15 @@ Dalamadur (24) and Shah Dalamadur (110) are two monster entries: head and tail
 * If the objectives do not match the monsters, killing everything can complete
   the sub quest instead of the main quest. The sub objective must therefore be
   randomized too. — *Confirmed*
+* Some quests are won by slaying small monsters or delivering items even
+  though large monsters are present; their main objectives are kept.
+* Several sub quests (e.g. Harvest Tours) ask to hunt the **intruder**. When
+  the intruder changes, the objective and its text are re-pointed to the new
+  intruder. — *Retail*
+* Capture objectives become Hunt (kill or capture): elder dragons and other
+  monsters cannot be captured. — *Design decision*
+* Break-part sub objectives use type `BREAK_PART`, the monster as target and
+  the part id as quantity (part ids in `generated/monsters.json`). — *Retail*
 
 ## Stats
 
@@ -114,6 +141,22 @@ original monster's.
   large monsters. — *User knowledge*
 * Maps without field music (6, 9, 14, 16, 19, 20, 21) are silent unless a
   monster with its own theme (`own_music`) is present. — *Legacy knowledge*
+
+## Moving a quest to another map
+
+* The small monster table has **one sub table per map area** (10 on the
+  Ancestral Steppe, 11 on the Dunes, 3 on arenas...). Changing the map without
+  replacing it hands the game a table that does not match the map. — *Retail*
+* Spawn mode (camp / random / elder dragon fight) and arena fence settings
+  also depend on the map.
+* The randomizer therefore copies these fields from a retail quest of the
+  target map with the closest rank (`MapProfiles` in
+  `randomizer/maps.py`). Small monster spawn conditions are cleared because
+  they refer to the original quest's events.
+* Retail quests never have intruders on arena maps; intruders are removed
+  when a quest moves to one. — *Retail*
+* The music and "one monster per wave on arenas" rules only apply when a
+  quest moves: some retail arena quests have two monsters at once.
 
 ## Spawn positions
 

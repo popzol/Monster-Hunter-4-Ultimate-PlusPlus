@@ -9,6 +9,9 @@ Quest randomizer for Monster Hunter 4 Ultimate (3DS), producing a modified
 |---|---|
 | `mh4u_rando/mib/` | Read/write quest files (`.mib`) as an in-memory `Quest` model |
 | `mh4u_rando/data/` | Game knowledge base: monsters, maps, items, engine rules |
+| `mh4u_rando/randomizer/` | Randomization logic and settings |
+| `mh4u_rando/arc/` | ARC archive reader/writer |
+| `mh4u_rando/pipeline.py`, `__main__.py` | Archive-to-archive run and command line |
 | `tools/` | Maintenance scripts (`build_gamedata.py`) |
 | `tests/` | `pytest` suite |
 | `docs/` | Format and rules documentation |
@@ -20,6 +23,17 @@ Quest randomizer for Monster Hunter 4 Ultimate (3DS), producing a modified
 * [docs/mib_format.md](docs/mib_format.md) - binary format of quest files
 * [docs/game_rules.md](docs/game_rules.md) - engine rules the randomizer must respect
 * [docs/data.md](docs/data.md) - knowledge base structure and maintenance
+* [docs/randomizer.md](docs/randomizer.md) - settings and behaviour
+
+## Usage
+
+```
+python -m mh4u_rando --arc path/to/original/quest01.arc --out output_folder [--seed S] [--preset settings.json]
+```
+
+Copy `output_folder/quest01.arc` to the emulator's mod folder
+(`romfs/loc/data`). The spoiler log and the settings used are written next
+to it.
 
 ## Development
 
