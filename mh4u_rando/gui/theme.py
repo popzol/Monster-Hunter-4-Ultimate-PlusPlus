@@ -1,31 +1,39 @@
 """Colour palette and widget styling.
 
-Slate surfaces with an amber accent, in light and dark variants. Colours are
-(light, dark) pairs, as customtkinter expects.
+Navy surfaces (#1B263B) with an orange accent (#FFA500) and a neon green
+(#39FF14) reserved for success and progress. Colours are (light, dark) pairs,
+as customtkinter expects; the light variants darken the accents enough to
+read on white.
 """
 
 import sys
 
 import customtkinter as ctk
 
-ACCENT = ("#B86E0C", "#E0942A")
-ACCENT_HOVER = ("#94570A", "#BE7A1C")
-ACCENT_TEXT = ("#FFFFFF", "#17130D")
-# Selected segment (tabs, language, appearance): segmented buttons use one text colour for every
-# segment, so the selected amber is tuned to contrast with TEXT in each mode.
-SEGMENT_SELECTED = ("#E9AE55", "#A8661A")
-SEGMENT_SELECTED_HOVER = ("#DD9F44", "#94590F")
-BACKGROUND = ("#EFEBE4", "#14171C")
-SIDEBAR = ("#E4DED4", "#1A1E25")
-CARD = ("#F8F6F2", "#20252D")
-CARD_BORDER = ("#D3CABC", "#303844")
-INPUT = ("#FFFFFF", "#12151A")
-INPUT_BORDER = ("#C6BCAD", "#3A4350")
-TEXT = ("#20242A", "#E8E3DA")
-TEXT_MUTED = ("#646C76", "#9AA4B0")
-NEUTRAL = ("#D8D0C4", "#2B323C")
-NEUTRAL_HOVER = ("#C9C0B2", "#38414D")
-CONTROL_BORDER = ("#8A8173", "#6E7987")
+NAVY = "#1B263B"
+ORANGE = "#FFA500"
+NEON = "#39FF14"
+
+ACCENT = (ORANGE, ORANGE)                     # filled controls: main button, checkboxes, radios
+ACCENT_HOVER = ("#E69500", "#E69500")
+ACCENT_TEXT = (NAVY, NAVY)                    # text and check marks on the accent
+HEADING = ("#975500", ORANGE)                 # accent used as text (titles, headings)
+SUCCESS = ("#16780A", NEON)
+# Segmented buttons (tabs, language, appearance) use one text colour for every segment,
+# so the selected segment is a lighter surface instead of the accent.
+SEGMENT_SELECTED = ("#B9CBE3", "#34507C")
+SEGMENT_SELECTED_HOVER = ("#A9BEDB", "#3D5C8C")
+BACKGROUND = ("#EEF1F6", "#111A2B")
+SIDEBAR = ("#E1E7F0", NAVY)
+CARD = ("#FFFFFF", "#18233A")
+CARD_BORDER = ("#CDD5E1", "#2A3A57")
+INPUT = ("#FFFFFF", "#0D1524")
+INPUT_BORDER = ("#B8C2D1", "#34466A")
+TEXT = (NAVY, "#E6EBF2")
+TEXT_MUTED = ("#56677E", "#93A2B8")
+NEUTRAL = ("#D9E0EA", "#22314D")
+NEUTRAL_HOVER = ("#C8D1DE", "#2C3E60")
+CONTROL_BORDER = ("#7D8AA0", "#6F82A3")
 
 FONT_FAMILY = "Segoe UI" if sys.platform == "win32" else "Roboto"
 
@@ -51,7 +59,7 @@ def apply_theme() -> None:
                                "selected_hover_color": SEGMENT_SELECTED_HOVER,
                                "unselected_color": NEUTRAL, "unselected_hover_color": NEUTRAL_HOVER,
                                "text_color": TEXT, "corner_radius": 8},
-        "CTkProgressBar": {"fg_color": NEUTRAL, "progress_color": ACCENT},
+        "CTkProgressBar": {"fg_color": NEUTRAL, "progress_color": SUCCESS},
         "CTkOptionMenu": {"fg_color": NEUTRAL, "button_color": NEUTRAL_HOVER, "button_hover_color": CARD_BORDER,
                           "text_color": TEXT, "corner_radius": 8},
         "CTkTextbox": {"fg_color": INPUT, "text_color": TEXT, "corner_radius": 8},

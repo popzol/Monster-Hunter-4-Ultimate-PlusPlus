@@ -7,6 +7,16 @@ is done or discovered.
 
 * **Package the GUI** as an .exe with PyInstaller (the GUI itself is done:
   `python -m mh4u_rando.gui`).
+* **HUD / one-screen play** (docs/hud_layout.md, docs/hud_code.md):
+  * results of probe 5: minimap icon size, mount gauge, L + X target switch;
+  * wire the executable patches into the pipeline (`code.ips` built from the
+    update's executable, merged with equipment) and decide whether L + X is
+    its own option;
+  * "X" hint next to the item selector's L hints (insert a pane in `ui205`);
+  * show the large-monster target icon on the top screen, left of the item
+    selector;
+  * the minimap does not shrink without the Map item;
+  * base game (no update) support for the executable patches (signatures).
 * **Species base health**: retail analysis shows the stat indices depend on
   the quest rank only (docs/game_rules.md, "Stats"). Find each monster's base
   HP (wiki data or in-game measurement) so `stats.py` can scale indices by
@@ -19,6 +29,18 @@ is done or discovered.
 
 ## To verify in-game
 
+* HUD size: the hold and fishing gauges and the Frenzy icon (scaled, never
+  seen); 90/80/60 %; on a real 3DS with Luma3DS (does the mod's
+  `core_common.arc` override the update's there too?).
+* Equipment randomizer with every option on: smithy lists, crafting and
+  upgrading, looks in quests, armor model sets missing a part, weapons that
+  gained an element (the code.ips mechanism itself is verified).
+* Felyne gear: new recipes, stats and looks (all decoded tables verified
+  against wiki data only).
+* Armor skills: pieces with 4-5 skills, high points (up to 10) and skill trees
+  that the original armor of that part never had (all decode to valid trees).
+* Dual-element Dual Blades: only the element stored in the weapon record is
+  changed; the other one lives in an unknown table.
 * Random structure (`structure = random`).
 * Small monster randomization (`randomize_small_monsters`).
 * Monster names written by hand (`verified: false` in
@@ -42,6 +64,9 @@ is done or discovered.
 * Capture quests become Hunt, but their text still says "Captura un X"
   (capturing still works, killing also completes the quest).
 * Encrypted DLC quests (`Documentation/mib.js` has the Blowfish keys).
+* Equipment: class-specific weapon data (phials, shells, notes, kinsect, ammo,
+  bow charges), Felyne set target/health bonus (docs/equipment_data.md lists what
+  is decoded).
 
 ## Unknown format fields
 

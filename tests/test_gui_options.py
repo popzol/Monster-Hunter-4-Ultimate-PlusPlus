@@ -10,7 +10,7 @@ NOT_IN_PANELS = {"seed"}  # shown in the sidebar
 
 
 def test_every_setting_has_exactly_one_option():
-    names = [o.field for o in all_options()]
+    names = [o.field for o in all_options()] + [o.range_to for o in all_options() if o.range_to]
     assert len(names) == len(set(names))
     assert set(names) == {f.name for f in fields(Settings)} - NOT_IN_PANELS
 
@@ -25,13 +25,30 @@ def test_every_enum_value_has_a_choice():
             assert option.label.is_complete() and not option.choices, option.field
         elif isinstance(value, int):
             assert option.minimum <= value <= option.maximum, option.field
+            if option.range_to:
+                high = getattr(defaults, option.range_to)
+                assert value <= high <= option.maximum, option.range_to
+
+
+def test_defaults_are_vanilla_and_shown_first():
+    defaults = Settings()
+    restrictions = {"always_music", "one_monster_per_wave_on_arenas"}  # limit randomness: on by default
+    for option in all_options():
+        value = getattr(defaults, option.field)
+        if option.choices:
+            assert option.choices[0].value == value, option.field
+        elif isinstance(value, bool):
+            assert value == (option.field in restrictions), option.field
+    assert not defaults.randomizes_equipment
 
 
 def test_requirements_point_at_boolean_settings():
     defaults = Settings()
     for option in all_options():
         if option.requires:
-            assert isinstance(getattr(defaults, option.requires), bool), option.field
+            master = getattr(defaults, option.requires)
+            # A bool switch, or an enum whose first choice (the default) means "off".
+            assert isinstance(master, bool) or master is type(master)(list(type(master))[0]), option.field
 
 
 def test_every_text_is_translated():

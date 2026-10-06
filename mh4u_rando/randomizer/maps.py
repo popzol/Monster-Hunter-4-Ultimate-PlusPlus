@@ -11,12 +11,15 @@ import random
 from dataclasses import dataclass, field
 
 from ..data import GameData, MapCategory, MapInfo, QuestCategory
+from ..data.tuning import tuning
 from ..mib import Monster, Quest
 from .plan import LineupPlan
 from .rng import weighted_choice
 from .settings import Frequency, Settings
 
-FREQUENCY_WEIGHT = {Frequency.NORMAL: 1.0, Frequency.RARE: 0.2, Frequency.NEVER: 0.0}
+def frequency_weight(frequency: Frequency) -> float:
+    return {Frequency.NORMAL: 1.0, Frequency.RARE: tuning("quests", "rare_map_weight"),
+            Frequency.NEVER: 0.0}[frequency]
 NEUTRAL_POSITION = (0.0, 0.0, 0.0)
 
 
@@ -88,9 +91,9 @@ def _category_weight(map_info: MapInfo, settings: Settings) -> float:
     if map_info.category is MapCategory.UNUSED:
         return 0.0
     if map_info.category is MapCategory.ARENA:
-        return FREQUENCY_WEIGHT[settings.arena_maps]
+        return frequency_weight(settings.arena_maps)
     if map_info.category is MapCategory.EVERWOOD:
-        return FREQUENCY_WEIGHT[settings.everwood]
+        return frequency_weight(settings.everwood)
     return 1.0
 
 
@@ -112,7 +115,7 @@ def choose_map(plan: LineupPlan, possible: frozenset[int], settings: Settings, d
         if moved and settings.one_monster_per_wave_on_arenas and map_info.is_arena and _has_crowded_wave(plan):
             continue
         weight = _category_weight(map_info, settings) if settings.randomize_maps else 1.0
-        weights[map_id] = weight if weight > 0 else FREQUENCY_WEIGHT[Frequency.RARE]  # staying is always valid
+        weights[map_id] = weight if weight > 0 else frequency_weight(Frequency.RARE)  # staying is always valid
     if not weights:
         return None
     return weighted_choice(rng, weights)

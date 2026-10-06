@@ -1,0 +1,55 @@
+{
+  "description": "Every arbitrary probability and parameter of the randomizer. Each entry is {\"value\": ..., \"description\": ...}; edit the value, keep the description up to date. Loaded and checked by mh4u_rando/data/tuning.py; documented in docs/data.md.",
+  "quests": {
+    "rare_map_weight": {
+      "value": 0.2,
+      "description": "Relative weight of a map category set to 'occasional' (arenas, Everwood); a normal map weighs 1."
+    },
+    "quest_monster_material_share": {
+      "value": 0.6,
+      "description": "Rewards 'quest monsters and rank': share of the materials of a reward box taken from the quest's own monsters (the rest from the whole rank)."
+    },
+    "balanced_tier_range": {
+      "value": 2,
+      "description": "Progression 'balanced': a monster may be replaced by one up to this many tiers easier or harder."
+    },
+    "random_structure_max_waves": {
+      "value": 3,
+      "description": "Structure 'random': maximum number of waves of a quest."
+    },
+    "health_ratio_per_tier": {
+      "value": 0.85,
+      "description": "Adjust health: health index multiplied by this for every tier the new monster is above the replaced one (divided when below). Provisional formula."
+    },
+    "attack_ratio_per_tier": {
+      "value": 0.93,
+      "description": "Adjust attack: like health_ratio_per_tier, for the attack index."
+    }
+  },
+  "equipment": {
+    "progressive_sigma": {
+      "value": 0.08,
+      "description": "Stat mode 'progressive': standard deviation of the bell curve of the change (0.08 = most changes within ±8 %)."
+    },
+    "progressive_max_change": {
+      "value": 0.2,
+      "description": "Stat mode 'progressive': the change is clipped to ±this share of the original value."
+    },
+    "skill_negative_points_probability": {
+      "value": {"-1": 0.2, "-2": 0.05, "-3": 0.01},
+      "description": "Armor skills: probability that a piece gets one negative skill with these points (at most one per piece; the rest of the time none). Its points are added to the positive skills."
+    },
+    "skill_points_decay": {
+      "value": 0.6,
+      "description": "Armor skills, chaotic: each extra point of a positive skill is this many times as likely as one point less (0.6: +1 is the most common, +5 about 13 times rarer)."
+    },
+    "skill_count_weights": {
+      "value": null,
+      "description": "Armor skills: relative weight of each number of skills of a piece, e.g. {\"1\": 1, \"2\": 2, \"3\": 3}; null = every number from 1 to the user's maximum equally likely."
+    },
+    "skill_excluded_trees": {
+      "value": ["Torso Up"],
+      "description": "Armor skills: skill trees never given by the randomizer (English names)."
+    }
+  }
+}

@@ -3,6 +3,7 @@
 import random
 
 from ..data import GameData
+from ..data.tuning import tuning
 from ..mib import Quest
 from .plan import LineupPlan, Slot
 
@@ -10,7 +11,6 @@ from .plan import LineupPlan, Slot
 MAX_LARGE_MONSTERS = 5
 # Random structures leave room for a Dalamadur tail.
 RANDOM_MAX_TOTAL = MAX_LARGE_MONSTERS - 1
-RANDOM_MAX_WAVES = 3
 RANDOM_MAX_PER_WAVE = 2
 
 
@@ -59,7 +59,7 @@ def random_skeleton(quest: Quest, data: GameData, rng: random.Random) -> LineupP
     templates = [s for s in original.slots() if s.is_choosable] or original.slots()
     reference_tier = max((s.original_tier for s in templates if s.original_tier), default=None)
 
-    wave_count = rng.randint(1, RANDOM_MAX_WAVES)
+    wave_count = rng.randint(1, tuning("quests", "random_structure_max_waves"))
     sizes = [rng.randint(1, RANDOM_MAX_PER_WAVE) for _ in range(wave_count)]
     while sum(sizes) > RANDOM_MAX_TOTAL:
         sizes[sizes.index(max(sizes))] -= 1

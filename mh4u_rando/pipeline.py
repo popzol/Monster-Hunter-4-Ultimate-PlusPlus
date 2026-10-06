@@ -1,7 +1,19 @@
-"""End-to-end run: original quest01.arc -> randomized quest01.arc + spoiler log.
+"""End-to-end run: the game ROM -> a Citra/Azahar mod folder + spoiler logs.
 
-The original archive is never modified; every run starts from it, so no
-backup copy of the extracted quests is needed.
+Input: a decrypted .3ds (quest01.arc and the executable are read from it in
+memory) or, for advanced use and tests, a loose quest01.arc plus an optional
+executable (code.bin or the update's .app).
+
+Output layout (copy its contents into load/mods/0004000000126100/):
+
+    romfs/loc/data/quest01.arc     randomized quests
+    romfs/<lang>/data/core_*.arc   smaller top-screen HUD (only with a HUD size below 100 %)
+    exefs/code.ips                 equipment changes (only when equipment is randomized)
+    spoiler_<seed>.txt/.json       quest log
+    equipment_<seed>.txt/.json     equipment log
+    settings_<seed>.json           preset used
+
+The original files are never modified; every run starts from them.
 """
 
 from collections.abc import Callable
@@ -10,12 +22,20 @@ from pathlib import Path
 
 from .arc import parse_arc, write_arc
 from .data import GameData, load_game_data
+from .exefs import ExtractError, RomFS, is_container, load_code, make_ips
+from .hud import UPDATE_TITLE_ID, find_update, remove_hud_files, write_hud_files
 from .mib import Quest, parse_mib, write_mib
 from .randomizer import (
-    QuestReport, Settings, randomize_quests, unrandomized_quests, write_spoiler_json, write_spoiler_text,
+    HudScale, QuestReport, Settings, randomize_quests, unrandomized_quests, write_spoiler_json, write_spoiler_text,
 )
+from .randomizer.equipment import EquipmentReport, randomize_equipment, write_equipment_json, write_equipment_text
 
 ARC_NAME = "quest01.arc"
+ROMFS_ARC_PATH = "loc/data/quest01.arc"
+ARC_DIR = Path("romfs") / "loc" / "data"
+IPS_PATH = Path("exefs") / "code.ips"
+# Stages announced through run(stage=...), in order (equipment only when it is randomized).
+STAGES = ("rom", "quests", "write", "equipment")
 # Above this share of quests differing from retail, the input is probably not an original archive.
 MODIFIED_INPUT_THRESHOLD = 0.1
 
@@ -39,6 +59,16 @@ class RunResult:
     seed: str
     input_check: InputCheck
     unrandomized: list[QuestReport]
+    ips_path: Path | None = None
+    equipment_spoiler_path: Path | None = None
+    equipment_report: EquipmentReport | None = None
+    hud_scale: HudScale = HudScale.FULL
+    hud_paths: list[Path] = field(default_factory=list)  # files of the smaller HUD
+    hud_update: Path | None = None  # update .app used for the HUD (prompts over the characters need it)
+
+    @property
+    def output_dir(self) -> Path:
+        return self.spoiler_path.parent
 
     @property
     def warnings(self) -> list[str]:
@@ -46,8 +76,28 @@ class RunResult:
                [f"{r.quest_id}: not randomized" for r in self.unrandomized]
 
 
-def read_quests(original_arc: Path):
-    arc = parse_arc(Path(original_arc).read_bytes())
+def mod_folder(output_dir: Path) -> Path:
+    """Root of the mod. Older versions wrote quest01.arc straight into <mod>/romfs/loc/data, so a folder
+    chosen that way is mapped back to the mod root."""
+    output_dir = Path(output_dir)
+    if [part.lower() for part in output_dir.parts[-len(ARC_DIR.parts):]] == list(ARC_DIR.parts):
+        return output_dir.parents[len(ARC_DIR.parts) - 1]
+    return output_dir
+
+
+def output_arc_path(output_dir: Path) -> Path:
+    return mod_folder(output_dir) / ARC_DIR / ARC_NAME
+
+
+def read_quest_arc(game: Path) -> bytes:
+    """quest01.arc from a ROM, or the file itself if `game` is a loose quest01.arc."""
+    if is_container(game):
+        return RomFS(game).read(ROMFS_ARC_PATH)
+    return Path(game).read_bytes()
+
+
+def read_quests(game: Path):
+    arc = parse_arc(read_quest_arc(game))
     entries = {entry.file_name: entry for entry in arc.quest_entries()}
     return arc, entries, {name: parse_mib(entry.data) for name, entry in entries.items()}
 
@@ -64,29 +114,90 @@ def check_input(quests: dict[str, Quest], data: GameData) -> InputCheck:
     return check
 
 
-def inspect_arc(original_arc: Path) -> InputCheck:
-    _, _, quests = read_quests(original_arc)
+def inspect_game(game: Path) -> InputCheck:
+    _, _, quests = read_quests(game)
     return check_input(quests, load_game_data())
 
 
-def run(original_arc: Path, output_dir: Path, settings: Settings,
-        progress: Callable[[int, int, QuestReport], None] | None = None) -> RunResult:
+def open_update(update_path: Path | None) -> tuple[RomFS | None, Path | None]:
+    """The update's RomFS for the HUD: `update_path`, or else the one installed in an emulator (if readable)."""
+    explicit = update_path is not None
+    path = update_path if explicit else find_update()
+    if path is None:
+        return None, None
+    try:
+        update = RomFS(path)
+        if update.title_id != UPDATE_TITLE_ID:
+            raise ExtractError(f"{path.name} is not the MH4U update (title {update.title_id})")
+    except (OSError, ExtractError):
+        if explicit:
+            raise
+        return None, None
+    return update, path
+
+
+def run(game: Path, output_dir: Path, settings: Settings,
+        progress: Callable[[int, int, QuestReport], None] | None = None,
+        code_path: Path | None = None, stage: Callable[[str], None] | None = None,
+        update_path: Path | None = None) -> RunResult:
+    """`game` is the ROM or a loose quest01.arc. The executable for equipment comes from `code_path`
+    (code.bin, .3ds or update .app) or, by default, from the ROM. The HUD size also needs the ROM, plus the
+    update's 00000000.app (`update_path`, or the one installed in Citra/Azahar/Lime3DS) for the prompts over
+    the characters. `stage` is told when each of STAGES starts (for progress displays)."""
+    announce = stage or (lambda _name: None)
+    announce("rom")
     data = load_game_data()
-    arc, entries, quests = read_quests(original_arc)
+    code = None
+    if settings.randomizes_equipment:
+        if code_path is None and not is_container(game):
+            raise ValueError("equipment randomization needs the game ROM (or its code.bin)")
+        code = load_code(code_path or game)  # fail before any work if the executable is unsupported
+    resize_hud = settings.hud_scale != HudScale.FULL
+    update = update_used = None
+    if resize_hud:
+        if not is_container(game):
+            raise ValueError("the HUD size needs the game ROM")
+        update, update_used = open_update(update_path)
+    arc, entries, quests = read_quests(game)
     input_check = check_input(quests, data)
 
+    announce("quests")
     reports = randomize_quests(quests, settings, data, progress)
 
+    announce("write")
     for name, quest in quests.items():
         entries[name].data = write_mib(quest)
 
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    arc_path = output_dir / ARC_NAME
+    output_dir = mod_folder(output_dir)
+    arc_path = output_arc_path(output_dir)
+    arc_path.parent.mkdir(parents=True, exist_ok=True)
     arc_path.write_bytes(write_arc(arc))
     spoiler_path = output_dir / f"spoiler_{settings.seed}.txt"
     spoiler_path.write_text(write_spoiler_text(reports, data, settings.seed, settings.to_dict()), encoding="utf-8")
     (output_dir / f"spoiler_{settings.seed}.json").write_text(write_spoiler_json(reports), encoding="utf-8")
     settings.save(output_dir / f"settings_{settings.seed}.json")
-    return RunResult(arc_path=arc_path, spoiler_path=spoiler_path, reports=reports, seed=settings.seed,
-                     input_check=input_check, unrandomized=unrandomized_quests(reports, settings))
+    result = RunResult(arc_path=arc_path, spoiler_path=spoiler_path, reports=reports, seed=settings.seed,
+                       input_check=input_check, unrandomized=unrandomized_quests(reports, settings))
+    if resize_hud:
+        result.hud_scale = HudScale(settings.hud_scale)
+        result.hud_paths = write_hud_files(output_dir, RomFS(game), update, result.hud_scale.factor)
+        result.hud_update = update_used
+    else:
+        remove_hud_files(output_dir)  # files left by an earlier run would still be loaded
+
+    ips_path = output_dir / IPS_PATH
+    if code is None:
+        ips_path.unlink(missing_ok=True)  # a patch left by an earlier run would still be applied
+        return result
+    announce("equipment")
+    equipment = randomize_equipment(code, settings, data)
+    ips_path.parent.mkdir(parents=True, exist_ok=True)
+    ips_path.write_bytes(make_ips(code, equipment.code))
+    result.ips_path = ips_path
+    result.equipment_report = equipment.report
+    result.equipment_spoiler_path = output_dir / f"equipment_{settings.seed}.txt"
+    result.equipment_spoiler_path.write_text(
+        write_equipment_text(equipment.report, equipment.catalog, data, settings.seed), encoding="utf-8")
+    (output_dir / f"equipment_{settings.seed}.json").write_text(write_equipment_json(equipment.report),
+                                                                encoding="utf-8")
+    return result

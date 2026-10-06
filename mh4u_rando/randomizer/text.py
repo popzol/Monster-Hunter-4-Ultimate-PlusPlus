@@ -12,8 +12,14 @@ from ..mib.model import TEXT_DESCRIPTION, TEXT_MAIN_OBJECTIVE, TEXT_SUB_OBJECTIV
 from .plan import LineupPlan
 from .settings import TextMode
 
-YOU_WILL_FACE = {"en": "You will face:", "fr": "Vous affronterez :", "es": "Te enfrentarás a:",
-                 "de": "Du triffst auf:", "it": "Affronterai:"}
+# Objectives in the style of the retail ones; no articles, to avoid grammatical gender per monster.
+HUNT_ONE = {"en": "Hunt {a}", "fr": "Chassez {a}", "es": "Caza a {a}", "de": "Jage {a}", "it": "Caccia {a}"}
+HUNT_TWO = {"en": "Hunt {a} and {b}", "fr": "Chassez {a} et {b}", "es": "Caza a {a} y {b}",
+            "de": "Jage {a} und {b}", "it": "Caccia {a} e {b}"}
+HUNT_ALL = {"en": "Hunt all large monsters", "fr": "Chassez tous les grands monstres",
+            "es": "Caza a todos los monstruos grandes", "de": "Jage alle großen Monster",
+            "it": "Caccia tutti i mostri grandi"}
+TARGETS = {"en": "Targets:", "fr": "Cibles :", "es": "Objetivos:", "de": "Ziele:", "it": "Obiettivi:"}
 NO_SUB_QUEST = {"en": "None", "fr": "Aucun", "es": "Ninguno", "de": "-", "it": "Nessuno"}
 BREAK_PART = {"en": "Break {monster}: {part}", "fr": "Briser {monster} : {part}",
               "es": "Rompe {monster}: {part}", "de": "{monster}: {part} brechen",
@@ -26,10 +32,22 @@ def apply_text(quest: Quest, plan: LineupPlan, data: GameData, mode: TextMode) -
     if mode is TextMode.REPLACE_NAMES:
         _replace_names(quest, plan, data)
     elif mode is TextMode.LIST_MONSTERS:
-        names = list(dict.fromkeys(s.monster_id for s in plan.slots() if not s.is_body_part))
-        for li, lang in enumerate(LANGUAGES):
-            listed = ", ".join(data.monsters[m].name_in(lang) for m in names)
-            quest.text[li][TEXT_MAIN_OBJECTIVE] = f"{YOU_WILL_FACE[lang]}\n{listed}"
+        _write_hunt_objective(quest, plan, data)
+
+
+def _write_hunt_objective(quest: Quest, plan: LineupPlan, data: GameData) -> None:
+    """"Hunt A" / "Hunt A and B"; with 3+ species "Hunt all large monsters" and the list atop the description."""
+    ids = list(dict.fromkeys(s.monster_id for s in plan.slots() if not s.is_body_part))
+    for li, lang in enumerate(LANGUAGES):
+        names = [data.monsters[m].name_in(lang) for m in ids]
+        if len(names) == 1:
+            quest.text[li][TEXT_MAIN_OBJECTIVE] = HUNT_ONE[lang].format(a=names[0])
+        elif len(names) == 2:
+            quest.text[li][TEXT_MAIN_OBJECTIVE] = HUNT_TWO[lang].format(a=names[0], b=names[1])
+        elif names:
+            quest.text[li][TEXT_MAIN_OBJECTIVE] = HUNT_ALL[lang]
+            description = quest.text[li][TEXT_DESCRIPTION]
+            quest.text[li][TEXT_DESCRIPTION] = f"{TARGETS[lang]} {', '.join(names)}\n{description}"
 
 
 def _replace_names(quest: Quest, plan: LineupPlan, data: GameData) -> None:

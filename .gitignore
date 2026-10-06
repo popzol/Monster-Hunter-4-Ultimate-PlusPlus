@@ -9,6 +9,14 @@ Scripts/
 # Game data (extracted from a personal dump; never commit)
 *.arc
 *.1BBFD18E
+Documentation/0004000000126100/
+Documentation/exefs/
+Documentation/updatefiles/
 
 # Generated output
 test_output/
+
+# Generated mods, spoilers and screenshots of the game (stay on disk)
+output/
+Documentation/*.PNG
+Documentation/*.png

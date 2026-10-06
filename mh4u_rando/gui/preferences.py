@@ -9,7 +9,8 @@ PREFERENCES_PATH = Path.home() / ".mh4u_rando" / "gui.json"
 
 @dataclass
 class Preferences:
-    original_arc: str = ""
+    rom_path: str = ""
+    update_path: str = ""      # optional: the update's 00000000.app (HUD size)
     output_dir: str = str(Path.cwd() / "output")
     last_settings: dict = field(default_factory=dict)
     language: str = "es"

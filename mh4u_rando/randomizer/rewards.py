@@ -8,13 +8,13 @@ and its full carry limit, so each draw hands out a whole stack.
 import random
 
 from ..data import GameData, ItemInfo
+from ..data.tuning import tuning
 from ..mib import LootItem, LootTable, Quest
 from .settings import RewardSource
 
 DEFAULT_LOOT_FLAG = 0x8000
 DEFAULT_STACK = 99
 # Share of items taken from the quest's own monsters (QUEST_MONSTERS_AND_RANK).
-QUEST_MONSTER_SHARE = 0.6
 
 
 def rarity_band(quest_rank: int) -> range:
@@ -38,7 +38,7 @@ def choose_reward_items(quest_rank: int, monster_ids: list[int], source: RewardS
     if source is RewardSource.QUEST_MONSTERS_AND_RANK:
         own = {i for m in monster_ids for i in data.monsters[m].material_ids}
         pool = gear_materials(data, quest_rank, own) or [data.items[i] for i in own if data.items[i].is_gear_material]
-        wanted = max(1, round(count * QUEST_MONSTER_SHARE))
+        wanted = max(1, round(count * tuning("quests", "quest_monster_material_share")))
         chosen += rng.sample(pool, min(wanted, len(pool)))
     rank_pool = [i for i in gear_materials(data, quest_rank) if i not in chosen]
     chosen += rng.sample(rank_pool, min(count - len(chosen), len(rank_pool)))

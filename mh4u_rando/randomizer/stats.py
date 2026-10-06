@@ -13,12 +13,11 @@ replaced monster lowers the indices by a fixed ratio, and vice versa.
 import copy
 
 from ..data import GameData
+from ..data.tuning import tuning
 from ..mib import MetaEntry, Quest
 from .plan import LineupPlan
 from .structure import MAX_LARGE_MONSTERS
 
-HEALTH_RATIO_PER_TIER = 0.85
-ATTACK_RATIO_PER_TIER = 0.93
 # Range of indices observed in retail quests; never leave it.
 HEALTH_INDEX_RANGE = (14, 95)
 ATTACK_INDEX_RANGE = (13, 117)
@@ -59,8 +58,8 @@ def make_monsters_weak(quest: Quest) -> None:
 
 def scale_meta(meta: MetaEntry, tier_delta: int) -> None:
     """tier_delta > 0: the new monster is easier than the replaced one."""
-    meta.hp = _scale(meta.hp, HEALTH_RATIO_PER_TIER, tier_delta, HEALTH_INDEX_RANGE)
-    meta.atk = _scale(meta.atk, ATTACK_RATIO_PER_TIER, tier_delta, ATTACK_INDEX_RANGE)
+    meta.hp = _scale(meta.hp, tuning("quests", "health_ratio_per_tier"), tier_delta, HEALTH_INDEX_RANGE)
+    meta.atk = _scale(meta.atk, tuning("quests", "attack_ratio_per_tier"), tier_delta, ATTACK_INDEX_RANGE)
 
 
 def _scale(value: int, ratio: float, tier_delta: int, bounds: tuple[int, int]) -> int:

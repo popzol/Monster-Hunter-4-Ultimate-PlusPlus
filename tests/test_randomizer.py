@@ -10,7 +10,8 @@ from mh4u_rando.randomizer import (
     randomize_quests, unrandomized_quests, validate_quest,
 )
 
-from conftest import original_quest_files
+from conftest import QUEST_RANDOM, original_quest_files
+from pairwise import QUEST_COMBOS
 
 pytestmark = pytest.mark.skipif(not original_quest_files(), reason="original quests not available")
 
@@ -27,7 +28,7 @@ def originals():
 
 def run(originals, data, **options):
     quests = copy.deepcopy(originals)
-    settings = Settings(**options)
+    settings = Settings(**{**QUEST_RANDOM, **options})
     reports = randomize_quests(quests, settings, data)
     return quests, reports, settings
 
@@ -47,6 +48,19 @@ SETTING_COMBOS = [
                          ids=lambda v: str(v)[:40])
 def test_every_quest_respects_the_rules(originals, data, options, seed):
     quests, reports, settings = run(originals, data, seed=seed, **options)
+    check_rules(originals, data, quests, reports, settings)
+
+
+@pytest.mark.parametrize("combo", range(len(QUEST_COMBOS)))
+def test_every_pair_of_quest_options(originals, data, combo):
+    """Pairwise coverage: every pair of values of any two quest options, on all 301 quests."""
+    quests = copy.deepcopy(originals)
+    settings = Settings(seed=f"PAIR{combo}", **QUEST_COMBOS[combo])
+    reports = randomize_quests(quests, settings, data)
+    check_rules(originals, data, quests, reports, settings)
+
+
+def check_rules(originals, data, quests, reports, settings):
     for name, quest in quests.items():
         new_errors = set(validate_quest(quest, data, settings)) - set(validate_quest(originals[name], data, settings))
         assert not new_errors, (name, new_errors)
@@ -58,7 +72,8 @@ def test_every_quest_respects_the_rules(originals, data, options, seed):
     for r in reports:
         if r.category != "expedition" and any(r.original_waves) and settings.randomize_monsters:
             assert r.skipped is None
-    relaxed = [r for r in reports if r.notes]
+    # Re-pointed objectives are expected repairs; relaxed preferences must stay rare.
+    relaxed = [r for r in reports if any(n.startswith("relaxed preferences") for n in r.notes)]
     assert len(relaxed) <= 5, [(r.quest_id, r.notes) for r in relaxed]
 
 
@@ -190,3 +205,41 @@ def test_settings_round_trip(tmp_path):
     path = tmp_path / "preset.json"
     settings.save(path)
     assert Settings.load(path) == settings
+
+
+def test_default_settings_leave_quests_vanilla(originals, data):
+    quests = copy.deepcopy(originals)
+    randomize_quests(quests, Settings(seed="VANILLA"), data)
+    for name, original in originals.items():
+        changed = {f for f in original.__dataclass_fields__ if getattr(original, f) != getattr(quests[name], f)}
+        # Only the safety repairs of docs/randomizer.md: invalid stat blocks and a missing Map.
+        assert changed <= {"large_meta", "supplies"}, (name, changed)
+
+
+def test_new_objective_text(originals, data):
+    from mh4u_rando.data import LANGUAGES
+    from mh4u_rando.mib.model import TEXT_DESCRIPTION, TEXT_MAIN_OBJECTIVE
+    from mh4u_rando.randomizer.text import HUNT_ALL, TARGETS
+    quests, reports, _ = run(originals, data, seed="TXT", text=TextMode.LIST_MONSTERS, structure=StructureMode.RANDOM)
+    seen = set()
+    for report in reports:
+        quest = next(q for q in quests.values() if q.quest_id == report.quest_id)
+        if report.skipped or not any(report.new_waves) or report.new_waves == report.original_waves:
+            continue
+        species = list(dict.fromkeys(m for wave in report.new_waves for m in wave
+                                     if data.monsters[m].body_part_of is None))
+        en = LANGUAGES.index("en")
+        objective = quest.text[en][TEXT_MAIN_OBJECTIVE]
+        if len(species) >= 3:
+            seen.add(3)
+            for li, lang in enumerate(LANGUAGES):
+                assert quest.text[li][TEXT_MAIN_OBJECTIVE] == HUNT_ALL[lang]
+                assert quest.text[li][TEXT_DESCRIPTION].startswith(TARGETS[lang])
+        elif len(species) == 2:
+            seen.add(2)
+            names = [data.monsters[m].name_in("en") for m in species]
+            assert objective == f"Hunt {names[0]} and {names[1]}"
+        elif len(species) == 1:
+            seen.add(1)
+            assert objective == f"Hunt {data.monsters[species[0]].name_in('en')}"
+    assert seen == {1, 2, 3}

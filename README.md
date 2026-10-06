@@ -1,7 +1,10 @@
 # MH4U Randomizer
 
-Quest randomizer for Monster Hunter 4 Ultimate (3DS), producing a modified
-`quest01.arc` for the Citra/Azahar mod folder (`romfs/loc/data`).
+Quest and equipment randomizer for Monster Hunter 4 Ultimate (3DS, European
+version), producing a Citra/Azahar mod folder: a modified `quest01.arc`
+(`romfs/loc/data`), for equipment a patch of the game executable
+(`exefs/code.ips`) and, optionally, a smaller top-screen HUD for playing on a
+monitor (`romfs/<language>/data`).
 
 ## Layout
 
@@ -11,12 +14,15 @@ Quest randomizer for Monster Hunter 4 Ultimate (3DS), producing a modified
 | `mh4u_rando/data/` | Game knowledge base: monsters, maps, items, engine rules |
 | `mh4u_rando/randomizer/` | Randomization logic and settings |
 | `mh4u_rando/arc/` | ARC archive reader/writer |
+| `mh4u_rando/equipment/` | Equipment tables of the executable (weapons, armor, recipes, sharpness) |
+| `mh4u_rando/exefs/` | Executable extraction (.3ds / update .app) and IPS patches |
+| `mh4u_rando/hud/` | GUI layouts (`lyt`, `lanl`) and the HUD size option |
 | `mh4u_rando/pipeline.py`, `__main__.py` | Archive-to-archive run and command line |
 | `mh4u_rando/gui/` | Graphical interface; panels generated from `gui/options.py` |
-| `tools/` | Maintenance scripts (`build_gamedata.py`) |
+| `tools/` | Maintenance and research scripts (`build_gamedata.py`, `build_equipment_data.py`, ...) |
 | `tests/` | `pytest` suite |
 | `docs/` | Format and rules documentation |
-| `Documentation/` | Reference sources from the online quest editor (`mib.js`, `constants.js`) |
+| `Documentation/` | Reference sources from the online quest editor (`mib.js`, `constants.js`); git-ignored game dumps |
 | `Scripts/` | Legacy implementation (own git repo, kept for reference) |
 
 ## Documentation
@@ -25,6 +31,10 @@ Quest randomizer for Monster Hunter 4 Ultimate (3DS), producing a modified
 * [docs/game_rules.md](docs/game_rules.md) - engine rules the randomizer must respect
 * [docs/data.md](docs/data.md) - knowledge base structure and maintenance
 * [docs/randomizer.md](docs/randomizer.md) - settings and behaviour
+* [docs/game_files.md](docs/game_files.md) - map of the game's files
+* [docs/equipment_data.md](docs/equipment_data.md) - equipment tables in the executable
+* [docs/hud_layout.md](docs/hud_layout.md) - HUD layouts and the HUD size option
+* [docs/hud_code.md](docs/hud_code.md) - executable patches for the HUD (minimap icons, L + X target switch)
 * [docs/roadmap.md](docs/roadmap.md) - pending work and open questions
 
 ## Usage
@@ -38,12 +48,27 @@ python -m mh4u_rando.gui
 Command line:
 
 ```
-python -m mh4u_rando --arc path/to/original/quest01.arc --out output_folder [--seed S] [--preset settings.json]
+python -m mh4u_rando --rom game.3ds --out output_folder [--seed S] [--preset settings.json]
 ```
 
-Copy `output_folder/quest01.arc` to the emulator's mod folder
-(`romfs/loc/data`). The spoiler log and the settings used are written next
-to it.
+The only input is your decrypted European `.3ds`: `quest01.arc` and the game
+executable are read from it in memory and it is never modified. It works with
+the update installed in the emulator (the update changes neither file). For
+advanced use, `--arc quest01.arc` replaces `--rom`, with `--code` (code.bin,
+.3ds or the update's `00000000.app`) for the equipment options.
+
+`--hud-scale 90|80|70|60` (or the GUI's Interface tab) shrinks the top-screen
+HUD, each element towards its corner. It needs `--rom`; the prompts over the
+characters also need the update's decrypted `00000000.app`, which is found in
+Citra/Azahar/Lime3DS or given with `--update`.
+
+Every setting defaults to the original game (all switches off, every mode on
+its least random value), so a preset only needs the options to change.
+
+Copy the `romfs` and `exefs` folders of `output_folder` into the emulator's
+mod folder for the game (Citra: right click the game > Open Mods Location,
+`load/mods/0004000000126100/`). The spoiler logs and the settings used are
+written next to them.
 
 ## Development
 
@@ -52,4 +77,9 @@ python -m pytest
 ```
 
 The tests read the original quests from `Scripts/og_loc/loc/quest`
-(override with the `MH4U_QUEST_DIR` environment variable).
+(override with the `MH4U_QUEST_DIR` environment variable), the executable
+from `Documentation/exefs/` (override with `MH4U_CODE_BIN`), the RomFS dump
+from `Documentation/0004000000126100` (`MH4U_ROMFS_DIR`), the update from
+`Documentation/updatefiles/00000000.app` (`MH4U_UPDATE_APP`) and the ROM from
+`MH4U_ROM` (only read); tests that need them are skipped when they are
+missing.

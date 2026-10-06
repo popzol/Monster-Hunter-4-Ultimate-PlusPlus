@@ -6,6 +6,8 @@ data/
     items.json          id -> name, usable
     item_categories.json id -> category, rarity, carry_limit (monsterhunterwiki.org)
     monster_materials.json monster id -> material item ids (monsterhunterwiki.org)
+    equipment_names.json weapon class / armor part -> names by id
+                        (tools/build_equipment_data.py, from the game dump)
     monsters.json       id -> name, is_large, preview_id, intro_cutscene_map,
                         special_variants, break_parts
     maps.json           id -> name, areas (bounds + retail spawn positions)
@@ -22,7 +24,9 @@ data/
     part_names.json     breakable part names in the 5 quest languages
     small_monster_rules.json  interchangeable small monster groups
     supply_pool.json    consumables for supply boxes, with max capacity
+    tuning.json         every arbitrary probability/parameter, with its description
   gamedata.py           loads and validates everything -> GameData
+  tuning.py             reads tuning.json: tuning("equipment", "progressive_sigma")
 ```
 
 ## Regenerating `generated/`
@@ -58,6 +62,17 @@ are not listed there and get the category `unknown`.
 8–10 = G1–G3), the arena Grudge Matches (ids 2xxxx) and 26 Everwood
 expedition templates (ids 45xxx, no text and no large monsters). Key/urgent
 status was matched by title against monsterhunterwiki.org on 2026-10-05.
+
+## Tuning parameters (`curated/tuning.json`)
+
+Every arbitrary number of the randomizer (probabilities, weights, ranges) is
+there, never hard-coded: map frequencies, reward share, balanced tier range,
+random structure waves, health/attack scaling, the ±20 % curve and the armor
+skill distribution (negative skill odds,
+point decay, skill count weights, excluded skill trees). Each entry is
+`{"value": ..., "description": ...}`; change the value and keep the
+description accurate (`tests/test_equipment.py` checks every entry is
+documented). Format limits (5 skills per piece, 3 slots...) stay in code.
 
 ## Editing `curated/`
 

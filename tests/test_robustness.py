@@ -9,7 +9,7 @@ from mh4u_rando.mib import MetaEntry, Monster, Objective, ObjectiveType, load_mi
 from mh4u_rando.randomizer import Settings, StructureMode, randomize_quests, unrandomized_quests, validate_quest
 from mh4u_rando.randomizer.selection import can_respawn
 
-from conftest import original_quest_files
+from conftest import QUEST_RANDOM, original_quest_files
 
 pytestmark = pytest.mark.skipif(not original_quest_files(), reason="original quests not available")
 
@@ -50,7 +50,7 @@ def corrupted_inputs(originals):
 @pytest.mark.parametrize("structure", list(StructureMode))
 def test_corrupted_inputs_are_still_randomized(originals, data, seed, structure):
     quests = corrupted_inputs(originals)
-    settings = Settings(seed=seed, structure=structure)
+    settings = Settings(seed=seed, structure=structure, **QUEST_RANDOM)
     reports = randomize_quests(quests, settings, data)
     assert not [r.warnings for r in reports if r.warnings]
     assert not unrandomized_quests(reports, settings)
@@ -61,7 +61,7 @@ def test_corrupted_inputs_are_still_randomized(originals, data, seed, structure)
 def test_dalamadur_only_on_speartip_crag_with_its_tail(originals, data):
     for seed in ("D1", "D2", "D3", "D4", "D5", "D6"):
         quests = copy.deepcopy(originals)
-        randomize_quests(quests, Settings(seed=seed), data)
+        randomize_quests(quests, Settings(seed=seed, **QUEST_RANDOM), data)
         for quest in quests.values():
             ids = [m.monster_id for m in quest.all_large_monsters()]
             for head, tail in ((24, 83), (110, 111)):
@@ -73,7 +73,7 @@ def test_dalamadur_only_on_speartip_crag_with_its_tail(originals, data):
 
 def test_hunt_a_thons_keep_their_respawn_count(originals, data):
     quests = copy.deepcopy(originals)
-    randomize_quests(quests, Settings(seed="HAT"), data)
+    randomize_quests(quests, Settings(seed="HAT", **QUEST_RANDOM), data)
     for name in (by_id(quests, 10421), by_id(quests, 10835)):
         [[monster]] = quests[name].large_monsters
         assert monster.qty == 99

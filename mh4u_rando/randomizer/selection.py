@@ -12,12 +12,11 @@ import random
 from dataclasses import dataclass
 
 from ..data import GameData, MonsterInfo
+from ..data.tuning import tuning
 from .plan import LineupPlan, Slot
 from .rng import weighted_choice
 from .settings import DuplicateMode, ProgressionMode, Settings
 from .structure import MAX_LARGE_MONSTERS
-
-BALANCED_TIER_RANGE = 2
 
 
 @dataclass
@@ -128,7 +127,7 @@ def _pick_by_progression(candidates: list[MonsterInfo], slot: Slot, ctx: Selecti
         if weights:
             return ctx.rng.choice(by_tier[weighted_choice(ctx.rng, weights)])
     elif mode is ProgressionMode.BALANCED and slot.original_tier is not None:
-        tiers = [t for t in by_tier if abs(t - slot.original_tier) <= BALANCED_TIER_RANGE]
+        tiers = [t for t in by_tier if abs(t - slot.original_tier) <= tuning("quests", "balanced_tier_range")]
         if tiers:
             return ctx.rng.choice(by_tier[ctx.rng.choice(sorted(tiers))])
     return ctx.rng.choice(candidates)

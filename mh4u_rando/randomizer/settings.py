@@ -2,6 +2,9 @@
 
 `Settings` is a plain dataclass so it can be saved and loaded as a JSON preset
 and edited by the GUI. Every option is documented where it is declared.
+
+Defaults are as close to the original game as possible: every switch off and
+every mode on its least random value (also the first choice shown in the GUI).
 """
 
 import json
@@ -44,14 +47,57 @@ class RewardSource(str, Enum):
 
 
 class SubQuestMode(str, Enum):
-    RANDOMIZE = "randomize"  # break a part of one of the quest's (non-intruder) monsters
+    KEEP = "keep"            # original sub quests (re-pointed only if their monster left the quest)
     DISABLE = "disable"      # remove sub quests
+    RANDOMIZE = "randomize"  # break a part of one of the quest's (non-intruder) monsters
 
 
 class TextMode(str, Enum):
-    REPLACE_NAMES = "replace_names"  # swap monster names inside the original texts
-    LIST_MONSTERS = "list_monsters"  # main objective becomes "You will face: A, B"
     KEEP = "keep"                    # leave texts untouched
+    REPLACE_NAMES = "replace_names"  # swap monster names inside the original texts
+    LIST_MONSTERS = "list_monsters"  # "Hunt A and B"; 3+: "Hunt all large monsters" + list in the description
+
+
+class StatMode(str, Enum):
+    KEEP = "keep"
+    PERCENT = "percent"  # ±20 %, bell curve centred on "no change"
+    RANGE = "range"      # anywhere between the min and max of the same class/part and rank
+
+
+class ArmorSkillMode(str, Enum):
+    KEEP = "keep"
+    SAME_SUM = "same_sum"  # same total points per piece, spread over random skills
+    CHAOTIC = "chaotic"    # random skills and points on every piece
+
+
+class ModelMode(str, Enum):
+    FAMILIES = "families"  # whole lines/sets take the look of another line/set, in order
+    CHAOTIC = "chaotic"    # any model of the same weapon class / armor part
+
+
+class PalicoModelMode(str, Enum):
+    FULL_SET = "full_set"    # a theme's weapon, head and body take the look of another theme together
+    SEPARATE = "separate"    # weapons among themselves, armor sets among themselves
+    CHAOTIC = "chaotic"      # any model of the same kind of piece
+
+
+class HudScale(str, Enum):
+    """Size of the top-screen HUD in % (mh4u_rando/hud, docs/hud_layout.md)."""
+    FULL = "100"
+    P90 = "90"
+    P80 = "80"
+    P70 = "70"
+    P60 = "60"
+
+    @property
+    def factor(self) -> float:
+        return int(self.value) / 100
+
+
+# Options that need the game executable (they patch exefs/code.bin).
+EQUIPMENT_SWITCHES = ("randomize_recipes", "randomize_weapon_stats", "randomize_armor_stats", "randomize_models",
+                      "randomize_palico_recipes", "randomize_palico_weapon_stats", "randomize_palico_armor_stats",
+                      "randomize_palico_models")
 
 
 @dataclass
@@ -59,35 +105,93 @@ class Settings:
     seed: str = ""
 
     # Large monsters
-    randomize_monsters: bool = True
+    randomize_monsters: bool = False
     structure: StructureMode = StructureMode.KEEP
     duplicates: DuplicateMode = DuplicateMode.ONLY_IF_ORIGINAL
     progression: ProgressionMode = ProgressionMode.BALANCED
-    adjust_stats: bool = True            # scale health to the tier change (provisional formula)
+    adjust_stats: bool = False           # scale health to the tier change (provisional formula)
 
     # Maps
-    randomize_maps: bool = True
-    arena_maps: Frequency = Frequency.RARE
+    randomize_maps: bool = False
+    arena_maps: Frequency = Frequency.NEVER
     everwood: Frequency = Frequency.NEVER
     always_music: bool = True            # avoid silent maps unless a monster brings its theme
     one_monster_per_wave_on_arenas: bool = True
 
     # Objectives and text
-    sub_quests: SubQuestMode = SubQuestMode.RANDOMIZE
-    text: TextMode = TextMode.REPLACE_NAMES
+    sub_quests: SubQuestMode = SubQuestMode.KEEP
+    text: TextMode = TextMode.KEEP
 
     # Rewards and supplies
-    randomize_rewards: bool = True
+    randomize_rewards: bool = False
     reward_source: RewardSource = RewardSource.QUEST_MONSTERS_AND_RANK
     reward_item_count: int = 5
     randomize_supplies: bool = False     # the Map is always kept
 
     # Other monsters
     randomize_small_monsters: bool = False
-    randomize_intruders: bool = True
+    randomize_intruders: bool = False
+
+    # Equipment (patches the game executable)
+    randomize_recipes: bool = False      # monster materials of the equipment's rank
+    recipe_material_count_min: int = 1   # different materials per recipe, "between N and M" (1-4)
+    recipe_material_count_max: int = 4
+    recipe_quantity_min: int = 1         # quantity of each material, "between N and M" (1-10)
+    recipe_quantity_max: int = 1
+    randomize_weapon_stats: bool = False
+    weapon_attack: StatMode = StatMode.KEEP
+    weapon_affinity: StatMode = StatMode.KEEP
+    weapon_element: StatMode = StatMode.KEEP     # element / status value
+    weapon_element_type: bool = False               # change the element / status of weapons that have one
+    weapon_element_add_remove: bool = False         # weapons may gain or lose their element / status
+    weapon_defense: StatMode = StatMode.KEEP
+    weapon_slots: StatMode = StatMode.KEEP
+    weapon_sharpness: StatMode = StatMode.KEEP
+    weapon_upgrades_improve: bool = False       # upgrades beat the weapon they come from (within the rank cap)
+    weapon_upgrades_keep_element: bool = False  # natural evolutions inherit the element/status
+    randomize_armor_stats: bool = False
+    armor_defense: StatMode = StatMode.KEEP
+    armor_resistances: StatMode = StatMode.KEEP
+    armor_slots: StatMode = StatMode.KEEP
+    armor_skills: ArmorSkillMode = ArmorSkillMode.KEEP
+    armor_skill_min_points: int = 0       # per positive skill (0 counts as 1)
+    armor_skill_max_points: int = 10      # per positive skill
+    armor_skill_max_count: int = 3        # skills per piece, 1 to 5 (format limit)
+    armor_skills_no_negative: bool = False
+    armor_skills_shared_variants: bool = False  # Blademaster/Gunner versions of a piece share their new skills
+    randomize_models: bool = False
+    model_mode: ModelMode = ModelMode.FAMILIES
+    models_use_each_once: bool = False
+
+    # Felyne (Palico) equipment
+    randomize_palico_recipes: bool = False
+    palico_recipe_material_count_min: int = 1
+    palico_recipe_material_count_max: int = 4
+    palico_recipe_quantity_min: int = 1
+    palico_recipe_quantity_max: int = 1
+    randomize_palico_weapon_stats: bool = False
+    palico_weapon_attack: StatMode = StatMode.KEEP       # melee; ranged (boomerang) keeps the same proportion
+    palico_weapon_affinity: StatMode = StatMode.KEEP
+    palico_weapon_element: StatMode = StatMode.KEEP
+    palico_weapon_defense: StatMode = StatMode.KEEP
+    palico_weapon_element_type: bool = False
+    palico_weapon_element_add_remove: bool = False
+    randomize_palico_armor_stats: bool = False
+    palico_armor_defense: StatMode = StatMode.KEEP
+    palico_armor_resistances: StatMode = StatMode.KEEP
+    randomize_palico_models: bool = False
+    palico_model_mode: PalicoModelMode = PalicoModelMode.FULL_SET
+    palico_models_use_each_once: bool = False
+
+    # Interface (game files, not randomized)
+    hud_scale: HudScale = HudScale.FULL  # each top-screen HUD element shrinks towards its corner
 
     # Debug
     debug_weak_monsters: bool = False    # lowest health and attack index for every monster
+
+    @property
+    def randomizes_equipment(self) -> bool:
+        return any(getattr(self, name) for name in EQUIPMENT_SWITCHES) or self.armor_skills is not ArmorSkillMode.KEEP
 
     def to_dict(self) -> dict:
         return {k: (v.value if isinstance(v, Enum) else v) for k, v in asdict(self).items()}

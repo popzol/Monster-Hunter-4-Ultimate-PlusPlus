@@ -135,6 +135,7 @@ def _randomize_large_monster_quest(quest: Quest, info: QuestInfo, ctx: Randomize
     rng_monsters = _rng(ctx, quest, "monsters")
     rng_maps = _rng(ctx, quest, "maps")
 
+    original_lineup = _wave_ids(quest)
     rewrite_objectives = objectives.main_objectives_target_large_monsters(quest)
     plan, new_map = _choose_lineup_and_map(quest, info, ctx, rng_monsters, rng_maps)
     map_changed = new_map != quest.map_id
@@ -170,14 +171,14 @@ def _randomize_large_monster_quest(quest: Quest, info: QuestInfo, ctx: Randomize
 
     stats.apply_stats(quest, plan, data, adjust=settings.adjust_stats and settings.randomize_monsters)
 
-    if rewrite_objectives:
+    if rewrite_objectives and _wave_ids(quest) != original_lineup:
         objectives.apply_main_objectives(quest, plan)
         objectives.apply_pictures(quest, plan, data)
 
     # Names first: the sub quest text written below must not be rewritten again.
     text.apply_text(quest, plan, data, settings.text)
 
-    if objectives.has_sub_quest(quest):
+    if objectives.has_sub_quest(quest) and settings.sub_quests is not SubQuestMode.KEEP:
         report.sub_quest_regenerated = True
         if settings.sub_quests is SubQuestMode.DISABLE:
             objectives.disable_sub_quest(quest)

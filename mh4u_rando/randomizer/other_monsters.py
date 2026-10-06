@@ -3,10 +3,10 @@
 import random
 
 from ..data import GameData, MapInfo, MonsterInfo
+from ..data.tuning import tuning
 from ..mib import Monster, Quest
 from .maps import place_monster
 from .rng import weighted_choice
-from .selection import BALANCED_TIER_RANGE
 from .settings import ProgressionMode, Settings
 
 APEX_INFECTION = 9
@@ -79,7 +79,7 @@ def _pick_intruder(candidates: list[MonsterInfo], original: MonsterInfo | None, 
             tier = weighted_choice(rng, weights)
             return rng.choice([c for c in candidates if c.tier == tier])
     elif settings.progression is ProgressionMode.BALANCED and original is not None and original.tier:
-        near = [c for c in candidates if abs(c.tier - original.tier) <= BALANCED_TIER_RANGE]
+        near = [c for c in candidates if abs(c.tier - original.tier) <= tuning("quests", "balanced_tier_range")]
         if near:
             return rng.choice(near)
     return rng.choice(candidates)
