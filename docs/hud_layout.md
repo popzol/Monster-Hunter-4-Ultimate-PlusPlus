@@ -1,0 +1,342 @@
+# HUD size option and GUI layouts (lyt / lanl)
+
+An optional **HUD size** setting for playing on a monitor: everything drawn
+over the game on the **top screen** during quests (including the minimap)
+shrinks, each element towards its own corner, in fixed steps of 100 / 90 / 80
+/ 70 / 60 %. The goal is to **play with the top screen only**, so the
+touch-screen map shrinking with the minimap is acceptable. It must work in
+Citra/Azahar and on a 3DS with Luma3DS. Menus are out of scope.
+
+This document covers the option and the data side (layout files). The
+executable patches it needs (minimap icons, mount gauge, L + X target switch)
+are in [hud_code.md](hud_code.md). Offsets are for MH4U EUR (title
+0004000000126100); [game_files.md](game_files.md) maps the RomFS.
+
+Status legend: **Verified** = checked on every file of the dump or in the
+game (says which); **Guess** = plausible from names or values, unverified.
+
+## Status
+
+| Part | State |
+|---|---|
+| `lyt` / `lanl` reader and writer, tools, tests | **Done** — every layout and animation of the dump round-trips |
+| Top-screen layouts identified and scaled by data | **Done**, verified in Citra (probes 1–2) |
+| Option in the randomizer (settings, pipeline, GUI, CLI) | **Done for the data layer** — the executable patches are not wired in yet |
+| Minimap: data + icon patch | Icon positions **verified** (probe 3); icon size in probe 5 (waiting) |
+| Mount gauge: data + face patch | In probe 5 (waiting) |
+| L + X switches the target | Patch in probe 5 (waiting); the "X" hint next to the item selector is not done |
+| Target icon on the top screen | Not started |
+| Minimap without the Map item | Not started — the map does not shrink then |
+
+## Code and tools
+
+| File | Purpose |
+|---|---|
+| `mh4u_rando/hud/lyt.py` | Layout reader/writer. A view over the original bytes: only decoded fields are written, so everything else round-trips |
+| `mh4u_rando/hud/lanl.py` | Animation reader/writer, same approach; `Track.transform()` maps key values |
+| `mh4u_rando/hud/scale.py` | `scale_hud()`: shrinks root groups towards an `Anchor` (a corner, `IN_PLACE` or any point), with their animations |
+| `mh4u_rando/hud/build.py` | `HUD_LAYOUTS` / `CODE_PATCH_LAYOUTS` (what to scale and towards where), `hud_files()` / `write_hud_files()` / `remove_hud_files()`, `find_update()` |
+| `mh4u_rando/hud/code_patch.py` | Executable patches — see [hud_code.md](hud_code.md) |
+| `tools/lyt_dump.py` | Prints the pane tree of the layouts in an ARC (`.arc`, RomFS dump folder or ROM) |
+| `tools/hud_probe.py` | Builds the test mods (below) |
+| `tests/test_hud.py` | Synthetic files + game files (skipped without the dump / update / ROM) |
+
+```
+python tools/lyt_dump.py Documentation/0004000000126100 --arc eng/data/core_quest.arc --layout ui202
+python tools/lyt_dump.py "MH4U.3ds" --arc spa/data/core_quest.arc --layout ui202
+python tools/hud_probe.py "MH4U.3ds" --update Documentation/updatefiles/00000000.app --out DIR
+    [--scale 70] [--tint] [--minimap [--target-button] [--merge-ips CURRENT.ips]]
+```
+
+`hud_probe.py`: default = every `HUD_LAYOUTS` entry scaled; `--tint` = probe 1
+(colours); `--minimap` adds `CODE_PATCH_LAYOUTS` and writes `exefs/code.ips`
+with `patch_hud()`; `--target-button` adds the L + X patch; `--merge-ips` keeps
+another patch's changes (e.g. the randomizer's equipment `code.ips`; an earlier
+HUD patch in it is undone first).
+
+### The option in the randomizer
+
+`Settings.hud_scale` (`HudScale`: "100" … "60"), GUI tab "Interfaz /
+Interface" (drop-down) plus an optional "Update" file field in the sidebar,
+CLI `--hud-scale` and `--update`. `pipeline.run()` writes
+`romfs/<lang>/data/core_quest.arc` for the 5 languages (and `core_common.arc`
+when it has the update) during the "write" stage, and removes the HUD files at
+100 %. The update's `00000000.app` comes from the GUI field / `--update`, or is
+found on the virtual SD card of Citra, Azahar or Lime3DS, which keep it
+decrypted: `<user folder>/<emulator>/sdmc/Nintendo 3DS/<id>/<id>/title/0004000e/00126100/content/00000000.app`.
+Without it the prompts over the characters keep their size.
+
+**Not wired in yet:** `CODE_PATCH_LAYOUTS` and `code_patch.patch_hud()` (minimap
+and mount gauge) and `patch_target_button()` (L + X). They need the update's
+executable — `load_code(update .app)` — as the base of `exefs/code.ips`, merged
+with the equipment patch (the equipment tables are identical in both
+executables). Whether L + X is part of the HUD option or a separate one is a
+pending product decision.
+
+## Where the HUD lives
+
+GUI layouts are ARC entries of type `15302EF4` (`lyt`); their animations are
+type `708E0028` (`lanl`), usually named after the layout. They are in the
+per-language folders (`eng/ fre/ ger/ ita/ spa/data/`). **Every language has
+its own copy** (texture paths differ, e.g. `spa\lyt\quest\texture\qst00_ID`), so
+a change is written for all 5 languages.
+
+### Update overlay
+
+The update (`0004000E00126100`, `00000000.app`) has only 20 RomFS files:
+`core_common`, `core_dlc`, `core_lobby` and `core_title.arc` in the 5 languages.
+Same entries as the base game, but some differ (Verified, dump):
+
+| ARC | Changed entries | Changed layouts |
+|---|---|---|
+| `core_common.arc` | 20 of 194 | ui001 ui005 ui006 ui007 ui008 ui010 ui015 ui020 ui021 ui022 ui027 ui028 ui029 ui030 ui035 ui036 ui050 ui060 |
+| `core_lobby.arc` | 33 of 329 | 29 lobby layouts |
+| `core_title.arc` | 3 of 65 | ui806 ui810 |
+| `core_dlc.arc` | 4 of 78 | ui520 ui541 |
+
+* `core_quest.arc` is not in the update; it is replaced like `quest01.arc`
+  (`load/mods/0004000000126100/romfs/<lang>/data/core_quest.arc`).
+* **A `core_common.arc` in the base title's mod folder overrides the update's
+  copy** — Verified in Citra (probe 1). So the mod ships the **update's**
+  `core_common.arc` (modified), never the base game's, or it would undo the
+  update. Luma3DS: still to be checked.
+
+### Top-screen HUD layouts
+
+Identified with probe 1 (each candidate tinted with a colour) and probe 2:
+
+| Layout | ARC | Content | On screen | Status |
+|---|---|---|---|---|
+| `ui202` | core_quest | Clock, health, stamina, sharpness, weapon gauges, ammo | Top-left | **Verified** (scaled, bars fit their frames) |
+| `ui203` | core_quest | Party list: companions' names and health | Left, under the bars | **Verified** |
+| `ui205` | core_quest | Item selector (icon, count, name, L / Y / A hints) and the ammo / coating list | Bottom-right | **Verified** |
+| `ui001` | core_common (update) | Prompts over the character (climb "A"…) and name tags | Placed by the code | **Verified** |
+| map layouts (`ui281…`, `ui25x…`) | `mNN[aNN]_map*.arc`, 164 per language | The minimap | Top-right | **Verified** |
+| `ui250` | core_quest | Minimap icons: 4 traps, 4 players, 8 monsters, all at (200, 120) | On the minimap, placed by the code | **Verified** |
+| `ui204` | core_quest | Hold / fishing / mount gauges, Palico face, Frenzy icon | Bottom-centre; Frenzy icon left | Mount gauge **Verified**; the others Guess |
+| `ui206`, `ui007`, `ui000` | core_quest / core_common | Pouch list, shortcuts, message windows | — | Not seen on the top screen during a hunt |
+| `ui200` `ui201` `ui211`, `ui207` | core_quest | Scopes and target markers; quest clear stamp | Centre | Left alone |
+| `ui601`–`ui604`, `ui610` | core_quest | Touch-screen panels (`ui601` = target camera) | Touch screen | Left alone |
+
+The code sets the minimap icons' colours every frame, which is why probe 1's
+tint did not show on them.
+
+`ui202` root groups (children count) — names are Japanese romaji:
+
+| Group | Meaning (Guess) | | Group | Meaning (Guess) |
+|---|---|---|---|---|
+| `time` (14) | Clock (`hari` = hand) | | `bowgun00/01` (11) | Bowgun ammo and reload |
+| `tairyoku` (7) | Health bar | | `hue` (22) | Hunting Horn notes |
+| `stamina` (6) | Stamina bar | | `gunlance` (6) | Gunlance shells |
+| `max` (2) | Max health/stamina markers | | `guard_axe` (27) | Charge Blade phials |
+| `kireaji` (4) | Sharpness | | `kireaji_down` (1) | Sharpness loss icon |
+| `mushi` (13) | Kinsect extracts | | `reload`, `tamakazu30` | Reload / ammo count |
+| `aucher00` (8) | Bow coatings | | `b_tama` (63) | Ammo icons |
+| `slash_axe` (9) | Switch Axe phial | | `a_bin`, `panel_bin` | Bow coating bottles |
+| `souken` (3) | Dual Blades demon gauge | | `panel_tama` (15) | Ammo panel |
+| `tati` (6) | Long Sword spirit gauge | | `virus` (12) | Frenzy virus |
+
+The item selector's L-mode bar is the root group `ui205_shita_ita`: item
+icons `ui205_icon00…04` and the hints `ui205_l_button`, `ui205_y_button00/01`,
+`ui205_a_button01` (16×16 glyphs from `cmn_icon`). X glyphs exist elsewhere
+(`ui205_x_button00/10`, in the ammo lists).
+
+## `lyt` format — Verified on all 1790 layouts of the dump
+
+Every layout parses with the rules below, the group/sprite/text/boundary
+counts match the header, every pane's hash matches its name, and writing it
+back gives the same bytes.
+
+### Header (0x30 bytes)
+
+| Off | Type | Field |
+|---|---|---|
+| 0x00 | char[4] | `lyt\0` |
+| 0x04 | u32 | Version `0x70C` |
+| 0x08 | u32 | Group count |
+| 0x0C | u32 | Texture count |
+| 0x10 | u32 | Null count — can be **larger** than the nulls in the file (allocation size?) |
+| 0x14 | u32 | Sprite count |
+| 0x18 | u32 | Unknown, always 0 |
+| 0x1C | u32 | Text count |
+| 0x20 | u32 | Boundary count |
+| 0x24 | u32 | Offset of the texture table: `(u32 unknown, u32 name offset)` per texture |
+| 0x28 | u32 | Offset of the pane table |
+| 0x2C | u32 | Offset of a trailing table — not decoded |
+
+After the pane table: 12 bytes, the pane names, the text strings, then the
+trailing table.
+
+### Pane table
+
+A **pre-order walk of the pane tree**: it starts with `(u32 kind, u32 depth)`
+of the first pane, and **every record ends with the kind and depth of the next
+one** (kind `0xFF` = end). Depth 0 is always a group; a pane's parent is the
+closest previous pane one level up (only groups and nulls have children).
+Nulls nest down to depth 4, so panes go down to depth 5.
+
+| Kind | Name | Record size |
+|---|---|---|
+| 0 | Sprite (textured quad) | 0x6C |
+| 1 | Null (transform node) | 0x38 |
+| 2 | Group (root) | 0x28 |
+| 3 | Text | 0x7C |
+| 4 | Boundary (rectangle; touch areas) | 0x30 |
+
+Common start of every record: `0x00 u32 ~crc32(name)` (hash 0 and name offset
+0 for unnamed panes), `0x04 u32 name offset`, `0x08 u32 size` (the record size;
+for groups and nulls the size of their subtree **without text panes**).
+
+| Kind | Field offsets (f32 unless stated) |
+|---|---|
+| Group | 0x0C x, y, z · 0x18 1.0 (alpha?) · 0x1C u8 flags |
+| Null | 0x0C x, y, z · 0x18 scale x, y · 0x20 RGBA · 0x24 0.0 · 0x28 1.0 |
+| Sprite | 0x0C x, y, z · 0x18 width, height · 0x20 scale x, y · 0x28 texture u, v, w, h (0–1) · 0x38 RGBA ×4 (corners) · 0x54 u32 flags (e.g. `0x71110`; the second byte varies, maybe the pivot) |
+| Text | 0x0C u32 text offset · 0x18 font width, height · 0x20 character / line spacing · 0x28 x, y, z · 0x34 width, height · 0x44 RGBA ×4 |
+| Boundary | 0x0C x, y · 0x14 width, height · 0x1C scale x, y · 0x24 0.0 |
+
+**Positions are relative to the parent pane.** All values are in screen
+pixels. The writer only edits existing fields: **inserting a pane** (needed for
+the X hint) means rebuilding the pane table, shifting the name / text offsets
+and the header counts and offsets — not implemented.
+
+### Coordinates
+
+Each layout instance is placed on screen by the code, so the origin depends on
+the layout:
+
+* **In-quest HUD — Verified in the game:** `screen = (200 − x, 120 − y)`: the
+  origin is the centre of the top screen and both axes are reversed. Screen
+  corners in layout coordinates: top-left (200, 120), top-right (−200, 120),
+  bottom-left (200, −120), bottom-right (−200, −120).
+
+  | Pane | Layout coords | Screen | In the game |
+  |---|---|---|---|
+  | `ui202_base` (clock) | (177, 99) | (23, 21) | Clock top-left |
+  | `ui202_tairyoku_waku` (health frame) | (158, 114), bar towards −x | (42, 6), bar to the right | Health bar at the top |
+  | `ui203_call` (party) | (191, 71…23) | (9, 49…97) | Left edge |
+  | `ui205_name_base` (item selector) | (−130, −110) | (330, 230) | Bottom-right |
+
+* Sprites seem to be placed by their **top-left corner on screen** (Guess,
+  strongly supported): the health frame is a 4 px cap at 0, a 222 px body at
+  −4 and a 14 px cap at −226, i.e. 0–240 px to the right of its null.
+  Scaling does not depend on it (positions and sizes scale together).
+* Prompts and name tags (`ui001`) and the map layouts are moved by the code as
+  a whole.
+* Menus: full-screen backgrounds sit at (200, 120) in some layouts and at
+  (0, 0) in others. Not relevant here.
+
+## `lanl` animations
+
+The HUD animations are in `core_quest.arc`: `ui202_hp`, `ui202_vit`,
+`ui202_slash`, `ui202_anim_list` (59 animations), `ui204_gauge`,
+`ui205_select`, `panel`, `panel_sc`, `ui206`, `ui207`.
+
+Format — Verified on the 132 distinct animation files of the dump (653
+animations, 5897 tracks; property meanings are a Guess):
+
+| Part | Layout |
+|---|---|
+| Header | `lanl`, u32 version 5, u32 animation count, u32 offset ×count (**0 = empty slot**) |
+| Animation (0x20) | u32 tracks offset, u32 0, u32 targets offset, u32 track count, u32 ?, u32 frame count, u32 ×2 (−1 in about half) |
+| Track (0x10) | u8 value format, u8 property, u16 key count, u32 keys offset, u32 group hash, u32 pane hash |
+| Key (0x10) | f32 frame, value (f32 or RGBA), f32 tangent ×2 |
+
+Value format: low nibble 0 = float, 2 = RGBA/raw; high nibble 0x00 / 0x10 /
+0x20 / 0x30 (interpolation — Guess). Only 0x20 and 0x30 keys use the tangents
+(in the key's unit, e.g. `y 34, tangents 33, 16`); in the other formats those
+8 bytes are 0 or leftovers (`CDCDCDCD`) and are never touched. No two tracks
+share a key array.
+
+| Property | Meaning | | Property | Meaning |
+|---|---|---|---|---|
+| 0x00 | Position x | | 0x09 | ? (0–1) |
+| 0x01 | Position y | | 0x0B | Rotation (65536 = 360°) |
+| 0x03 | Width | | 0x0C | Scale? (1.0–2.0) |
+| 0x04 | Height | | 0x0D | Visibility / texture (raw) |
+| 0x05 | Scale x | | 0x0E | Pane colour (RGBA) |
+| 0x06 | Scale y | | 0x0F–0x12 | Corner colours (RGBA) |
+| 0x07, 0x08 | Texture offset? (0–1) | | | |
+
+**The HUD layouts animate positions and sizes in pixels**, so scaling a layout
+also scales the keys of properties 0x00, 0x01, 0x03 and 0x04 (all linear
+tracks):
+
+| Animation file | Panes moved or resized |
+|---|---|
+| `ui202_anim_list` | `ui202_kira_kouka` x/y/w/h (sparkle along the Kinsect gauge), `ui202_suji30` width (ammo bar), `ui202_jyakushi00`/`onpu_ita00` y (Hunting Horn notes) — 10 tracks |
+| `ui205_select` | The ammo / coating list rows (y) and their arrows (x, width) |
+| `ui204_gauge` | The Palico face (`face00_00/01`) y, width, height |
+| `panel` | Scope / target arrows of `ui200` and `ui211` |
+| `ui207` | Quest clear stamp frame (y) |
+
+`ui202_hp`, `ui202_vit` and `ui202_slash` only animate colours. Depth-1 panes
+are animated in their group's coordinates (e.g. `ui205_b_base00` y −65 → −54),
+so their keys get the same anchored mapping as the pane.
+
+## Minimap (data side)
+
+* Each area has its own `mNN[aNN]_map*.arc` per language (164 in `eng/data`):
+  one map texture and a small layout (`ui281a00`, `ui252`…) with the map, the
+  area numbers and the exits.
+* **The layout is drawn as if the map's frame started at the screen's top-left
+  corner**: in 156 of the 164 layouts the map sprite is 128×128 at (200, 120)
+  (the other 8 are smaller variants inside the same frame). The code moves the
+  whole layout to the top-right without resizing it. Its top-right corner is
+  at (72, 120) in layout coordinates (`MINIMAP_ANCHOR`).
+* Shrinking the map layouts towards that corner works by data (map, area
+  numbers, exits). The icons need the executable patch
+  ([hud_code.md](hud_code.md)). The touch-screen map uses the same files and
+  shrinks too — accepted.
+* **The map only shrinks when the hunter carries the Map item**; without it
+  nothing changes (probe 2). The no-Map minimap must come from other files or
+  another code path — to investigate.
+
+## How the HUD is scaled
+
+| ARC | Layout | Anchor |
+|---|---|---|
+| core_quest | `ui202` | Top-left |
+| core_quest | `ui203` | Top-left (stays under the bars) |
+| core_quest | `ui204` | `hold`, `fish`: bottom; `virus`: top-left; `nori` (mount gauge): bottom — **only with the executable patch** |
+| core_quest | `ui205` | Bottom-right |
+| core_quest | `ui250` | In place (size only) — **only with the executable patch** |
+| core_common (update's copy) | `ui001` | In place: each prompt / name tag shrinks where the code puts it |
+| map ARCs | every layout | (72, 120), the minimap's top-right corner — **only with the executable patch** |
+
+`HUD_LAYOUTS` is used alone when the executable is not patched;
+`CODE_PATCH_LAYOUTS` and the map ARCs are added by
+`hud_files(..., with_code_patch=True)`, which must go with
+`code_patch.patch_hud()` in `exefs/code.ips`.
+
+For a scale `s` and an anchor `C` (layout coordinates):
+
+* panes right under a root group: `p' = C + (p − C)·s` (in place: unchanged).
+  Root groups are all at (0, 0) in the quest layouts, so this works whether or
+  not the engine applies their position (it is multiplied by `s` anyway);
+* deeper panes: `p' = p·s` (positions are relative);
+* sizes, font sizes and text spacing: `×s`; scale fields unchanged (the code
+  sets some of them, e.g. bar fills);
+* animation keys of x and y: the same rule as the pane they move; width and
+  height: `×s`; tangents: `×s`.
+
+The anchor is chosen **per root group** (`ui204` mixes corners).
+
+## In-game probes (Citra, update installed)
+
+| Probe | Contents | Result |
+|---|---|---|
+| 1 (`--tint`) | `ui202` at 70 %; other candidates tinted | Coordinates confirmed; layouts identified (table above); the mod's `core_common.arc` wins over the update's |
+| 2 (`--minimap`, before the patches) | Everything at 70 % | All correct except the minimap icons (stay put) and the mount gauge face (outside the gauge). Touch-screen map shrinks too (accepted). Map unchanged without the Map item |
+| 3 | + minimap icon patch | **Icons on their spots**, but too big |
+| 4 | + `ui250` scaled in place, mount face patch | Superseded by 5 |
+| 5 (`--minimap --target-button`) | + L + X target switch | **Waiting**: icon size, mount gauge, L + X (and whether X also attacks) |
+
+## Open questions
+
+* Luma3DS: does the base title's `core_common.arc` override the update's too?
+  Do `code.ips` and the HUD look right on a real 3DS (values below 70 % may be
+  unreadable at 400×240)?
+* Minimap without the Map item.
+* Hold / fishing gauges and the Frenzy icon are scaled but never seen.
+* The trailing table at header 0x2C and the sprite flags at 0x54.
