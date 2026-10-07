@@ -59,9 +59,19 @@ advanced use, `--arc quest01.arc` replaces `--rom`, with `--code` (code.bin,
 .3ds or the update's `00000000.app`) for the equipment options.
 
 `--hud-scale 90|80|70|60` (or the GUI's Interface tab) shrinks the top-screen
-HUD, each element towards its corner. It needs `--rom`; the prompts over the
-characters also need the update's decrypted `00000000.app`, which is found in
-Citra/Azahar/Lime3DS or given with `--update`.
+HUD, each element towards its corner. It needs `--rom`; the minimap, the mount
+gauge and the prompts over the characters also need the update's decrypted
+`00000000.app`, which is found in Citra/Azahar/Lime3DS or given with
+`--update`.
+
+For playing with the top screen only (GUI's Interface tab, "Target"):
+`--target-switch` makes L + X lock / switch the large-monster target like a
+tap on the target camera panel (gunners use L + X for ammo too, to be
+changed), and `--target-face` shows the target camera panel's monster faces
+on the top screen as well, left of the item selector. Both need `--rom` and
+the update. With any of these executable patches, `exefs/code.ips` is built
+from the update's executable (equipment changes included), so it is only
+valid with the update installed.
 
 Every setting defaults to the original game (all switches off, every mode on
 its least random value), so a preset only needs the options to change.

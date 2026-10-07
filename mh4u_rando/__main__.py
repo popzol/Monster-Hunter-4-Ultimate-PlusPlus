@@ -3,8 +3,11 @@
     python -m mh4u_rando --rom game.3ds --out output_folder [--seed S] [--preset p.json]
 
 The ROM must be decrypted; quest01.arc and the executable are read from it.
---hud-scale 70 makes the top-screen HUD smaller (needs --rom; the update's
-00000000.app is found in Citra/Azahar/Lime3DS, or given with --update).
+--hud-scale 70 makes the top-screen HUD smaller, --target-switch lets L + X
+lock / switch the target, --target-face shows the target's face on the top
+screen too (all need --rom and the update's 00000000.app, found in
+Citra/Azahar/Lime3DS or given with --update; without it the HUD size only
+changes data files).
 Advanced: --arc quest01.arc (instead of --rom) plus --code code.bin|game.3ds|update.app.
 The output folder is a mod folder: copy its contents into Citra's
 load/mods/0004000000126100/.
@@ -32,7 +35,10 @@ def main(argv=None) -> int:
     parser.add_argument("--hud-scale", choices=[s.value for s in HudScale],
                         help="top-screen HUD size in %% (overrides the preset)")
     parser.add_argument("--update", type=Path,
-                        help="the update's 00000000.app, for the HUD size (found in Citra/Azahar/Lime3DS by default)")
+                        help="the update's 00000000.app, for the interface options (found in Citra/Azahar/Lime3DS "
+                             "by default)")
+    parser.add_argument("--target-switch", action="store_true", help="L + X locks / switches the target")
+    parser.add_argument("--target-face", action="store_true", help="the target's face on the top screen too")
     args = parser.parse_args(argv)
 
     settings = Settings.load(args.preset) if args.preset else Settings()
@@ -40,10 +46,12 @@ def main(argv=None) -> int:
         settings.seed = args.seed
     if args.hud_scale:
         settings.hud_scale = HudScale(args.hud_scale)
+    settings.target_switch = settings.target_switch or args.target_switch
+    settings.target_face_top = settings.target_face_top or args.target_face
     if settings.randomizes_equipment and args.arc and args.code is None:
         parser.error("the preset randomizes equipment: use --rom, or add --code to --arc")
-    if settings.hud_scale != HudScale.FULL and args.arc:
-        parser.error("the HUD size needs --rom")
+    if settings.patches_interface_code and args.arc:
+        parser.error("the interface options (HUD size, target) need --rom")
 
     def progress(done, total, report):
         print(f"\r[{done}/{total}] {report.title or report.quest_id}"[:79].ljust(79), end="", flush=True)
@@ -54,14 +62,16 @@ def main(argv=None) -> int:
     print(f"Quests: {result.arc_path}")
     print(f"Spoiler log: {result.spoiler_path}")
     if result.ips_path:
-        print(f"Equipment patch: {result.ips_path}")
+        print(f"Executable patch: {result.ips_path}" + (" (from the update's executable)"
+                                                        if result.interface_patched else ""))
+    if result.equipment_spoiler_path:
         print(f"Equipment log: {result.equipment_spoiler_path}")
     if result.hud_paths:
         print(f"HUD at {result.hud_scale.value} %: {len(result.hud_paths)} files in "
               f"{result.output_dir / 'romfs'}")
         if result.hud_update is None:
-            print("HUD: the update's 00000000.app was not found, so the prompts over the characters keep "
-                  "their size (use --update)")
+            print("HUD: the update's 00000000.app was not found, so the minimap, the mount gauge and the "
+                  "prompts over the characters keep their size (use --update)")
     for warning in result.warnings:
         print(f"WARNING {warning}")
     return 0

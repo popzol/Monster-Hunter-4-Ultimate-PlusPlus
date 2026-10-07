@@ -519,14 +519,31 @@ INTERFACE_SECTIONS: tuple[Section, ...] = (
                               T("Difícil de leer en la pantalla de una 3DS.", "Hard to read on a 3DS screen.")),
                    ), compact=True),
         ), T("Pensado para jugar en un monitor. Cada elemento se encoge hacia su esquina: reloj, vida, aguante, "
-             "filo y medidores del arma, lista del grupo, selector de objetos y avisos sobre los personajes. "
-             "El minimapa y el medidor de montar se quedan a su tamaño por ahora. Necesita la ROM; los avisos "
-             "sobre los personajes, además, la actualización (se busca en Citra, Azahar o Lime3DS, o se indica "
-             "a la izquierda).",
+             "filo y medidores del arma, lista del grupo, selector de objetos, minimapa, medidor de montar y "
+             "avisos sobre los personajes. Necesita la ROM y la actualización (se busca en Citra, Azahar o "
+             "Lime3DS, o se indica a la izquierda): parte del cambio va en el ejecutable de la actualización.",
              "Meant for playing on a monitor. Each element shrinks towards its corner: clock, health, stamina, "
-             "sharpness and weapon gauges, party list, item selector and the prompts over the characters. The "
-             "minimap and the mount gauge keep their size for now. Needs the ROM; the prompts over the "
-             "characters also need the update (found in Citra, Azahar or Lime3DS, or set on the left).")),
+             "sharpness and weapon gauges, party list, item selector, minimap, mount gauge and the prompts over "
+             "the characters. Needs the ROM and the update (found in Citra, Azahar or Lime3DS, or set on the "
+             "left): part of the change goes into the update's executable.")),
+        Group(T("Objetivo", "Target"), (
+            Option("target_switch", T("Cambiar de objetivo con L + X", "Switch the target with L + X"),
+                   T("Con L pulsado (modo objetos), X fija el monstruo grande o cambia al otro, igual que tocar el "
+                     "panel de la cámara de objetivo. Los tiradores usan L + X para la munición: con arco o "
+                     "ballesta hará las dos cosas (pendiente de cambiar).",
+                     "With L held (item mode), X locks the large monster or switches to the other one, like a "
+                     "tap on the target camera panel. Gunners use L + X for ammo: with a bow or bowgun it does "
+                     "both (to be changed).")),
+            Option("target_face_top", T("Cara del objetivo arriba", "Target face on the top screen"),
+                   T("Muestra la cara del monstruo del panel de la cámara de objetivo también en la pantalla "
+                     "superior, a la izquierda del selector de objetos, con su marca de fijado.",
+                     "Shows the monster face of the target camera panel on the top screen too, left of the item "
+                     "selector, with its lock mark.")),
+        ), T("Para jugar solo con la pantalla superior. Funcionan con el panel de la cámara de objetivo puesto en "
+             "la pantalla táctil, y solo cuando el monstruo ya se ha encontrado (como el panel). Necesitan la "
+             "ROM y la actualización.",
+             "For playing with the top screen only. They work with the target camera panel on the touch screen, "
+             "and only once the monster has been found (like the panel). They need the ROM and the update.")),
     )),
 )
 

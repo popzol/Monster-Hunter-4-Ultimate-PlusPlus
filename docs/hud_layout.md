@@ -21,11 +21,11 @@ game (says which); **Guess** = plausible from names or values, unverified.
 |---|---|
 | `lyt` / `lanl` reader and writer, tools, tests | **Done** — every layout and animation of the dump round-trips |
 | Top-screen layouts identified and scaled by data | **Done**, verified in Citra (probes 1–2) |
-| Option in the randomizer (settings, pipeline, GUI, CLI) | **Done for the data layer** — the executable patches are not wired in yet |
+| Option in the randomizer (settings, pipeline, GUI, CLI) | **Done**: data files and executable patches (`code.ips` from the update's executable) |
 | Minimap: data + icon patch | **Verified** (icon positions probe 3, size probe 5) |
 | Mount gauge: data + face patch | **Verified** (probe 6) |
 | L + X switches the target | **Verified** (probe 11, the player's action 12; see hud_code.md, "Target switch"). Conflicts with the gunners' ammo selection: input to change. The "X" hint next to the item selector is not done |
-| Target icon (monster face) on the top screen | Not started |
+| Target face (monster icon) on the top screen | **Implemented**, checked offline; in-game test pending (probe 12; hud_code.md, "Target face on the top screen") |
 | Minimap without the Map item | Not started — the map does not shrink then |
 
 ## Code and tools
@@ -47,7 +47,7 @@ game (says which); **Guess** = plausible from names or values, unverified.
 python tools/lyt_dump.py Documentation/0004000000126100 --arc eng/data/core_quest.arc --layout ui202
 python tools/lyt_dump.py "MH4U.3ds" --arc spa/data/core_quest.arc --layout ui202
 python tools/hud_probe.py "MH4U.3ds" --update Documentation/updatefiles/00000000.app --out DIR
-    [--scale 70] [--tint] [--minimap [--target-button [--target-asm R.s --devkitarm DIR]] [--merge-ips CURRENT.ips]]
+    [--scale 70] [--tint] [--minimap [--target-button [--target-asm R.s --devkitarm DIR]] [--target-face] [--merge-ips CURRENT.ips]]
 python tools/citra_state.py %APPDATA%/Citra/states/0004000000126100.02.cst --input-log
 ```
 
@@ -69,12 +69,18 @@ found on the virtual SD card of Citra, Azahar or Lime3DS, which keep it
 decrypted: `<user folder>/<emulator>/sdmc/Nintendo 3DS/<id>/<id>/title/0004000e/00126100/content/00000000.app`.
 Without it the prompts over the characters keep their size.
 
-**Not wired in yet:** `CODE_PATCH_LAYOUTS` and `code_patch.patch_hud()` (minimap
-and mount gauge) and `patch_target_button()` (L + X). They need the update's
-executable — `load_code(update .app)` — as the base of `exefs/code.ips`, merged
-with the equipment patch (the equipment tables are identical in both
-executables). Whether L + X is part of the HUD option or a separate one is a
-pending product decision.
+**Executable patches.** With the update, a HUD size below 100 % also writes
+`CODE_PATCH_LAYOUTS` (minimap, map icons, mount gauge) and `code_patch.patch_hud()`
+goes into `exefs/code.ips`. Two separate switches, GUI group "Objetivo /
+Target" (`Settings.target_switch`, `Settings.target_face_top`; CLI
+`--target-switch`, `--target-face`), add `patch_target_button()` (L + X) and
+`patch_target_face()` (the target's face on the top screen). Whenever one of
+these executable patches is on, `exefs/code.ips` is built from the **update's**
+executable (`load_code(update .app)`) with the equipment changes, then
+`code_patch.patch_interface()`; otherwise it is
+built from the ROM's executable as before. Without the update, the HUD size
+only changes data files, and the target options (`Settings.needs_update`) stop
+the run with an error.
 
 ## Where the HUD lives
 
@@ -337,6 +343,7 @@ The anchor is chosen **per root group** (`ui204` mixes corners).
 | 6 | L + X with other bits | Mount gauge **correct**; L + X did nothing |
 | 7–10 (`--target-asm`) | Diagnostic routines logging the input (read from save states) | The real button bits and the player's actions (hud_code.md, "Pad") |
 | 11 (`--minimap --target-button`) | L + X = the player's action 12 | **L + X locks / switches the target** once the monster's icon is tappable |
+| 12 (pipeline: HUD 70 %, `target_switch`, `target_face_top`) | Combined test of every interface option, mod built by `pipeline.run()` | **Waiting**: target face on the top screen, everything else unchanged |
 
 ## Open questions
 

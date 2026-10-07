@@ -458,23 +458,52 @@ def test_hud_scale_setting_and_checks(tmp_path):
     assert Settings.from_dict(settings.to_dict()).hud_scale is HudScale.P70
     loose_arc = tmp_path / "quest01.arc"
     loose_arc.write_bytes(b"ARC\x00")
-    with pytest.raises(ValueError, match="HUD size needs the game ROM"):
+    with pytest.raises(ValueError, match="interface options need the game ROM"):
         run(loose_arc, tmp_path / "out", settings)
-    with pytest.raises(SystemExit):
-        main(["--arc", str(loose_arc), "--out", str(tmp_path / "out"), "--hud-scale", "70"])
+    for option in (["--hud-scale", "70"], ["--target-switch"], ["--target-face"]):
+        with pytest.raises(SystemExit):
+            main(["--arc", str(loose_arc), "--out", str(tmp_path / "out"), *option])
 
 
-def test_pipeline_writes_the_hud(tmp_path):
+def test_interface_settings():
+    from mh4u_rando.randomizer import HudScale, Settings
+    assert not Settings().patches_interface_code and not Settings().needs_update
+    assert Settings(hud_scale=HudScale.P90).patches_interface_code and not Settings(hud_scale=HudScale.P90).needs_update
+    for name in ("target_switch", "target_face_top"):
+        settings = Settings(**{name: True})
+        assert settings.patches_interface_code and settings.needs_update
+        assert getattr(Settings.from_dict(settings.to_dict()), name) is True
+
+
+def test_target_options_need_the_update(tmp_path, monkeypatch):
     from conftest import rom_path
+    from mh4u_rando import pipeline
+    from mh4u_rando.randomizer import Settings
+    rom = rom_path()
+    if rom is None:
+        pytest.skip("no ROM (set MH4U_ROM)")
+    monkeypatch.setattr(pipeline, "find_update", lambda: None)
+    with pytest.raises(ValueError, match="need the update"):
+        pipeline.run(rom, tmp_path, Settings(seed="target", target_face_top=True))
+
+
+def test_pipeline_writes_the_hud(tmp_path, monkeypatch):
+    from conftest import rom_path
+    from mh4u_rando import pipeline
     from mh4u_rando.pipeline import run
     from mh4u_rando.randomizer import HudScale, Settings
     rom = rom_path()
     if rom is None:
         pytest.skip("no ROM (set MH4U_ROM)")
     update = UPDATE_APP if UPDATE_APP.is_file() else None
+    if update is None:  # do not pick up an update installed in an emulator
+        monkeypatch.setattr(pipeline, "find_update", lambda: None)
     result = run(rom, tmp_path, Settings(seed="hud", hud_scale=HudScale.P80), update_path=update)
-    assert result.hud_scale is HudScale.P80 and len(result.hud_paths) == (10 if update else 5)
-    assert all(p.is_file() for p in result.hud_paths)
+    assert result.hud_scale is HudScale.P80 and all(p.is_file() for p in result.hud_paths)
+    if update:  # with the update: core_quest + core_common + the maps per language, and the executable patch
+        assert len(result.hud_paths) > 10 and result.interface_patched and result.ips_path.is_file()
+    else:  # data only: core_quest per language, no executable patch
+        assert len(result.hud_paths) == 5 and result.ips_path is None
     result = run(rom, tmp_path, Settings(seed="hud"))  # back to 100 %: the files go away
     assert not result.hud_paths and not any(p.exists() for p in (tmp_path / "romfs").rglob("core_*.arc"))
 
@@ -592,3 +621,92 @@ def test_patch_target_button_on_the_game():
     if not update.is_file():
         pytest.skip("no Documentation/exefs/code_update.bin")
     patch_target_button(patch_hud(update.read_bytes(), 0.7))  # both fit in the free space together
+
+
+def synthetic_face_code() -> bytes:
+    """An executable with what patch_target_face checks: the layout loader's literals, the quest layout
+    list (20 path pointers + 0) with its screen table, and the call to the target panel update."""
+    from mh4u_rando.hud.code_patch import (
+        BASE_ADDRESS, FACE_HOOK, LAYOUT_COUNT, LAYOUT_LIST, LAYOUT_SCREENS, LIST_LITERAL, PANEL_UPDATE, UI601,
+        encode_bl,
+    )
+    code = bytearray(LAYOUT_SCREENS + 0x40 - BASE_ADDRESS)
+    struct.pack_into("<2I", code, LIST_LITERAL - BASE_ADDRESS, LAYOUT_LIST, LAYOUT_SCREENS)
+    struct.pack_into(f"<{LAYOUT_COUNT + 1}I", code, LAYOUT_LIST - BASE_ADDRESS,
+                     *(0xEAC000 + 0x10 * i for i in range(LAYOUT_COUNT)), 0)
+    code[LAYOUT_SCREENS - BASE_ADDRESS + UI601] = 1
+    code[LAYOUT_SCREENS - BASE_ADDRESS + LAYOUT_COUNT] = 0xFF  # what follows the table in the game
+    code[FACE_HOOK - BASE_ADDRESS:FACE_HOOK - BASE_ADDRESS + 4] = encode_bl(FACE_HOOK, PANEL_UPDATE)
+    return bytes(code)
+
+
+def test_patch_target_face():
+    from mh4u_rando.hud.code_patch import (
+        BASE_ADDRESS, CAVE_END, FACE_END, FACE_HOOK, FACE_LIST, FACE_PARAMS, FACE_ROUTINE, FACE_SCREENS,
+        LAYOUT_COUNT, LIST_LITERAL, TARGET_FACE, UI601, CodePatchError, bl_target, face_params,
+        patch_target_face,
+    )
+    code = synthetic_face_code()
+    patched = patch_target_face(code, 0.7)
+    assert struct.unpack_from("<2I", patched, LIST_LITERAL - BASE_ADDRESS) == (FACE_LIST, FACE_SCREENS)
+    paths = struct.unpack_from(f"<{LAYOUT_COUNT + 2}I", patched, FACE_LIST - BASE_ADDRESS)
+    original = struct.unpack_from(f"<{LAYOUT_COUNT}I", code, 0xEFE17C - BASE_ADDRESS)
+    assert paths == (*original, original[UI601], 0)  # ui601 loaded a second time
+    screens = patched[FACE_SCREENS - BASE_ADDRESS:FACE_SCREENS - BASE_ADDRESS + LAYOUT_COUNT + 1]
+    assert screens[UI601] == 1 and screens[LAYOUT_COUNT] == 0  # touch screen, then the top screen
+    assert struct.unpack_from("<3f", patched, FACE_PARAMS - BASE_ADDRESS) == pytest.approx(face_params(0.7))
+    assert patched[FACE_ROUTINE - BASE_ADDRESS:FACE_ROUTINE - BASE_ADDRESS + len(TARGET_FACE)] == TARGET_FACE
+    assert FACE_ROUTINE + len(TARGET_FACE) <= FACE_END
+    assert bl_target(patched, FACE_HOOK) == FACE_ROUTINE
+    assert bl_target(patched, FACE_ROUTINE + 12) == 0xB94854  # the routine still runs the panel update
+    assert not any(patched[FACE_END - BASE_ADDRESS:CAVE_END - BASE_ADDRESS])  # the icons' range is untouched
+    with pytest.raises(CodePatchError):
+        patch_target_face(patched)  # already patched
+    with pytest.raises(CodePatchError):
+        patch_target_face(bytes(len(code)))  # not the update's executable
+
+
+def test_face_params_follow_the_hud_size():
+    from mh4u_rando.hud.code_patch import FACE_SCALE, face_params
+    for factor in (1.0, 0.7):
+        x, y, scale = face_params(factor)
+        assert scale == pytest.approx(FACE_SCALE * factor)
+        right = 200 - (x + 40 * scale) + 48 * 1.2 * scale   # two monsters: right frame's right edge
+        bottom = 120 - (y + 86 * scale) + 44 * 1.2 * scale
+        assert right == pytest.approx(400 - 138 * factor) and bottom == pytest.approx(240 - 4 * factor)
+
+
+def test_patch_target_face_on_the_game():
+    from mh4u_rando.hud.code_patch import patch_hud, patch_target_button, patch_target_face
+    update = ROOT / "Documentation" / "exefs" / "code_update.bin"
+    if not update.is_file():
+        pytest.skip("no Documentation/exefs/code_update.bin")
+    code = update.read_bytes()
+    patch_target_face(patch_target_button(patch_hud(code, 0.7)), 0.7)  # all fit in the free space together
+    patch_hud(patch_target_face(code), 0.7)  # in any order
+
+
+def test_pipeline_with_every_interface_option(tmp_path):
+    """code.ips from the update's executable: equipment, HUD size, L + X and the target face together."""
+    from conftest import rom_path
+    from mh4u_rando.exefs import apply_ips, load_code
+    from mh4u_rando.hud.code_patch import (
+        CAVE, FACE_HOOK, FACE_ROUTINE, ICON_CALLS, TARGET_ROUTINE, TARGET_TEST, bl_target,
+    )
+    from mh4u_rando.pipeline import run
+    from mh4u_rando.randomizer import HudScale, Settings
+    rom = rom_path()
+    if rom is None or not UPDATE_APP.is_file():
+        pytest.skip("needs the ROM and the update (MH4U_ROM, MH4U_UPDATE_APP)")
+    settings = Settings(seed="interface", randomize_recipes=True, hud_scale=HudScale.P70, target_switch=True,
+                        target_face_top=True)
+    result = run(rom, tmp_path, settings, update_path=UPDATE_APP)
+    assert result.interface_patched and result.equipment_report is not None
+    original = load_code(UPDATE_APP)
+    patched = apply_ips(original, result.ips_path.read_bytes())
+    assert all(bl_target(patched, site) == CAVE for site in ICON_CALLS)
+    assert bl_target(patched, TARGET_TEST) == TARGET_ROUTINE and bl_target(patched, FACE_HOOK) == FACE_ROUTINE
+    assert patched != original
+    result = run(rom, tmp_path, Settings(seed="interface"))  # everything off: patch and files go away
+    assert result.ips_path is None and not (tmp_path / "exefs" / "code.ips").exists()
+    assert not result.hud_paths and not any((tmp_path / "romfs").rglob("core_*.arc"))

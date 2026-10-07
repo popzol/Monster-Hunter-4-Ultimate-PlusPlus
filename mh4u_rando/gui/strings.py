@@ -54,9 +54,12 @@ LOG_DONE = T("Archivo generado: {path}", "Archive written: {path}")
 LOG_EQUIPMENT = T("Parche de equipo generado: {path} ({count} piezas cambiadas)",
                   "Equipment patch written: {path} ({count} pieces changed)")
 LOG_HUD = T("HUD al {scale} %: {count} archivos en {path}", "HUD at {scale}%: {count} files in {path}")
-LOG_HUD_NO_UPDATE = T("No se ha encontrado la actualización (00000000.app): los avisos sobre los personajes "
-                      "conservan su tamaño.",
-                      "The update (00000000.app) was not found: the prompts over the characters keep their size.")
+LOG_HUD_NO_UPDATE = T("No se ha encontrado la actualización (00000000.app): el minimapa, el medidor de montar y "
+                      "los avisos sobre los personajes conservan su tamaño.",
+                      "The update (00000000.app) was not found: the minimap, the mount gauge and the prompts over "
+                      "the characters keep their size.")
+LOG_INTERFACE_PATCH = T("Parche del ejecutable de la actualización (interfaz): {path}",
+                        "Patch of the update's executable (interface): {path}")
 LOG_SUMMARY = T("{randomized} misiones randomizadas, {skipped} sin cambios por diseño, {notes} con ajustes relajados.",
                 "{randomized} quests randomized, {skipped} unchanged by design, {notes} with relaxed preferences.")
 LOG_WARNING = T("AVISO", "WARNING")
@@ -70,8 +73,8 @@ ERROR_SAME_FILE = T("La carpeta de salida no puede contener el archivo original:
 ERROR_READ_ROM = T("No se pudo leer la ROM:\n{error}", "The ROM could not be read:\n{error}")
 ERROR_EQUIPMENT_NEEDS_ROM = T("Las opciones de equipo necesitan la ROM del juego (.3ds), no un quest01.arc suelto.",
                               "Equipment options need the game ROM (.3ds), not a loose quest01.arc.")
-ERROR_HUD_NEEDS_ROM = T("El tamaño del HUD necesita la ROM del juego (.3ds), no un quest01.arc suelto.",
-                        "The HUD size needs the game ROM (.3ds), not a loose quest01.arc.")
+ERROR_HUD_NEEDS_ROM = T("Las opciones de interfaz necesitan la ROM del juego (.3ds), no un quest01.arc suelto.",
+                        "The interface options need the game ROM (.3ds), not a loose quest01.arc.")
 ERROR_NO_UPDATE = T("No se encuentra el archivo de la actualización:\n{path}",
                     "The update file was not found:\n{path}")
 ERROR_PRESET = T("No se pudo cargar el preset:\n{error}", "The preset could not be loaded:\n{error}")

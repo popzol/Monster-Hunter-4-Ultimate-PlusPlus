@@ -32,7 +32,7 @@ import customtkinter as ctk
 
 from ..exefs import is_container
 from ..pipeline import inspect_game, output_arc_path, run
-from ..randomizer import HudScale, Settings
+from ..randomizer import Settings
 from ..randomizer.rng import new_seed
 from . import strings as S
 from . import theme
@@ -356,7 +356,7 @@ class RandomizerApp(ctk.CTk):
         if settings.randomizes_equipment and not is_container(rom):
             messagebox.showerror(S.APP_NAME, self.tr(S.ERROR_EQUIPMENT_NEEDS_ROM))
             return
-        if settings.hud_scale != HudScale.FULL and not is_container(rom):
+        if settings.patches_interface_code and not is_container(rom):
             messagebox.showerror(S.APP_NAME, self.tr(S.ERROR_HUD_NEEDS_ROM))
             return
         update_text = self.update_var.get().strip()
@@ -431,9 +431,11 @@ class RandomizerApp(ctk.CTk):
         skipped = sum(1 for r in result.reports if r.skipped or (not any(r.original_waves) and not r.intruders))
         notes = sum(1 for r in result.reports if r.notes)
         self._log(S.LOG_DONE.format(self.language, path=result.arc_path))
-        if result.ips_path:
+        if result.equipment_report:
             self._log(S.LOG_EQUIPMENT.format(self.language, path=result.ips_path,
                                              count=len(result.equipment_report.pieces)))
+        if result.interface_patched:
+            self._log(S.LOG_INTERFACE_PATCH.format(self.language, path=result.ips_path))
         if result.hud_paths:
             self._log(S.LOG_HUD.format(self.language, scale=result.hud_scale.value, count=len(result.hud_paths),
                                        path=result.output_dir / "romfs"))

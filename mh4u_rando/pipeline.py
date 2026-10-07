@@ -7,8 +7,10 @@ executable (code.bin or the update's .app).
 Output layout (copy its contents into load/mods/0004000000126100/):
 
     romfs/loc/data/quest01.arc     randomized quests
-    romfs/<lang>/data/core_*.arc   smaller top-screen HUD (only with a HUD size below 100 %)
-    exefs/code.ips                 equipment changes (only when equipment is randomized)
+    romfs/<lang>/data/core_*.arc   smaller top-screen HUD (HUD size below 100 %)
+    exefs/code.ips                 equipment changes and the interface's executable patches (HUD size,
+                                   L + X target switch, target face); built from the update's executable
+                                   when there are interface patches, from the ROM's otherwise
     spoiler_<seed>.txt/.json       quest log
     equipment_<seed>.txt/.json     equipment log
     settings_<seed>.json           preset used
@@ -23,7 +25,8 @@ from pathlib import Path
 from .arc import parse_arc, write_arc
 from .data import GameData, load_game_data
 from .exefs import ExtractError, RomFS, is_container, load_code, make_ips
-from .hud import UPDATE_TITLE_ID, find_update, remove_hud_files, write_hud_files
+from .hud import UPDATE_TITLE_ID, find_update, hud_files, remove_hud_files
+from .hud.code_patch import patch_interface
 from .mib import Quest, parse_mib, write_mib
 from .randomizer import (
     HudScale, QuestReport, Settings, randomize_quests, unrandomized_quests, write_spoiler_json, write_spoiler_text,
@@ -65,6 +68,7 @@ class RunResult:
     hud_scale: HudScale = HudScale.FULL
     hud_paths: list[Path] = field(default_factory=list)  # files of the smaller HUD
     hud_update: Path | None = None  # update .app used for the HUD (prompts over the characters need it)
+    interface_patched: bool = False  # code.ips carries the interface patches (built from the update's executable)
 
     @property
     def output_dir(self) -> Path:
@@ -136,28 +140,52 @@ def open_update(update_path: Path | None) -> tuple[RomFS | None, Path | None]:
     return update, path
 
 
+def write_interface_files(result: "RunResult", rom: RomFS | None, update: RomFS | None, settings: Settings,
+                          with_code_patch: bool) -> None:
+    """The HUD size's RomFS files; files of an earlier run are removed first (they would still be loaded)."""
+    output_dir = result.output_dir
+    remove_hud_files(output_dir)
+    resize_hud = settings.hud_scale != HudScale.FULL
+    hud = dict(hud_files(rom, update, settings.hud_scale.factor, with_code_patch)) if resize_hud else {}
+    for path, data in hud.items():
+        target = output_dir / "romfs" / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+        result.hud_paths.append(target)
+    if resize_hud:
+        result.hud_scale = HudScale(settings.hud_scale)
+
+
 def run(game: Path, output_dir: Path, settings: Settings,
         progress: Callable[[int, int, QuestReport], None] | None = None,
         code_path: Path | None = None, stage: Callable[[str], None] | None = None,
         update_path: Path | None = None) -> RunResult:
     """`game` is the ROM or a loose quest01.arc. The executable for equipment comes from `code_path`
-    (code.bin, .3ds or update .app) or, by default, from the ROM. The HUD size also needs the ROM, plus the
-    update's 00000000.app (`update_path`, or the one installed in Citra/Azahar/Lime3DS) for the prompts over
-    the characters. `stage` is told when each of STAGES starts (for progress displays)."""
+    (code.bin, .3ds or update .app) or, by default, from the ROM. The interface options also need the ROM,
+    plus the update's 00000000.app (`update_path`, or the one installed in Citra/Azahar/Lime3DS): their
+    executable patches are for the update, so code.ips is then built from the update's executable (its
+    equipment tables are the same). Without the update the HUD size only changes data files (the minimap,
+    the mount gauge and the prompts over the characters keep their size); the target options require it.
+    `stage` is told when each of STAGES starts (for progress displays)."""
     announce = stage or (lambda _name: None)
     announce("rom")
     data = load_game_data()
+    update = update_used = None
+    if settings.patches_interface_code:
+        if not is_container(game):
+            raise ValueError("the interface options need the game ROM")
+        update, update_used = open_update(update_path)
+        if update is None and settings.needs_update:
+            raise ValueError("the target options need the update's 00000000.app (installed in "
+                             "Citra, Azahar or Lime3DS, or given)")
+    patch_interface_code = update_used is not None and settings.patches_interface_code
     code = None
-    if settings.randomizes_equipment:
+    if patch_interface_code:
+        code = load_code(update_used)  # fail before any work if the executable is unsupported
+    elif settings.randomizes_equipment:
         if code_path is None and not is_container(game):
             raise ValueError("equipment randomization needs the game ROM (or its code.bin)")
-        code = load_code(code_path or game)  # fail before any work if the executable is unsupported
-    resize_hud = settings.hud_scale != HudScale.FULL
-    update = update_used = None
-    if resize_hud:
-        if not is_container(game):
-            raise ValueError("the HUD size needs the game ROM")
-        update, update_used = open_update(update_path)
+        code = load_code(code_path or game)
     arc, entries, quests = read_quests(game)
     input_check = check_input(quests, data)
 
@@ -178,22 +206,28 @@ def run(game: Path, output_dir: Path, settings: Settings,
     settings.save(output_dir / f"settings_{settings.seed}.json")
     result = RunResult(arc_path=arc_path, spoiler_path=spoiler_path, reports=reports, seed=settings.seed,
                        input_check=input_check, unrandomized=unrandomized_quests(reports, settings))
-    if resize_hud:
-        result.hud_scale = HudScale(settings.hud_scale)
-        result.hud_paths = write_hud_files(output_dir, RomFS(game), update, result.hud_scale.factor)
-        result.hud_update = update_used
-    else:
-        remove_hud_files(output_dir)  # files left by an earlier run would still be loaded
+    write_interface_files(result, RomFS(game) if is_container(game) else None, update, settings,
+                          patch_interface_code)
+    result.hud_update = update_used
 
     ips_path = output_dir / IPS_PATH
     if code is None:
         ips_path.unlink(missing_ok=True)  # a patch left by an earlier run would still be applied
         return result
-    announce("equipment")
-    equipment = randomize_equipment(code, settings, data)
+    patched = code
+    if settings.randomizes_equipment:
+        announce("equipment")
+        equipment = randomize_equipment(code, settings, data)
+        patched = equipment.code
+    if patch_interface_code:
+        patched = patch_interface(patched, settings.hud_scale.factor, settings.target_switch,
+                                  settings.target_face_top)
+        result.interface_patched = True
     ips_path.parent.mkdir(parents=True, exist_ok=True)
-    ips_path.write_bytes(make_ips(code, equipment.code))
+    ips_path.write_bytes(make_ips(code, patched))
     result.ips_path = ips_path
+    if not settings.randomizes_equipment:
+        return result
     result.equipment_report = equipment.report
     result.equipment_spoiler_path = output_dir / f"equipment_{settings.seed}.txt"
     result.equipment_spoiler_path.write_text(

@@ -2,7 +2,7 @@
 
     python tools/hud_probe.py ROM --out DIR [--update UPDATE.app] [--scale 70] [--tint]
                               [--minimap [--merge-ips CURRENT.ips] [--target-button
-                              [--target-asm ROUTINE.s --devkitarm DIR]]]
+                              [--target-asm ROUTINE.s --devkitarm DIR]] [--target-face]]
 
 ROM is the decrypted .3ds. UPDATE is the update's 00000000.app, needed for the
 core_common.arc layouts because the update replaces that file. Default: every
@@ -14,6 +14,7 @@ instead (main HUD scaled, other candidate layouts tinted to identify them).
 --target-button adds the L + X target switch; --target-asm assembles another
 routine in its place (a diagnostic one such as tools/asm/input_event_log.s,
 read back with tools/citra_state.py; needs devkitARM or the Arm GNU Toolchain).
+--target-face shows the target panel's monster faces on the top screen too.
 Writes DIR/romfs/..., DIR/exefs/code.ips and DIR/LEEME.txt; copy romfs and exefs
 into load/mods/0004000000126100/.
 """
@@ -28,8 +29,8 @@ from mh4u_rando.exefs import RomFS, apply_ips, load_code, make_ips  # noqa: E402
 from mh4u_rando.hud import LANGUAGES, LYT_TYPE_HASH, Anchor, hud_files, parse_lyt, scale_arc  # noqa: E402
 from mh4u_rando.hud.build import MAP_ARC, short_name  # noqa: E402
 from mh4u_rando.hud.code_patch import (  # noqa: E402
-    BASE_ADDRESS, CAVE, CAVE_END, ICON_CALLS, MOUNT_FACE_FLOATS, TARGET_BUTTON, TARGET_ROUTINE, TARGET_TEST,
-    patch_hud, patch_target_button,
+    BASE_ADDRESS, CAVE, FACE_END, FACE_HOOK, ICON_CALLS, LIST_LITERAL, MOUNT_FACE_FLOATS, TARGET_BUTTON,
+    TARGET_ROUTINE, TARGET_TEST, patch_hud, patch_target_button, patch_target_face,
 )
 from build_hud_asm import DEFAULT_DEVKITARM, assemble  # noqa: E402
 
@@ -135,8 +136,9 @@ def scale_readme(scale: int, with_common: bool, minimap: bool, code_patch: bool)
 def without_hud_patch(code: bytes, original: bytes) -> bytes:
     """`code` with the original bytes back wherever code_patch.patch_hud writes."""
     out = bytearray(code)
-    spans = [(CAVE, CAVE_END)] + [(site, site + 4) for site in ICON_CALLS] + \
-        [(address, address + 4) for address in MOUNT_FACE_FLOATS] + [(TARGET_TEST, TARGET_TEST + 16)]
+    spans = [(CAVE, FACE_END)] + [(site, site + 4) for site in ICON_CALLS] + \
+        [(address, address + 4) for address in MOUNT_FACE_FLOATS] + [(TARGET_TEST, TARGET_TEST + 16)] + \
+        [(LIST_LITERAL, LIST_LITERAL + 8), (FACE_HOOK, FACE_HOOK + 4)]
     for start, end in spans:
         out[start - BASE_ADDRESS:end - BASE_ADDRESS] = original[start - BASE_ADDRESS:end - BASE_ADDRESS]
     return bytes(out)
@@ -154,6 +156,7 @@ def main() -> None:
     parser.add_argument("--target-button", action="store_true", help="also L + X to switch the target")
     parser.add_argument("--target-asm", type=Path, help="routine assembled instead of asm/target_button.s")
     parser.add_argument("--devkitarm", type=Path, default=DEFAULT_DEVKITARM, help="bin folder of the assembler")
+    parser.add_argument("--target-face", action="store_true", help="also the target's face on the top screen")
     args = parser.parse_args()
     factor = args.scale / 100
     rom = RomFS(args.rom)
@@ -177,6 +180,8 @@ def main() -> None:
         if args.target_button:
             routine = assemble(args.target_asm, TARGET_ROUTINE, args.devkitarm) if args.target_asm else TARGET_BUTTON
             code = patch_target_button(code, routine)
+        if args.target_face:
+            code = patch_target_face(code, factor)
         ips.write_bytes(make_ips(original, code))
         print(f"HUD executable patch written to {ips}")
     readme = tint_readme(args.scale, update is not None) if args.tint else \

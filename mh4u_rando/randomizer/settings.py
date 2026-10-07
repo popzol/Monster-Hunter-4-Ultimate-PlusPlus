@@ -183,11 +183,23 @@ class Settings:
     palico_model_mode: PalicoModelMode = PalicoModelMode.FULL_SET
     palico_models_use_each_once: bool = False
 
-    # Interface (game files, not randomized)
+    # Interface (game files and executable patches, not randomized)
     hud_scale: HudScale = HudScale.FULL  # each top-screen HUD element shrinks towards its corner
+    target_switch: bool = False          # L + X locks / switches the large-monster target
+    target_face_top: bool = False        # the target camera panel's monster faces also on the top screen
 
     # Debug
     debug_weak_monsters: bool = False    # lowest health and attack index for every monster
+
+    @property
+    def patches_interface_code(self) -> bool:
+        """The interface options that patch the executable and the update's files (mh4u_rando/hud)."""
+        return self.hud_scale != HudScale.FULL or self.needs_update
+
+    @property
+    def needs_update(self) -> bool:
+        """Interface options that cannot work without the update's 00000000.app (the HUD size can)."""
+        return self.target_switch or self.target_face_top
 
     @property
     def randomizes_equipment(self) -> bool:
