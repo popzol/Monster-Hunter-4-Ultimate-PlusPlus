@@ -7,7 +7,10 @@ Each stat follows its own StatMode:
   pieces of the same weapon class / armor part and rank.
 
 Whatever the mode, no stat goes above the maximum of the original pieces of
-the same weapon class / armor part and rank.
+the same weapon class / armor part and rank. Armor also stays under the
+game's limits for worn pieces (defense at the maximum upgrade level, and each
+resistance), past which it refuses quests (docs/game_rules.md); the few
+unobtainable pieces that break them are left out of the pools.
 
 Weapon upgrade options (the upgrade tree comes from the game):
 * "natural evolution" of a weapon = the upgrade that, in the original game,
@@ -28,7 +31,7 @@ import random
 from collections import defaultdict
 
 from ...data.tuning import tuning
-from ...equipment import RESISTANCES
+from ...equipment import RESISTANCES, Armor
 from ..settings import Settings, StatMode
 from .catalog import CLASS_BY_KEY, Catalog, Piece
 
@@ -37,7 +40,8 @@ ELEMENT_KINDS = {"element": range(1, 6), "status": range(1, 5)}
 SLOT_FIELDS = {"element": ("element_type", "element_value"), "status": ("status_type", "status_value")}
 
 WEAPON_LIMITS = {"attack": (1, 65535), "affinity": (-100, 100), "defense": (0, 255), "slots": (0, 3)}
-ARMOR_LIMITS = {"defense": (1, 255), "slots": (0, 3), **{f"res_{r}": (-127, 127) for r in RESISTANCES}}
+ARMOR_LIMITS = {"defense": (1, Armor.DEFENSE_LIMIT - 1), "slots": (0, 3),
+                **{f"res_{r}": (-127, Armor.RESISTANCE_LIMIT - 1) for r in RESISTANCES}}
 ELEMENT_LIMITS = (1, 127)
 
 
@@ -333,13 +337,25 @@ def randomize_weapon_stats(catalog: Catalog, settings: Settings, rng: random.Ran
 
 # ----- armor ---------------------------------------------------------------------------------------------
 
+def _within_game_limits(piece: Piece) -> bool:
+    return (piece.original["defense"] + piece.record.defense_gain < Armor.DEFENSE_LIMIT
+            and all(piece.original[f"res_{r}"] < Armor.RESISTANCE_LIMIT for r in RESISTANCES))
+
+
+def _armor_limits(piece: Piece, field: str) -> tuple[int, int]:
+    if field == "defense":   # the limit applies to the upgraded defense
+        return 1, max(1, Armor.DEFENSE_LIMIT - 1 - piece.record.defense_gain)
+    return ARMOR_LIMITS[field]
+
+
 def randomize_armor_stats(catalog: Catalog, settings: Settings, rng: random.Random) -> None:
     pools = Pools()
     for key, pieces in catalog.armor.items():
         for piece in pieces.values():
-            for field in ARMOR_LIMITS:
-                pools.add((key, piece.rank, field), piece.original[field])
-                pools.add((key, field), piece.original[field])
+            if _within_game_limits(piece):
+                for field in ARMOR_LIMITS:
+                    pools.add((key, piece.rank, field), piece.original[field])
+                    pools.add((key, field), piece.original[field])
     modes = {"defense": settings.armor_defense, "slots": settings.armor_slots,
              **{f"res_{r}": settings.armor_resistances for r in RESISTANCES}}
     for pieces in catalog.armor.values():
@@ -347,4 +363,4 @@ def randomize_armor_stats(catalog: Catalog, settings: Settings, rng: random.Rand
             for field, mode in modes.items():
                 if mode is not StatMode.KEEP:
                     value = _new_value(mode, piece.original[field], piece, field, pools, rng)
-                    piece.record[field] = _clamp(value, ARMOR_LIMITS[field])
+                    piece.record[field] = _clamp(value, _armor_limits(piece, field))

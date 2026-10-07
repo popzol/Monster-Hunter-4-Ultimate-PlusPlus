@@ -33,6 +33,13 @@ is done or discovered.
 
 ## To verify in-game
 
+* **Equipment stat limits** (docs/game_rules.md): `tools/bisect_mod.py caps`
+  builds K1 (armor at 179 defense at max level, resistances 9: quests
+  accepted), K2 (base defense 180: refused), K3 (fire resistance 10: refused)
+  and N (the user's mod with the fix: accepted). Afterwards: find the code that
+  reads the tamper bits when a quest is accepted, and check the weapon limits
+  (does attack 420 refuse? "Awaritia", charge blade 103, has 420). If they
+  hold, keep weapon stats under them too.
 * Monster icons (`new_monster_icons`, on by default; docs/monster_icons.md):
   verified with Gogmazios (quest board, details, in the
   quest) and Dalamadur (head + tail on the quest board). Left: the Fatalis'

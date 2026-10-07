@@ -1,7 +1,8 @@
 """Minimal reader for MH4U LMD text files (ARC type 0x62440501, magic "lmd\\0").
 
 Only what is needed to list strings by index:
-    0x08  u32 string count
+    0x08  u32 count of the 8-byte entries at 0x24 (labels?); not the string count
+    0x10  u32 string count
     0x1C  u32 offset of the string table
     table: count x (u32 absolute offset, u32 length, u32 length), UTF-16LE strings
 """
@@ -17,7 +18,7 @@ LMD_TYPE_HASH = 0x62440501
 def read_lmd(data: bytes) -> list[str]:
     if data[:4] != b"lmd\x00":
         raise ValueError("not an LMD file")
-    count = struct.unpack_from("<I", data, 0x08)[0]
+    count = struct.unpack_from("<I", data, 0x10)[0]
     table = struct.unpack_from("<I", data, 0x1C)[0]
     strings = []
     for i in range(count):

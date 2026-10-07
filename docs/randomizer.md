@@ -78,6 +78,10 @@ unused slots. Rank comes from rarity: 1-3 low, 4-7 high, 8-10 G.
   upgrades hold only 2 (format limit). The upgrade tree is unchanged.
 * **Caps**: whatever the mode, no weapon or armor stat goes above the maximum
   of the original pieces of the same weapon class / armor part and rank.
+  Armor also stays under the game's limits for worn gear (defense under 180 at
+  the maximum upgrade level, resistances under 10), or the game refuses
+  quests (docs/game_rules.md, "Equipment stat limits"); the unobtainable "GX"
+  pieces that break them are left out of the pools.
 * **Upgrades** (the tree comes from the game; a few weapons have two parents):
   * natural evolution = the upgrade that kept its weapon's element/status in
     the original game (or, failing that, the most similar name);

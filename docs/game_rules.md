@@ -153,6 +153,46 @@ original monster's.
   (equipment presets). — *Retail*
 * Everwood expedition templates (ids 45xxx) are never randomized. — *Retail*
 
+## Equipment stat limits
+
+The game checks the stats of the gear the hunter wears against fixed limits.
+A piece at or past a limit is marked as tampered, and accepting a quest
+shows **"No puedes aceptar estos datos de misión"** ("You can't accept this
+quest data"; Lobby text 0x134), so the quest is refused. — *Confirmed
+(armor defense)*
+
+* **Armor defense: under 180 per piece**, counting upgrades: base defense
+  (record byte 0x07) plus the steps of the piece's current upgrade level
+  (`Armor.defense_gain`; docs/equipment_data.md). Every obtainable piece
+  stays at 156 or less at its maximum level. — *Confirmed*: a mod whose
+  generated stats broke it was refused, and setting every base defense to 255
+  made the leather set refused too. Measured with the leather set: base 180 →
+  refused, base 179 minus the max-level gain → accepted (pending,
+  `tools/bisect_mod.py caps`).
+* **Armor resistances: under 10 per piece and element** (record bytes
+  0x0C-0x10; upgrades do not change them). Every obtainable piece has at most 7. —
+  *Read from the code; in-game test pending (`caps`, variant K3)*.
+* Weapons go through the same check, each with its own bit: defense bonus
+  over 179, attack at or over 420 (a per-type table), element or status
+  over 100 (stored / 10), affinity over 100. — *Hypothesis*: what the attack
+  check reads is not verified; "Awaritia" (charge blade 103), which can be
+  crafted, has 420 in its record.
+* The only original pieces that break the armor limits are the 20
+  rarity-10 "GX Escadora" / "GX Dragon… X" pieces, which have no recipe.
+
+Where it is: `FUN_002f8f34(ctx, hunter, kind)` totals the worn stats for the
+status screen. For each worn piece it compares the stat with the limit, keeps
+the stat at the limit when it is reached, and sets a bit in
+`*(hunter + 0xE30) + 0x494 + type × 4` (bit 0 = defense, bit `kind` =
+resistance, 0x40 = attack, 0x80… = other weapon stats). The limits are halfwords
+indexed by equipment type at **0xF3FC0E** (0 / 180 ×6 / 420 ×14); the
+resistance limits are at 0xE05F30 (0, 10 ×5). Which code reads these bits
+when a quest is accepted is not found yet (no direct reference to +0x494).
+
+The randomizer keeps generated armor under these limits
+(`randomizer/equipment/stats.py`, `_armor_limits`). Before that fix, "Random"
+(range) armor stats broke them for about 300 of the 3039 craftable pieces.
+
 ## Maps
 
 `curated/map_rules.json`:

@@ -61,6 +61,27 @@ class Armor(Record):
     }
     SKILLS_AT = 0x1E
     SKILL_SLOTS = 5
+    # A worn piece whose defense or a resistance reaches these is flagged as tampered and quests
+    # are refused (docs/game_rules.md, "Equipment stat limits").
+    DEFENSE_LIMIT = 180
+    RESISTANCE_LIMIT = 10
+    # Upgrades: levels per stage at 0x14-0x1B, defense per level by stage; flag 0x10 picks the small steps.
+    LEVELS_AT = 0x14
+    MAX_LEVEL = 63
+    DEFENSE_STEPS = (2, 3, 4, 5, 4, 2, 4, 2)
+    DEFENSE_STEPS_SMALL = (2, 2, 3, 3, 2, 1, 3, 1)
+
+    @property
+    def defense_gain(self) -> int:
+        """Defense the piece gains from its base to its maximum upgrade level."""
+        steps = self.DEFENSE_STEPS_SMALL if self.data[0x04] & 0x10 else self.DEFENSE_STEPS
+        levels = self.MAX_LEVEL
+        gain = 0
+        for stage, count in enumerate(self.data[self.LEVELS_AT:self.LEVELS_AT + 8]):
+            taken = min(count, levels)
+            gain += taken * steps[stage]
+            levels -= taken
+        return gain
 
     @property
     def skills(self) -> list[tuple[int, int]]:

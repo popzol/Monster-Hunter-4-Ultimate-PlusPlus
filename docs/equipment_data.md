@@ -2,7 +2,9 @@
 
 Where MH4U (EUR, 0004000000126100) stores equipment. Offsets are **file
 offsets in the decompressed `code.bin`** (16,261,120 bytes; see
-[game_files.md](game_files.md) to extract it).
+[game_files.md](game_files.md) to extract it). The address in memory (Ghidra,
+Citra) is the offset + 0x100000: the head table at offset 0xE835AC is at
+0xF835AC.
 
 **Base game and update (0004000E00126100, `00000000.app`) have every table
 below at the same offset with identical contents**, even though the code
@@ -125,14 +127,31 @@ Record (40 bytes) — *Verified* on 32 random pieces (all parts, rarity 2–10):
 |---|---|---|
 | 0x00 | u16 | **Male model id** (`pl_m_helm001` → 1) |
 | 0x02 | u16 | **Female model id** |
-| 0x04 | u8 | Flags (hunter type / gender) — *Guess* |
+| 0x04 | u8 | Flags: 0x04 and 0x08 = hunter types (blademaster / gunner; which is which not checked), **0x10 = small upgrade steps**; the rest *Guess* (gender) |
 | 0x05 | u8 | **Rarity − 1** |
-| 0x07 | u8 | **Base defense** (max defense follows from upgrades) |
+| 0x07 | u8 | **Base defense** (at upgrade level 1) |
 | 0x08 | u32 | **Price / 2** |
 | 0x0C | s8 ×5 | **Resistances**: fire, water, thunder, dragon, ice |
 | 0x11 | u8 | **Slots** |
-| 0x12–0x1D | | Upgrade data — not decoded |
+| 0x12–0x13 | | Not decoded |
+| 0x14 | u8 ×8 | **Upgrade levels per stage** (see below) |
+| 0x1C–0x1D | u16 | Not decoded; its low 4 bits are packed with the rarity in some list (`FUN_009e35ac`) |
 | 0x1E | (u8, s8) ×5 | **Skills**: (skill tree id, points); id 0 = empty |
+
+**Upgraded defense** (`FUN_002f3fb0`, *Verified* in the code; `Armor.defense_gain`):
+the maximum level is the sum of the 8 stage counts, at most 63 (`FUN_002f51cc`).
+Each level after the first adds the step of its stage, taking stages in order:
+steps `2 3 4 5 4 2 4 2` (table at VA 0xF3ED5C), or `2 2 3 3 2 1 3 1` (0xF3ED64)
+when flag 0x10 is set. Defense = base + the steps up to the piece's current
+level. The game refuses quests when a worn piece reaches 180 (docs/game_rules.md,
+"Equipment stat limits"). Craftable pieces reach at most 156; the gain from base
+to maximum is 0 to 133.
+
+Pointers to the five tables plus a sixth (VA 0xFB2924), indexed by equipment type
+(1 body, 2 arms, 3 waist, 4 legs, 5 head, 6 ?), are at VA 0xF588D8. Their only
+reader is `FUN_002f5874(ctx, item)`, which returns the record of a worn or
+stored item. The item is 0x1C bytes: [0] type, [1] upgrade level − 1, [2..3] id,
+[6..] decorations (*Likely*). Pieces per type: VA 0xF3FC38.
 
 ## Crafting recipes
 

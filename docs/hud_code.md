@@ -21,8 +21,14 @@ Paths differ per machine; `<user>` is the Windows user folder.
   auto-analysis takes 21–27 minutes.
 * Headless queries (`tools/ghidra/`): `Xrefs.java` (references to addresses),
   `Decompile.java` (C of the functions containing addresses), `Listing.java`
-  (instructions with the value of every loaded constant). Example, from
-  PowerShell:
+  (instructions with the value of every loaded constant), `Range.java` (the
+  same between two addresses, also outside functions), `Scalars.java` (every
+  instruction that uses a constant, as an immediate or a literal-pool word),
+  `Dump.java` (halfwords at an address, or at the pointer stored there with
+  `*ADDR`). Each run takes about a minute, so pass several scripts at once.
+  Text messages are asked for by (file, index) and the index is often
+  computed, so searching a message index with `Scalars.java` finds mostly
+  unrelated constants. Example, from PowerShell:
 
   ```
   $env:JAVA_HOME = '<JDK 21>'
@@ -289,6 +295,17 @@ What worked to see the game's state at run time, and what did not.
   (`vMustReplyEmpty: timeout`). Breakpoints work, but a conditional
   breakpoint on a per-frame routine stops the emulator every frame and the
   game freezes. A one-shot breakpoint did confirm that the routine runs.
+  More traps (quest-accept investigation, 2026-10): the stub sends extra
+  `OK` packets and duplicate replies, so a client must drain pending packets
+  before each command, check that `g` / `m` replies are hex of the expected
+  length, and take only `T` / `S` packets as stop replies; devkitARM's gdb
+  has no Python, and `continue` inside batch `commands` froze the game. A
+  breakpoint armed after the game has loaded was never shown to fire (no
+  control test), and no read watchpoint (Z3 / Z4) ever fired: do not trust a
+  "not hit" without a positive control. Detect that Citra is listening with
+  `netstat -ano | Select-String ":24689 .*LISTENING"`, not with a TCP probe.
+  With the stub on, Citra waits for a client at boot: turn it off afterwards
+  (`use_gdbstub` in `%APPDATA%\Citra\config\qt-config.ini`, CRLF, no BOM).
 * **Save states as memory dumps** (what worked): a diagnostic routine writes
   counters or an event log into the **unused tail of the last `.bss` page**
   (0x111D128–0x111E000: mapped, zero, used by nothing), the tester plays and

@@ -5,7 +5,7 @@ import pytest
 
 from mh4u_rando.data import load_game_data
 from mh4u_rando.equipment import (
-    CodeBinError, CreateRecipe, EquipmentTables, MeleeWeapon, SharpnessProfile, verify_code,
+    RESISTANCES, Armor, CodeBinError, CreateRecipe, EquipmentTables, MeleeWeapon, SharpnessProfile, verify_code,
 )
 from mh4u_rando.equipment.tables import _regions
 from mh4u_rando.exefs import apply_ips, make_ips
@@ -82,6 +82,16 @@ def test_use_once_covers_every_target():
 
 def test_ranks():
     assert [rank_of(r) for r in (1, 3, 4, 7, 8, 10)] == [1, 1, 2, 2, 3, 3]
+
+
+def test_armor_defense_gain_follows_the_upgrade_stages():
+    raw = bytearray(40)
+    raw[0x14:0x1C] = bytes([1, 2, 0, 0, 0, 0, 0, 3])    # 6 levels: steps 2, 3, 3, then 2, 2, 2
+    assert Armor(0, raw).defense_gain == 2 + 3 * 2 + 2 * 3
+    raw[0x04] = 0x10                                    # small steps: 2, 2, 2, then 1, 1, 1
+    assert Armor(0, raw).defense_gain == 2 + 2 * 2 + 1 * 3
+    raw[0x14:0x1C] = bytes([40, 40, 0, 0, 0, 0, 0, 0])  # stops at level 63
+    assert Armor(0, raw).defense_gain == 40 * 2 + 23 * 2
 
 
 # ----- with the game executable ----------------------------------------------------------------------------
@@ -293,6 +303,27 @@ def test_stats_never_exceed_the_rank_maximum(code_bin, modes, improve):
         for index, p in pieces.items():
             for f in ("defense", "slots", "res_fire", "res_ice"):
                 assert p.record[f] <= top[(key, original.armor[key][index].rank, f)], (p.name, f)
+
+
+def _breaks_game_limits(record) -> bool:
+    return (record["defense"] + record.defense_gain >= Armor.DEFENSE_LIMIT
+            or any(record[f"res_{r}"] >= Armor.RESISTANCE_LIMIT for r in RESISTANCES))
+
+
+def test_only_unobtainable_original_armor_breaks_the_game_limits(code_bin):
+    catalog = build_catalog(EquipmentTables.read(code_bin))
+    breaking = [p for pieces in catalog.armor.values() for p in pieces.values() if _breaks_game_limits(p.record)]
+    assert breaking and all(p.create is None and p.rarity == 10 for p in breaking)
+
+
+@pytest.mark.parametrize("mode", [StatMode.RANGE, StatMode.PERCENT], ids=["random", "progressive"])
+def test_armor_stays_within_the_game_limits(code_bin, mode):
+    for seed in ("LIMIT1", "LIMIT2", "LIMIT3"):
+        result = randomize_equipment(code_bin, Settings(seed=seed, randomize_armor_stats=True, armor_defense=mode,
+                                                        armor_resistances=mode), load_game_data())
+        catalog = build_catalog(EquipmentTables.read(result.code))
+        assert not [p.name for pieces in catalog.armor.values() for p in pieces.values()
+                    if _breaks_game_limits(p.record)], seed
 
 
 def test_upgrades_always_improve(code_bin):

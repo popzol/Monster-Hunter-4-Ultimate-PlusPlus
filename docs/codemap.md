@@ -78,6 +78,7 @@ its public classes and functions with their signatures.
 - class `MeleeWeapon(Record)` - 24-byte record. Element/status values are stored / 10; negative = needs Awaken.
 - class `RangedWeapon(Record)` - 40-byte record (bows and bowguns).
 - class `Armor(Record)` - 40-byte record. Price is stored halved.
+  - `defense_gain() -> int` - Defense the piece gains from its base to its maximum upgrade level.
   - `skills() -> list[tuple[int, int]]` - [(skill tree id, points)], empty slots (tree 0) left out.
   - `skills(skills: list[tuple[int, int]]) -> None`
 - class `PalicoWeapon(Record)` - 20 bytes, packed (the table starts on an odd address). Element value / 10; rarity as shown (1-10).
@@ -537,6 +538,19 @@ its public classes and functions with their signatures.
 
 ### `mh4u_rando/randomizer/validation.py` - Check a randomized quest against every known engine rule.
 - `validate_quest(quest: Quest, data: GameData, settings: Settings) -> list[str]`
+
+### `tools/bisect_mod.py` - Find which part of a mod breaks the game (hang, crash, refused quests): build it in steps, instal...
+- `variant_settings(full: Settings, variant: str) -> Settings` - `full` with only the pieces up to `variant` (see the module docstring).
+- `group_settings(full: Settings, group: str) -> Settings` - `full` with only the equipment options of `group` (and no interface options).
+- `mods_dir(arg: Path | None) -> Path`
+- `build(args) -> None`
+- `cap_tables(base: bytes, test: str) -> EquipmentTables`
+- `caps(args) -> None`
+- `clear_mod(mods: Path) -> None`
+- `copy_mod(source: Path, mods: Path) -> None`
+- `install(args) -> None`
+- `restore(args) -> None`
+- `main() -> None`
 
 ### `tools/build_equipment_data.py` - Build mh4u_rando/data/generated/equipment_names.json from the game's text files.
 - `main() -> None`
