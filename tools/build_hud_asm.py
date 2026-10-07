@@ -1,5 +1,7 @@
 """Build mh4u_rando/hud/asm/* with devkitARM (or the Arm GNU Toolchain) and compare them with the bytes
-embedded in mh4u_rando/hud/code_patch.py (MINIMAP_WRAPPER, TARGET_BUTTON, TARGET_FACE).
+embedded in mh4u_rando/hud/code_patch.py (MINIMAP_WRAPPER, TARGET_BUTTON, FACE_LOADER_CODE, TARGET_FACE).
+Also prints the size of the diagnostic build of target_face.c (-DFACE_DEBUG, tools/hud_probe.py
+--face-debug), which may use the free space up to CAVE_END.
 
     python tools/build_hud_asm.py [--devkitarm DIR]
 
@@ -18,30 +20,33 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from mh4u_rando.hud.code_patch import (  # noqa: E402
-    CAVE, FACE_ROUTINE, MINIMAP_WRAPPER, PANEL_UPDATE, TARGET_BUTTON, TARGET_FACE, TARGET_ROUTINE,
+    CAVE, CAVE_END, FACE_LOADER, FACE_LOADER_CODE, FACE_PARAMS, FACE_ROUTINE, MINIMAP_WRAPPER, PANEL_UPDATE, TARGET_BUTTON,
+    TARGET_FACE, TARGET_ROUTINE,
 )
 
 ASM = ROOT / "mh4u_rando" / "hud" / "asm"
 # source -> (link address, embedded bytes, name in code_patch.py)
 SOURCES = {"minimap_wrapper.s": (CAVE, MINIMAP_WRAPPER, "MINIMAP_WRAPPER"),
            "target_button.s": (TARGET_ROUTINE, TARGET_BUTTON, "TARGET_BUTTON"),
+           "face_loader.s": (FACE_LOADER, FACE_LOADER_CODE, "FACE_LOADER_CODE"),
            "target_face.c": (FACE_ROUTINE, TARGET_FACE, "TARGET_FACE")}
-# Game functions called from C sources.
-GAME_SYMBOLS = {"panel_update": PANEL_UPDATE, "group_show": 0xAE53E0, "pane_redraw": 0xAE6BCC}
+# Game functions and patch data used by C sources.
+GAME_SYMBOLS = {"panel_update": PANEL_UPDATE, "group_show": 0xAE53E0, "group_priority": 0xAE63C8,
+                "pane_redraw": 0xAE6BCC, "face_params": FACE_PARAMS}
 C_FLAGS = ("-Os", "-Wall", "-Wextra", "-Werror", "-marm", "-mcpu=mpcore", "-mfloat-abi=softfp", "-mfpu=vfp",
            "-ffreestanding", "-fno-builtin", "-nostdlib", "-fno-pic", "-fno-common", "-ffunction-sections")
 DEFAULT_DEVKITARM = Path("C:/devkitPro/devkitARM/bin")
 
 
-def assemble(source: Path, address: int, bin_dir: Path) -> bytes:
-    """Machine code of `source` (.s, or .c with its .ld) linked at `address`."""
+def assemble(source: Path, address: int, bin_dir: Path, defines: tuple[str, ...] = ()) -> bytes:
+    """Machine code of `source` (.s, or .c with its .ld and the macros `defines`) linked at `address`."""
     def run(tool: str, *args) -> None:
         subprocess.run([str(bin_dir / f"arm-none-eabi-{tool}"), *map(str, args)], check=True)
 
     with tempfile.TemporaryDirectory() as tmp:
         obj, elf, raw = (Path(tmp) / name for name in ("out.o", "out.elf", "out.bin"))
         if source.suffix == ".c":
-            run("gcc", "-c", *C_FLAGS, "-o", obj, source)
+            run("gcc", "-c", *C_FLAGS, *(f"-D{name}" for name in defines), "-o", obj, source)
             symbols = [f"--defsym={name}={value:#x}" for name, value in GAME_SYMBOLS.items()]
             run("ld", f"--defsym=LINK_ADDRESS={address:#x}", *symbols, "-T", source.with_suffix(".ld"),
                 "-o", elf, obj)
@@ -61,6 +66,9 @@ def main() -> None:
         print(f"{source}: {len(code)} bytes at {address:#x}")
         print(code.hex())
         print(f"matches code_patch.{name}" if code == embedded else f"DIFFERS from code_patch.{name}")
+    debug =assemble(ASM / "target_face.c", FACE_ROUTINE, args.devkitarm, ("FACE_DEBUG",))
+    room = CAVE_END - FACE_ROUTINE
+    print(f"target_face.c with FACE_DEBUG: {len(debug)} bytes of {room}" + ("" if len(debug) <= room else " - TOO BIG"))
 
 
 if __name__ == "__main__":

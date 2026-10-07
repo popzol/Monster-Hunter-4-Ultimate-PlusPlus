@@ -25,7 +25,7 @@ game (says which); **Guess** = plausible from names or values, unverified.
 | Minimap: data + icon patch | **Verified** (icon positions probe 3, size probe 5) |
 | Mount gauge: data + face patch | **Verified** (probe 6) |
 | L + X switches the target | **Verified** (probe 11, the player's action 12; see hud_code.md, "Target switch"). Conflicts with the gunners' ammo selection: input to change. The "X" hint next to the item selector is not done |
-| Target face (monster icon) on the top screen | **Implemented**, checked offline; in-game test pending (probe 12; hud_code.md, "Target face on the top screen") |
+| Target face (monster icon) on the top screen | Probe 12: works, but with three bugs (minimap gone, face too big and centred, no lock mark); fixes in probe 13, pending (hud_code.md, "Target face on the top screen") |
 | Minimap without the Map item | Not started — the map does not shrink then |
 
 ## Code and tools
@@ -47,7 +47,8 @@ game (says which); **Guess** = plausible from names or values, unverified.
 python tools/lyt_dump.py Documentation/0004000000126100 --arc eng/data/core_quest.arc --layout ui202
 python tools/lyt_dump.py "MH4U.3ds" --arc spa/data/core_quest.arc --layout ui202
 python tools/hud_probe.py "MH4U.3ds" --update Documentation/updatefiles/00000000.app --out DIR
-    [--scale 70] [--tint] [--minimap [--target-button [--target-asm R.s --devkitarm DIR]] [--target-face] [--merge-ips CURRENT.ips]]
+    [--scale 70] [--tint] [--minimap [--target-button [--target-asm R.s --devkitarm DIR]] [--target-face [--face-debug]] [--merge-ips CURRENT.ips]]
+python tools/citra_state.py %APPDATA%/Citra/states/0004000000126100.03.cst --face-dump
 python tools/citra_state.py %APPDATA%/Citra/states/0004000000126100.02.cst --input-log
 ```
 
@@ -226,9 +227,11 @@ the layout:
   | `ui203_call` (party) | (191, 71…23) | (9, 49…97) | Left edge |
   | `ui205_name_base` (item selector) | (−130, −110) | (330, 230) | Bottom-right |
 
-* Sprites seem to be placed by their **top-left corner on screen** (Guess,
-  strongly supported): the health frame is a 4 px cap at 0, a 222 px body at
-  −4 and a 14 px cap at −226, i.e. 0–240 px to the right of its null.
+* The point of a sprite placed at its position depends on the sprite (the
+  pivot may be the second byte of its flags at 0x54): the health frame looks
+  placed by its **top-left corner** (a 4 px cap at 0, a 222 px body at −4 and
+  a 14 px cap at −226, i.e. 0–240 px to the right of its null), while
+  `ui601`'s monster icons are placed by their **centre** (Verified, probe 12).
   Scaling does not depend on it (positions and sizes scale together).
 * Prompts and name tags (`ui001`) and the map layouts are moved by the code as
   a whole.
@@ -343,7 +346,8 @@ The anchor is chosen **per root group** (`ui204` mixes corners).
 | 6 | L + X with other bits | Mount gauge **correct**; L + X did nothing |
 | 7–10 (`--target-asm`) | Diagnostic routines logging the input (read from save states) | The real button bits and the player's actions (hud_code.md, "Pad") |
 | 11 (`--minimap --target-button`) | L + X = the player's action 12 | **L + X locks / switches the target** once the monster's icon is tappable |
-| 12 (pipeline: HUD 70 %, `target_switch`, `target_face_top`) | Combined test of every interface option, mod built by `pipeline.run()` | **Waiting**: target face on the top screen, everything else unchanged |
+| 12 (pipeline: HUD 70 %, `target_switch`, `target_face_top`) | Combined test of every interface option, mod built by `pipeline.run()` | Target face drawn on the top screen and following the panel, but full size, centred, with its board; **minimap gone**; no lock mark on the top screen (hud_code.md, "Probe 12") |
+| 13 (`--minimap --target-button --target-face --face-debug`) | Copy loaded after the stage map; faces scaled, boards hidden, placed by their centre; draw priority copied; diagnostic snapshot | **Waiting** |
 
 ## Open questions
 

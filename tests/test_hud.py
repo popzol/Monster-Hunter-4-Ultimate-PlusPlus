@@ -1,5 +1,6 @@
 import os
 import struct
+import sys
 from pathlib import Path
 
 import pytest
@@ -624,66 +625,88 @@ def test_patch_target_button_on_the_game():
 
 
 def synthetic_face_code() -> bytes:
-    """An executable with what patch_target_face checks: the layout loader's literals, the quest layout
-    list (20 path pointers + 0) with its screen table, and the call to the target panel update."""
+    """An executable with what patch_target_face checks: the instruction replaced in the layout loader,
+    the quest layout list (20 path pointers + 0) and the call to the target panel update."""
     from mh4u_rando.hud.code_patch import (
-        BASE_ADDRESS, FACE_HOOK, LAYOUT_COUNT, LAYOUT_LIST, LAYOUT_SCREENS, LIST_LITERAL, PANEL_UPDATE, UI601,
-        encode_bl,
+        BASE_ADDRESS, CAVE_END, FACE_HOOK, LAYOUT_COUNT, LAYOUT_LIST, LOADER_HOOK, LOADER_HOOK_ORIGINAL,
+        PANEL_UPDATE, encode_bl,
     )
-    code = bytearray(LAYOUT_SCREENS + 0x40 - BASE_ADDRESS)
-    struct.pack_into("<2I", code, LIST_LITERAL - BASE_ADDRESS, LAYOUT_LIST, LAYOUT_SCREENS)
+    code = bytearray(LAYOUT_LIST + 0x100 - BASE_ADDRESS)
+    assert len(code) > CAVE_END - BASE_ADDRESS
+    code[LOADER_HOOK - BASE_ADDRESS:LOADER_HOOK - BASE_ADDRESS + 4] = LOADER_HOOK_ORIGINAL
     struct.pack_into(f"<{LAYOUT_COUNT + 1}I", code, LAYOUT_LIST - BASE_ADDRESS,
                      *(0xEAC000 + 0x10 * i for i in range(LAYOUT_COUNT)), 0)
-    code[LAYOUT_SCREENS - BASE_ADDRESS + UI601] = 1
-    code[LAYOUT_SCREENS - BASE_ADDRESS + LAYOUT_COUNT] = 0xFF  # what follows the table in the game
     code[FACE_HOOK - BASE_ADDRESS:FACE_HOOK - BASE_ADDRESS + 4] = encode_bl(FACE_HOOK, PANEL_UPDATE)
     return bytes(code)
 
 
 def test_patch_target_face():
     from mh4u_rando.hud.code_patch import (
-        BASE_ADDRESS, CAVE_END, FACE_END, FACE_HOOK, FACE_LIST, FACE_PARAMS, FACE_ROUTINE, FACE_SCREENS,
-        LAYOUT_COUNT, LIST_LITERAL, TARGET_FACE, UI601, CodePatchError, bl_target, face_params,
-        patch_target_face,
+        BASE_ADDRESS, CAVE_END, FACE_END, FACE_HOOK, FACE_LOADER, FACE_LOADER_CODE, FACE_PARAMS, FACE_ROUTINE,
+        LAYOUT_LIST, LOADER_HOOK, TARGET_FACE, CodePatchError, bl_target, face_params, patch_target_face,
     )
     code = synthetic_face_code()
     patched = patch_target_face(code, 0.7)
-    assert struct.unpack_from("<2I", patched, LIST_LITERAL - BASE_ADDRESS) == (FACE_LIST, FACE_SCREENS)
-    paths = struct.unpack_from(f"<{LAYOUT_COUNT + 2}I", patched, FACE_LIST - BASE_ADDRESS)
-    original = struct.unpack_from(f"<{LAYOUT_COUNT}I", code, 0xEFE17C - BASE_ADDRESS)
-    assert paths == (*original, original[UI601], 0)  # ui601 loaded a second time
-    screens = patched[FACE_SCREENS - BASE_ADDRESS:FACE_SCREENS - BASE_ADDRESS + LAYOUT_COUNT + 1]
-    assert screens[UI601] == 1 and screens[LAYOUT_COUNT] == 0  # touch screen, then the top screen
+    assert bl_target(patched, LOADER_HOOK) == FACE_LOADER
+    loader = patched[FACE_LOADER - BASE_ADDRESS:FACE_LOADER - BASE_ADDRESS + len(FACE_LOADER_CODE)]
+    assert loader == FACE_LOADER_CODE and FACE_LOADER + len(FACE_LOADER_CODE) <= FACE_PARAMS
+    literals = struct.unpack_from("<2I", loader, len(loader) - 8)
+    assert literals == (LAYOUT_LIST + 12 * 4, 0xEFE1E8)  # ui601's path; the replaced instruction's literal
+    assert patched[LAYOUT_LIST - BASE_ADDRESS:] == code[LAYOUT_LIST - BASE_ADDRESS:]  # the list is untouched
     assert struct.unpack_from("<3f", patched, FACE_PARAMS - BASE_ADDRESS) == pytest.approx(face_params(0.7))
     assert patched[FACE_ROUTINE - BASE_ADDRESS:FACE_ROUTINE - BASE_ADDRESS + len(TARGET_FACE)] == TARGET_FACE
     assert FACE_ROUTINE + len(TARGET_FACE) <= FACE_END
     assert bl_target(patched, FACE_HOOK) == FACE_ROUTINE
-    assert bl_target(patched, FACE_ROUTINE + 12) == 0xB94854  # the routine still runs the panel update
-    assert not any(patched[FACE_END - BASE_ADDRESS:CAVE_END - BASE_ADDRESS])  # the icons' range is untouched
+    assert not any(patched[FACE_END - BASE_ADDRESS:CAVE_END - BASE_ADDRESS])  # still free
     with pytest.raises(CodePatchError):
         patch_target_face(patched)  # already patched
     with pytest.raises(CodePatchError):
         patch_target_face(bytes(len(code)))  # not the update's executable
+    big = bytes(range(256)) * 4  # the diagnostic build only fits up to CAVE_END
+    with pytest.raises(CodePatchError):
+        patch_target_face(code, 0.7, big)
+    debug = patch_target_face(code, 0.7, big, end=CAVE_END)
+    assert debug[FACE_ROUTINE - BASE_ADDRESS:FACE_ROUTINE - BASE_ADDRESS + len(big)] == big
 
 
 def test_face_params_follow_the_hud_size():
-    from mh4u_rando.hud.code_patch import FACE_SCALE, face_params
+    from mh4u_rando.hud.code_patch import FACE_CORNER_GAP, FACE_SCALE, face_params
     for factor in (1.0, 0.7):
         x, y, scale = face_params(factor)
         assert scale == pytest.approx(FACE_SCALE * factor)
-        right = 200 - (x + 40 * scale) + 48 * 1.2 * scale   # two monsters: right frame's right edge
-        bottom = 120 - (y + 86 * scale) + 44 * 1.2 * scale
-        assert right == pytest.approx(400 - 138 * factor) and bottom == pytest.approx(240 - 4 * factor)
+        half = 40 * 1.2 / 2 * scale                        # ui601_icon02, centred at (40, 86) * scale
+        right = 200 - (x + 40 * scale) + half              # two monsters: right face's right edge
+        bottom = 120 - (y + 86 * scale) + half
+        assert right == pytest.approx(400 - FACE_CORNER_GAP[0] * factor)
+        assert bottom == pytest.approx(240 - FACE_CORNER_GAP[1] * factor)
 
 
 def test_patch_target_face_on_the_game():
-    from mh4u_rando.hud.code_patch import patch_hud, patch_target_button, patch_target_face
+    from mh4u_rando.hud.code_patch import (
+        FACE_LOADER, LOADER_HOOK, PANEL_UPDATE, bl_target, patch_hud, patch_target_button, patch_target_face,
+    )
     update = ROOT / "Documentation" / "exefs" / "code_update.bin"
     if not update.is_file():
         pytest.skip("no Documentation/exefs/code_update.bin")
     code = update.read_bytes()
-    patch_target_face(patch_target_button(patch_hud(code, 0.7)), 0.7)  # all fit in the free space together
+    patched = patch_target_face(patch_target_button(patch_hud(code, 0.7)), 0.7)  # all fit together
+    assert bl_target(patched, LOADER_HOOK) == FACE_LOADER
+    calls = [bl_target(patched, FACE_LOADER + 4 * i) for i in range(40)]
+    assert {0x2B51C0, 0xC0F474} <= set(calls)                  # loads ui601 and creates its groups
+    assert patched.count(struct.pack("<I", 0xE59F7120)) == code.count(struct.pack("<I", 0xE59F7120)) - 1
+    assert PANEL_UPDATE in [bl_target(patched, address) for address in range(0xDEC8FC, 0xDEC910, 4)]
     patch_hud(patch_target_face(code), 0.7)  # in any order
+
+
+def test_embedded_code_matches_the_sources():
+    """The bytes in code_patch.py are the build of mh4u_rando/hud/asm (needs devkitARM)."""
+    sys.path.insert(0, str(ROOT / "tools"))
+    from build_hud_asm import ASM, DEFAULT_DEVKITARM, SOURCES, assemble
+    if not (DEFAULT_DEVKITARM / "arm-none-eabi-gcc.exe").is_file() and \
+            not (DEFAULT_DEVKITARM / "arm-none-eabi-gcc").is_file():
+        pytest.skip("no devkitARM")
+    for source, (address, embedded, name) in SOURCES.items():
+        assert assemble(ASM / source, address, DEFAULT_DEVKITARM) == embedded, name
 
 
 def test_pipeline_with_every_interface_option(tmp_path):
