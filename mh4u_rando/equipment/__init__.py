@@ -6,10 +6,12 @@ from .records import (
     PalicoWeapon, RangedWeapon, SharpnessProfile, ShortUpgradeRecipe, UpgradeRecipe,
 )
 from .tables import CodeBinError, EquipmentTables, tables_digest, verify_code
+from .tamper import allow_op_equipment
 
 __all__ = [
     "ARMOR_PARTS", "ELEMENT_TYPES", "PALICO_TABLES", "RESISTANCES", "SHARPNESS_COLORS", "STATUS_TYPES",
     "WEAPON_CLASSES", "Armor", "ArmorPart", "CodeBinError", "CreateRecipe", "EquipmentTables", "MeleeWeapon",
     "PalicoArmor", "PalicoTable", "PalicoWeapon", "RangedWeapon",
-    "SharpnessProfile", "ShortUpgradeRecipe", "UpgradeRecipe", "WeaponClass", "tables_digest", "verify_code",
+    "SharpnessProfile", "ShortUpgradeRecipe", "UpgradeRecipe", "WeaponClass", "allow_op_equipment", "tables_digest",
+    "verify_code",
 ]

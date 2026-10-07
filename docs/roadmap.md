@@ -36,7 +36,9 @@ is done or discovered.
 * **Equipment stat limits** (docs/game_rules.md): `tools/bisect_mod.py caps`
   builds K1 (armor at 179 defense at max level, resistances 9: quests
   accepted), K2 (base defense 180: refused), K3 (fire resistance 10: refused)
-  and N (the user's mod with the fix: accepted). Afterwards: find the code that
+  and N (the user's mod with the fix: accepted). Also test `allow_op_equipment`
+  (build a mod with it, wear gear past the limits, accept a quest; check the
+  stat bars of strong gear). Afterwards: find the code that
   reads the tamper bits when a quest is accepted, and check the weapon limits
   (does attack 420 refuse? "Awaritia", charge blade 103, has 420). If they
   hold, keep weapon stats under them too.

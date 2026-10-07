@@ -188,7 +188,7 @@ def run(game: Path, output_dir: Path, settings: Settings,
     if settings.patches_interface_code:
         if not is_container(game):
             raise ValueError("the interface options need the game ROM")
-    if settings.patches_interface_code or want_icons:
+    if settings.patches_interface_code or want_icons or settings.allow_op_equipment:
         update, update_used = open_update(update_path)
         if update is None and settings.needs_update:
             raise ValueError("the target options need the update's 00000000.app (installed in "
@@ -200,7 +200,8 @@ def run(game: Path, output_dir: Path, settings: Settings,
                        "keep the \"?\" icon")
     patch_interface_code = update_used is not None and (settings.patches_interface_code or new_icons)
     code = None
-    if patch_interface_code:
+    if patch_interface_code or (settings.allow_op_equipment and update_used is not None):
+        # The update's executable is the one that runs; allow_op_equipment patches code that only it has.
         code = load_code(update_used)  # fail before any work if the executable is unsupported
     elif settings.randomizes_equipment:
         if code_path is None and not is_container(game):
@@ -240,6 +241,7 @@ def run(game: Path, output_dir: Path, settings: Settings,
         announce("equipment")
         equipment = randomize_equipment(code, settings, data)
         patched = equipment.code
+        result.notices.extend(equipment.notices)
     if patch_interface_code:
         patched = patch_interface(patched, settings.hud_scale.factor, settings.target_switch,
                                   settings.target_face_top)

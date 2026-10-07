@@ -102,6 +102,10 @@ its public classes and functions with their signatures.
   - `records()`
   - `write(code: bytes) -> bytes`
 
+### `mh4u_rando/equipment/tamper.py` - Turn off the game's check of the stats of worn gear ("allow OP equipment", docs/game_rules.md).
+- `compares_present(code: bytes) -> bool` - True if the limit compares are where the update's executable has them.
+- `allow_op_equipment(code: bytes) -> tuple[bytes, bool]` - `code` without the stat limits of worn gear, and whether every limit could be removed.
+
 ### `mh4u_rando/exefs/__init__.py` - Access to the game ROM: its executable (ExeFS code.bin), RomFS files, and IPS patches.
 
 ### `mh4u_rando/exefs/code_bin.py` - Load the game executable from whatever file the user has.

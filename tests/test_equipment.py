@@ -80,6 +80,42 @@ def test_use_once_covers_every_target():
     assert set(Counter(mapping.values()).values()) <= {2, 3}
 
 
+def _fake_update_code() -> bytes:
+    import struct
+    from mh4u_rando.equipment import tamper
+    code = bytearray(0xE40000)
+    struct.pack_into("<21H", code, tamper.LIMITS_AT, 0, *[180] * 6, *[420] * 14)
+    struct.pack_into("<6H", code, tamper.RESISTANCE_LIMITS_AT, 0, *[10] * 5)
+    for n, address in enumerate(tamper.COMPARES):
+        struct.pack_into("<I", code, address - tamper.BASE_ADDRESS, 0xE3500000 | (0xB4 if n == 9 else 0x65))
+    return bytes(code)
+
+
+def test_allow_op_equipment_removes_every_limit():
+    import struct
+    from mh4u_rando.equipment import allow_op_equipment, tamper
+    code = _fake_update_code()
+    patched, complete = allow_op_equipment(code)
+    assert complete
+    assert struct.unpack_from("<21H", patched, tamper.LIMITS_AT) == (0, *[0x7FFF] * 20)
+    assert struct.unpack_from("<6H", patched, tamper.RESISTANCE_LIMITS_AT) == (0, *[0x7FFF] * 5)
+    for address in tamper.COMPARES:
+        word = struct.unpack_from("<I", patched, address - tamper.BASE_ADDRESS)[0]
+        assert word == 0xE3500C01     # cmp r0, #0x100
+    assert allow_op_equipment(patched)[1] is False   # nothing left to recognise: never patched twice
+
+
+def test_allow_op_equipment_without_the_update_patches_the_tables_only():
+    import struct
+    from mh4u_rando.equipment import allow_op_equipment, tamper
+    code = bytearray(_fake_update_code())
+    struct.pack_into("<I", code, tamper.COMPARES[3] - tamper.BASE_ADDRESS, 0xEAFFFFD4)  # the base game's code
+    patched, complete = allow_op_equipment(bytes(code))
+    assert not complete
+    assert struct.unpack_from("<H", patched, tamper.LIMITS_AT + 2)[0] == 0x7FFF
+    assert patched[tamper.COMPARES[0] - tamper.BASE_ADDRESS:][:4] == code[tamper.COMPARES[0] - tamper.BASE_ADDRESS:][:4]
+
+
 def test_ranks():
     assert [rank_of(r) for r in (1, 3, 4, 7, 8, 10)] == [1, 1, 2, 2, 3, 3]
 
@@ -113,6 +149,12 @@ def _check(original: bytes, result, data, settings: Settings):
     outside = bytearray(result.code)
     for offset, size in _regions():
         outside[offset:offset + size] = original[offset:offset + size]
+    if settings.allow_op_equipment:   # the limits of worn gear (equipment/tamper.py) are the only other change
+        from mh4u_rando.equipment import tamper
+        spans = [(tamper.LIMITS_AT, 2 * tamper.LIMITS_COUNT), (tamper.RESISTANCE_LIMITS_AT, 2 * tamper.RESISTANCE_COUNT),
+                 *[(a - tamper.BASE_ADDRESS, 4) for a in tamper.COMPARES]]
+        for offset, size in spans:
+            outside[offset:offset + size] = original[offset:offset + size]
     assert bytes(outside) == original, "bytes outside the equipment tables changed"
 
     catalog = build_catalog(EquipmentTables.read(result.code))
@@ -324,6 +366,14 @@ def test_armor_stays_within_the_game_limits(code_bin, mode):
         catalog = build_catalog(EquipmentTables.read(result.code))
         assert not [p.name for pieces in catalog.armor.values() for p in pieces.values()
                     if _breaks_game_limits(p.record)], seed
+
+
+def test_op_equipment_lifts_the_armor_limits(code_bin):
+    settings = Settings(seed="OP", randomize_armor_stats=True, armor_defense=StatMode.RANGE,
+                        armor_resistances=StatMode.RANGE, allow_op_equipment=True)
+    result = randomize_equipment(code_bin, settings, load_game_data())
+    catalog = build_catalog(EquipmentTables.read(result.code))
+    assert any(_breaks_game_limits(p.record) for pieces in catalog.armor.values() for p in pieces.values())
 
 
 def test_upgrades_always_improve(code_bin):

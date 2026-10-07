@@ -410,6 +410,26 @@ EQUIPMENT_SECTIONS: tuple[Section, ...] = (
                    requires="armor_skills"),
         ), T("Como mucho una habilidad negativa por pieza.", "At most one negative skill per piece.")),
     )),
+    Section(T("Equipo OP", "OP equipment"), (
+        Group(T("Límites del juego", "Game limits"), (
+            Option("allow_op_equipment", T("Permitir equipo OP", "Allow OP equipment"),
+                   T("Quita la comprobación del juego que rechaza las misiones (\"No puedes aceptar estos datos de "
+                     "misión\") cuando llevas puesta una pieza con defensa de 180 o más (contando mejoras), una "
+                     "resistencia de 10 o más, o un arma por encima de sus topes. Con la opción activada puedes "
+                     "entrar a cualquier misión con cualquier arma y armadura, y las estadísticas de armadura "
+                     "aleatorias ya no se limitan a esos valores. Necesita la actualización del juego "
+                     "(00000000.app) para quitar todos los límites; sin ella solo se quitan los de ataque, "
+                     "defensa y resistencias.",
+                     "Removes the game's check that refuses quests (\"You can't accept this quest data\") when you "
+                     "wear a piece with 180 or more defense (counting upgrades), a resistance of 10 or more, or a "
+                     "weapon past its limits. With it on you can enter any quest with any weapon and armor, and "
+                     "random armor stats are no longer kept under those values. It needs the game update "
+                     "(00000000.app) to remove every limit; without it only the attack, defense and resistance "
+                     "limits are removed.")),
+        ), T("Desactivada, el randomizer mantiene la armadura por debajo de los límites para que las misiones "
+             "se puedan aceptar.",
+             "When off, the randomizer keeps armor under the limits so quests can be accepted.")),
+    )),
     Section(T("Modelos", "Models"), (
         Group(T("Aspecto", "Looks"), (
             Option("randomize_models", T("Randomizar modelos", "Randomize models"),

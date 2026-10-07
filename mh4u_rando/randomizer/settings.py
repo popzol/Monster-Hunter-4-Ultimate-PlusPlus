@@ -162,6 +162,7 @@ class Settings:
     randomize_models: bool = False
     model_mode: ModelMode = ModelMode.FAMILIES
     models_use_each_once: bool = False
+    allow_op_equipment: bool = False      # no stat limits: the game accepts quests with any worn gear
 
     # Felyne (Palico) equipment
     randomize_palico_recipes: bool = False
@@ -205,7 +206,8 @@ class Settings:
 
     @property
     def randomizes_equipment(self) -> bool:
-        return any(getattr(self, name) for name in EQUIPMENT_SWITCHES) or self.armor_skills is not ArmorSkillMode.KEEP
+        return (any(getattr(self, name) for name in EQUIPMENT_SWITCHES) or self.armor_skills is not ArmorSkillMode.KEEP
+                or self.allow_op_equipment)
 
     def to_dict(self) -> dict:
         return {k: (v.value if isinstance(v, Enum) else v) for k, v in asdict(self).items()}

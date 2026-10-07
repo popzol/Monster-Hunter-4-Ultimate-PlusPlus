@@ -189,7 +189,22 @@ indexed by equipment type at **0xF3FC0E** (0 / 180 ×6 / 420 ×14); the
 resistance limits are at 0xE05F30 (0, 10 ×5). Which code reads these bits
 when a quest is accepted is not found yet (no direct reference to +0x494).
 
-The randomizer keeps generated armor under these limits
+**Option `allow_op_equipment`** ("Permitir equipo OP" / "Allow OP equipment",
+GUI section "OP equipment") removes the check (`mh4u_rando/equipment/tamper.py`):
+the attack / defense limits (0xF3FC0E, 21 halfwords by type) and the resistance
+limits (0xE05F30) become 0x7FFF, and the 13 `cmp #0x65` / `#0xB4` of
+`FUN_002f8f34` (VA 0x2F914C … 0x2F9828; element, status, affinity, weapon
+defense bonus) become `cmp #0x100`, so no stat can set a tamper bit. The tables
+are identical in the base game and the update; the `cmp` exist only in the
+update, so without it (no `00000000.app`) only the tables are patched and the
+run gives a notice. With the update installed the patch is built from the
+update's executable even if no interface option is on. Armor stats are then
+generated without the limits above. The side effect on the tables is untested:
+if the game also uses the 0xF3FC0E table to scale a display, bars of very strong
+gear may look different. — *Implemented and unit-tested; in-game effect
+pending (roadmap).*
+
+Without that option the randomizer keeps generated armor under these limits
 (`randomizer/equipment/stats.py`, `_armor_limits`). Before that fix, "Random"
 (range) armor stats broke them for about 300 of the 3039 craftable pieces.
 

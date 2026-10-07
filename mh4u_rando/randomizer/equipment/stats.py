@@ -10,7 +10,9 @@ Whatever the mode, no stat goes above the maximum of the original pieces of
 the same weapon class / armor part and rank. Armor also stays under the
 game's limits for worn pieces (defense at the maximum upgrade level, and each
 resistance), past which it refuses quests (docs/game_rules.md); the few
-unobtainable pieces that break them are left out of the pools.
+unobtainable pieces that break them are left out of the pools. With
+`allow_op_equipment` the check is removed from the executable instead, and
+the pools keep every piece.
 
 Weapon upgrade options (the upgrade tree comes from the game):
 * "natural evolution" of a weapon = the upgrade that, in the original game,
@@ -342,17 +344,20 @@ def _within_game_limits(piece: Piece) -> bool:
             and all(piece.original[f"res_{r}"] < Armor.RESISTANCE_LIMIT for r in RESISTANCES))
 
 
-def _armor_limits(piece: Piece, field: str) -> tuple[int, int]:
+def _armor_limits(piece: Piece, field: str, op: bool) -> tuple[int, int]:
+    if op:                   # the game's check is removed (allow_op_equipment)
+        return (1, 255) if field == "defense" else (ARMOR_LIMITS[field][0], 127 if field != "slots" else 3)
     if field == "defense":   # the limit applies to the upgraded defense
         return 1, max(1, Armor.DEFENSE_LIMIT - 1 - piece.record.defense_gain)
     return ARMOR_LIMITS[field]
 
 
 def randomize_armor_stats(catalog: Catalog, settings: Settings, rng: random.Random) -> None:
+    op = settings.allow_op_equipment
     pools = Pools()
     for key, pieces in catalog.armor.items():
         for piece in pieces.values():
-            if _within_game_limits(piece):
+            if op or _within_game_limits(piece):
                 for field in ARMOR_LIMITS:
                     pools.add((key, piece.rank, field), piece.original[field])
                     pools.add((key, field), piece.original[field])
@@ -363,4 +368,4 @@ def randomize_armor_stats(catalog: Catalog, settings: Settings, rng: random.Rand
             for field, mode in modes.items():
                 if mode is not StatMode.KEEP:
                     value = _new_value(mode, piece.original[field], piece, field, pools, rng)
-                    piece.record[field] = _clamp(value, _armor_limits(piece, field))
+                    piece.record[field] = _clamp(value, _armor_limits(piece, field, op))

@@ -81,7 +81,11 @@ unused slots. Rank comes from rarity: 1-3 low, 4-7 high, 8-10 G.
   Armor also stays under the game's limits for worn gear (defense under 180 at
   the maximum upgrade level, resistances under 10), or the game refuses
   quests (docs/game_rules.md, "Equipment stat limits"); the unobtainable "GX"
-  pieces that break them are left out of the pools.
+  pieces that break them are left out of the pools. `allow_op_equipment`
+  ("Allow OP equipment") removes those limits from the executable instead: any
+  weapon and armor can enter quests, and armor stats are generated without them
+  (`equipment/tamper.py`; needs the update for the element / status / affinity
+  limits; see docs/game_rules.md).
 * **Upgrades** (the tree comes from the game; a few weapons have two parents):
   * natural evolution = the upgrade that kept its weapon's element/status in
     the original game (or, failing that, the most similar name);
