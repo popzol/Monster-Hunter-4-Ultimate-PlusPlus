@@ -580,6 +580,10 @@ def test_patch_target_button():
     assert words[2] >> 24 == 0xEA and TARGET_TEST + 20 + 4 * (words[2] & 0xFFFFFF) == TARGET_SET   # b
     with pytest.raises(CodePatchError):
         patch_target_button(patched)  # already patched
+    diagnostic = bytes(range(1, 201))  # a larger routine in its place (hud_probe.py --target-asm)
+    patched = patch_target_button(bytes(code), diagnostic)
+    assert patched[TARGET_ROUTINE - BASE_ADDRESS:TARGET_ROUTINE - BASE_ADDRESS + len(diagnostic)] == diagnostic
+    assert bl_target(patched, TARGET_TEST) == TARGET_ROUTINE
 
 
 def test_patch_target_button_on_the_game():

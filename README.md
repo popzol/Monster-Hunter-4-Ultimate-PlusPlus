@@ -24,6 +24,7 @@ monitor (`romfs/<language>/data`).
 | `docs/` | Format and rules documentation |
 | `Documentation/` | Reference sources from the online quest editor (`mib.js`, `constants.js`); git-ignored game dumps |
 | `Scripts/` | Legacy implementation (own git repo, kept for reference) |
+| `input/` | Your own ROM / update dumps (git-ignored) |
 
 ## Documentation
 
@@ -82,4 +83,9 @@ from `Documentation/exefs/` (override with `MH4U_CODE_BIN`), the RomFS dump
 from `Documentation/0004000000126100` (`MH4U_ROMFS_DIR`), the update from
 `Documentation/updatefiles/00000000.app` (`MH4U_UPDATE_APP`) and the ROM from
 `MH4U_ROM` (only read); tests that need them are skipped when they are
-missing.
+missing. Personal dumps can also be kept in `input/` (git-ignored) and passed
+through those variables.
+
+Reverse engineering of the executable (Ghidra, the assembler, run-time
+inspection in Citra with save states and `tools/citra_state.py`, which needs
+`pip install zstandard`) is described in [docs/hud_code.md](docs/hud_code.md).

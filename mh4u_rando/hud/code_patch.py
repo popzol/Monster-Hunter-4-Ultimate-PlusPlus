@@ -11,6 +11,12 @@ with x = 45 - 98 * progress, in pixels; both constants of its literal pool are
 scaled (the gauge's anchor is x = 0). Its bar fills are scales, so they follow
 the data.
 
+Target switch (not part of the HUD size): FUN_00b94854 runs the touch-screen
+target camera panel and has a button shortcut test; it is redirected to
+asm/target_button.s, which also accepts the player's action 12 (L held + X
+pressed, after the game's button configuration). See docs/hud_code.md,
+"Target switch".
+
 Addresses are virtual (file offset + 0x100000) in the update's executable
 (0004000E00126100); the base game's code differs and is not supported yet.
 Every patched place is checked first, so another executable is rejected
@@ -42,9 +48,10 @@ MOUNT_FACE_FLOATS = {0xB987D4: -98.0, 0xB987D8: 45.0}
 # L + X target switch: asm/target_button.s, right after the minimap wrapper.
 TARGET_ROUTINE = 0xDEC7E0
 TARGET_BUTTON = bytes.fromhex(
-    "44c09fe500c09ce548039ce540139ce5020c11e30200000a010b10e30100a0131eff2f11020910e30000a0031eff2f01"
-    "18c09fe500c09ce52b00dce5010050e30000a0130100a0031eff2fe1e07205017c6bfb00")
-# FUN_00b94854: the ZR shortcut test (ldr r0, pad; ldr r0, [r0]; ldr r0, [r0, #0x348]; tst r0, #0x8000) ...
+    "64c09fe500c09ce500005ce30700000a0ecc8ce230c09ce500005ce30300000acc039ce5010a10e30100a0131eff2f11"
+    "2cc09fe500c09ce548039ce5020910e30000a0031eff2f0118c09fe500c09ce52b00dce5010050e30000a0130100a003"
+    "1eff2fe1e07205017c6bfb000c260801")
+# FUN_00b94854: the button shortcut test (ldr r0, pad; ldr r0, [r0]; ldr r0, [r0, #0x348]; tst r0, #0x8000) ...
 TARGET_TEST = 0xB948AC
 TARGET_TEST_ORIGINAL = bytes.fromhex("80009fe5000090e5480390e5020910e3")
 TARGET_SET = 0xB948D8   # bl FUN_0013f230; mov r1, #1; strb r1, [r0, #0x27e]
@@ -117,16 +124,20 @@ def patch_hud(code: bytes, factor: float) -> bytes:
     return patch_mount_gauge(patch_minimap_icons(code, factor), factor)
 
 
-def patch_target_button(code: bytes) -> bytes:
-    """`code` where L + X switches the large-monster target, like a tap on the target camera panel."""
+def patch_target_button(code: bytes, routine_code: bytes = TARGET_BUTTON) -> bytes:
+    """`code` where L + X switches the large-monster target, like a tap on the target camera panel.
+
+    `routine_code` replaces asm/target_button.s, linked at TARGET_ROUTINE (diagnostic routines of
+    tools/hud_probe.py --target-asm); it must return r0 = 1 to switch, like the original test.
+    """
     out = bytearray(code)
-    routine = slice(_offset(TARGET_ROUTINE), _offset(TARGET_ROUTINE) + len(TARGET_BUTTON))
+    routine = slice(_offset(TARGET_ROUTINE), _offset(TARGET_ROUTINE) + len(routine_code))
     test = slice(_offset(TARGET_TEST), _offset(TARGET_TEST) + len(TARGET_TEST_ORIGINAL))
     if any(out[routine]) or not TARGET_ROUTINE >= CAVE + len(MINIMAP_WRAPPER) or routine.stop > _offset(CAVE_END):
         raise CodePatchError("no free space for the target switch routine")
     if bytes(out[test]) != TARGET_TEST_ORIGINAL:
         raise CodePatchError(f"unexpected instructions at {TARGET_TEST:#x}: not the update's executable")
-    out[routine] = TARGET_BUTTON
+    out[routine] = routine_code
     out[test] = (encode_branch(TARGET_TEST, TARGET_ROUTINE, link=True)
                  + struct.pack("<I", 0xE3500000)  # cmp r0, #0
                  + encode_branch(TARGET_TEST + 8, TARGET_SKIP, cond=COND_EQ)

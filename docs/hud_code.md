@@ -8,30 +8,43 @@ switch. All addresses are **virtual addresses in the update's executable**
 
 ## Tools
 
-* **Ghidra 12.1.4** (`C:\Users\USUARIO\Documents\Ghidra\ghidra_12.1.4_PUBLIC`,
-  needs JDK 21: `C:\Program Files\Java\jdk-21`). Project
-  `C:\Users\USUARIO\Documents\Ghidra\projects\MH4U`, program `code_update.bin`:
-  raw binary at 0x100000, language `ARM:LE:32:v6`, prepared by
-  `tools/ghidra/SetupMh4u.java` (segments, permissions, `.bss`, entry point,
-  aggressive instruction finder). Full auto-analysis takes about 21 minutes.
+Paths differ per machine; `<user>` is the Windows user folder.
+
+* **Ghidra 12.1.4** (`<user>\Documents\Ghidra\ghidra_12.1.4_PUBLIC`, needs
+  JDK 21: set `JAVA_HOME`, e.g. Temurin 21 from `winget install
+  EclipseAdoptium.Temurin.21.JDK`; newer JDKs are not the supported ones).
+  Project `<user>\Documents\Ghidra\projects\MH4U`, program `code_update.bin`
+  (extract it with `tools/extract_code_bin.py UPDATE.app --out
+  Documentation/exefs/code_update.bin`): raw binary at 0x100000, language
+  `ARM:LE:32:v6`, prepared by `tools/ghidra/SetupMh4u.java` (segments,
+  permissions, `.bss`, entry point, aggressive instruction finder). Full
+  auto-analysis takes 21–27 minutes.
 * Headless queries (`tools/ghidra/`): `Xrefs.java` (references to addresses),
   `Decompile.java` (C of the functions containing addresses), `Listing.java`
   (instructions with the value of every loaded constant). Example, from
   PowerShell:
 
   ```
-  $env:JAVA_HOME = 'C:\Program Files\Java\jdk-21'
-  & '<ghidra>\support\analyzeHeadless.bat' 'C:\Users\USUARIO\Documents\Ghidra\projects' MH4U `
+  $env:JAVA_HOME = '<JDK 21>'
+  & '<ghidra>\support\analyzeHeadless.bat' '<user>\Documents\Ghidra\projects' MH4U `
     -process code_update.bin -noanalysis -readOnly -scriptPath tools\ghidra `
     -postScript Decompile.java out.c 0xB835E0 -postScript Xrefs.java refs.txt 0xB835E0
   ```
 
   To import from scratch: `-import code_update.bin -processor ARM:LE:32:v6
   -loader BinaryLoader -loader-baseAddr 0x100000 -preScript SetupMh4u.java`.
-* **devkitARM** (`C:\devkitPro\devkitARM\bin`): `arm-none-eabi-as`, `ld`,
-  `objcopy`, `objdump`. `tools/build_hud_asm.py` assembles
-  `mh4u_rando/hud/asm/*.s` at their patch addresses and checks the bytes
-  embedded in `code_patch.py` (the randomizer itself never needs devkitARM).
+* **devkitARM** (`C:\devkitPro\devkitARM\bin`) or the **Arm GNU Toolchain**
+  (`winget install Arm.ArmGnuToolchain`; pass its `bin` folder with
+  `--devkitarm`): `arm-none-eabi-as`, `ld`, `objcopy`, `objdump`, `gdb`.
+  `tools/build_hud_asm.py` assembles `mh4u_rando/hud/asm/*.s` at their patch
+  addresses and checks the bytes embedded in `code_patch.py` (the randomizer
+  itself never needs an assembler). Quick disassembly without Ghidra:
+  `arm-none-eabi-objdump -D -b binary -m arm --adjust-vma=0x100000
+  --start-address=A --stop-address=B code_update.bin`.
+* **Run-time inspection**: `tools/hud_probe.py --target-asm` (diagnostic
+  routines such as `tools/asm/input_event_log.s`) and `tools/citra_state.py`
+  (reads `.data` / `.bss` from a Citra save state; needs `pip install
+  zstandard`). See "Debugging in Citra" below.
 
 ## Executable layout
 
@@ -47,8 +60,8 @@ Free space used in the update:
 | Address | Size | Contents |
 |---|---|---|
 | 0xDEC784 | 0x5C | `asm/minimap_wrapper.s` |
-| 0xDEC7E0 | 0x54 | `asm/target_button.s` |
-| 0xDEC834 | 0x7CC | free |
+| 0xDEC7E0 | 0x70 | `asm/target_button.s` (diagnostic routines take its place, up to the end) |
+| 0xDEC850 | 0x7B0 | free |
 
 Citra and Luma apply `code.ips` to the executable that runs — the update's
 when it is installed. Code addresses differ between base and update, so the
@@ -147,40 +160,120 @@ in pixels: `x = 45 − 98 · progress`, with the literals at 0xB987D8 (45) and
 0xB987D4 (−98), read only there.
 
 **Patch** (`code_patch.patch_mount_gauge`): both literals × the scale (the
-gauge's anchor is x = 0; y comes from the data). In probe 5.
+gauge's anchor is x = 0; y comes from the data). **Verified in Citra (probe 6):** the
+face runs along the bar.
 
 ## Pad
 
-The pad object is `*(0x10572E0)`.
+The pad object is `*(0x10572E0)`; 0x694CCC updates it once per frame (it is
+the only caller of 0x6949D4). **Its button bits are not the 3DS HID layout**:
+the buttons arrive already remapped by the game's button configuration, so
+the bits depend on the player's settings. Reading the code's tables gave
+wrong bits three times (probes 5–7); the values below were **measured in
+Citra (probe 10)** with the default configuration, keyboard input, and the
+setting bytes `*(0xFB6B7C) + 0x7D` = 1, `+ 0x7E` = 0.
 
-* 0x694CCC turns the raw 3DS buttons (+0x8C) into the game's layout — held
-  +0x30C, previous +0x30E, pressed +0x310, released +0x312 (16 bits) — with the
-  tables at 0xFB8260 (3DS masks) and 0xFB82A0 (game masks): Right 0x2000,
-  Up 0x1000, Down 0x800, Left 0x400, ZR 0x200, L 0x80, ZL 0x40, Y 0x10, R 0x8,
-  X 0x4, B 0x2, Start 0x8000, A 0x4000. X and Y map elsewhere depending on the
-  control type (0x2B0174).
-* 0x6949D4 keeps a second set for the GUI — held +0x340, previous +0x344,
-  pressed +0x348 (32 bits) — in the **3DS layout**: L 0x200, R 0x100, X 0x400,
-  ZR 0x8000, D-pad 0x10–0x80 (the touch screen injects L / R there as 0x200 /
-  0x100, at 0xA27320).
-* Players copy the game layout into `*(player + 0xE30) + 0x3A0…` (0x2C5470)
-  and read "actions" as bits of +0x3CC (0xB0D768; 0xE / 0xF = previous / next
-  item with L, used by the item selector 0xB8E2A8).
+| Button | "raw" +0x8C | game layout +0x30C | GUI set +0x340 | player p + 0x3A0 |
+|---|---|---|---|---|
+| X | 0x1000 | 0x100 | 0x4000 | 0x100 |
+| A | 0x2000 | 0x20 | 0x10 | 0x20 |
+| Y | 0x8000 | 0x200 | 0x2080 | 0x200 |
+| L | 0x100 | 0x8 | 0x100 | 0x8 |
 
-## Target switch (L + X)
+(p = `*(player + 0xE30)`, player = `*(0x108260C)`.) Probe 8 also saw R, ZL,
+ZR, the Circle Pad (0xF0000000) and bits 0xF0000 in +0x8C during a quest.
 
-* The touch-screen target camera panel (`ui601`) is run by 0xB8D074: a tap
-  (0xD8F538 on `ui601_boundary_000`) toggles the lock on monster slot 1 or 2;
-  the current target is `*(0x105729C) + 0xED5` (0 = none).
-* Its caller 0xB94854 already has a button shortcut: if the GUI pressed
-  buttons contain ZR and the setting byte `*(0xFB6B7C) + 0x2B` is 1, it sets
-  `panel + 0x27E` = 1 and 0xB8D074 switches the target exactly like a tap
-  (sound included). It only runs while the target camera panel is on the
-  touch screen.
+* **"Raw" buttons** at +0x8C are filled by 0x5B8284 (from the input manager,
+  0x5B8460); they are not the HID bits (A is not 0x1).
+* **Game layout**: 0x694CCC maps +0x8C with the tables at 0xFB8260 (16 masks)
+  and 0xFB82A0 (16 game bits) into held +0x30C, previous +0x30E, pressed
+  +0x310, released +0x312 (16 bits). Entries 9 and 11 are replaced according to
+  0x2B0174 (`settings + 0x7D ? settings + 0x7E : 0xFF`): 0 → 0x80 / 0x8,
+  1 → 0x400 / 0x800, 2 → 0x1000 / 0x2000. The masks were first taken for the
+  HID layout (L 0x200 → 0x80, X 0x400 → 0x4…), which the measurements
+  contradict.
+* **GUI set**: 0x6949D4 builds held +0x340, previous / released +0x344, pressed
+  +0x348 (32 bits) from the game layout with the static table at 0xFB8140
+  (18 × {flag, game mask}; GUI bit *i* ← entry *i*; read only there). Bits whose
+  counter at +0x3C0 + 2·*i* is positive keep their previous state. The touch
+  screen injects bits through +0x3F4 (0xA27320).
+* **Player copy**: 0x2C5470 copies the game layout into p + 0x3A0 (held, 32
+  bits), p + 0x3A4 (pressed) and 16-bit copies from p + 0x3A8, unless the
+  player is busy (then zeros). **Actions** are bits of p + 0x3CC, read with
+  0xB0D768(player, n). Measured: 0x200 always, **0x800 while L is held** (item
+  mode), and one-frame pulses **L + A → 15 (0x8000, next item), L + Y → 14
+  (0x4000, previous item), L + X → 12 (0x1000)**. Readers: the item selector
+  0xB8E2A8 (14, 15); 0xCA51C0, the player state, with 12–15 when
+  `*(player + 0xA29C) + 0xEC` has 0x100000 (12 / 13 probably the gunners'
+  ammo selection); 0xB95E18, a HUD hint, with 11–13.
+
+## Target switch (L + X) — verified in Citra (probe 11)
+
+* The touch-screen target camera panel (`ui601`) is run by 0xB8D074(enabled):
+  the current target is `*(0x105729C) + 0xED5` (0 = none, else slot 1 / 2).
+  With fewer than two lockable monsters a tap (0xD8F538 on
+  `ui601_boundary_000`, bit 0x200) or `panel + 0x27E` toggles the lock of the
+  slot; with two, the two-button view (0xD8FFAC) or `+ 0x27E` cycles slot 1 →
+  slot 2 → none. A monster only counts once its flag `*(monster + 0xE28) +
+  0x1C0` is set (its icon becomes tappable once it has been found); before
+  that a toggle is undone, so L + X, like a tap, does nothing at the start of
+  a quest. `enabled` = 0xB84F38(13) ≠ 1.
+* Its caller 0xB94854 (called once per frame from 0xB826BC, at 0xB82B50) has a
+  button shortcut: if GUI pressed (pad + 0x348) has 0x8000 and the setting
+  byte `*(0xFB6B7C) + 0x2B` is 1, it sets `panel + 0x27E` = 1 and 0xB8D074
+  switches the target exactly like a tap (sound included). No button gave
+  0x8000 in probe 10. The test only runs when 0xB84F38(13) ≠ 0 (panel 13, the
+  target camera, is in one of the 6 touch-screen slots, halfwords at
+  `*(0x1287A4()) + 0x7A`), `0x19FBF0(*0xFB5EDC)` = 0 and 0xB40A48
+  (`*(0x13F230())`) = 0. Probe 7 measured it running every quest frame.
 * **Patch** (`code_patch.patch_target_button`): the four instructions of that
   test at 0xB948AC become `bl 0xDEC7E0; cmp r0, #0; beq 0xB948E4; b 0xB948D8`.
-  The routine (`asm/target_button.s`) returns 1 for "GUI held L and GUI pressed
-  X", or the original ZR condition. In probe 5.
+  The routine (`asm/target_button.s`) returns 1 when the player's **action
+  12** is set (one frame, on L held + X pressed), else the original test. The
+  action already follows the button configuration, so keyboard and gamepad
+  behave the same.
+* **Gunners**: action 12 is also theirs (0xCA51C0), so with a bow or bowgun
+  L + X would switch the target and the ammo. The switch must move to another
+  input for them (or for everyone) — to decide.
 * Still to do: the "X" hint next to the item selector's L hints (a new sprite
-  in `ui205_shita_ita`, see [hud_layout.md](hud_layout.md)), and showing the
-  target icon on the top screen (left of the item selector).
+  in `ui205_shita_ita`, see [hud_layout.md](hud_layout.md)), and drawing the
+  target monster's icon (face) on the top screen, left of the item selector.
+
+### History (probes 5–11)
+
+| Probe | Routine tested | Result |
+|---|---|---|
+| 5 | GUI held 0x200 + pressed 0x400 | Nothing (bits taken from the HID layout) |
+| 6 | GUI held 0x200 + pressed 0x800 | Nothing (bits taken from the 0xFB8140 table) |
+| 7 | Logs the GUI / game sets; also game X 0x4 | Nothing; the test runs every quest frame; while "L" is held only that bit is seen |
+| 8 | Logs "raw" +0x8C | No A / B / X / Y with the bits assumed: the raw bits are not HID |
+| 9 | Logs the player copy and actions | The item actions never coincide with the assumed L: the bits are wrong |
+| 10 | Event log (`tools/asm/input_event_log.s`), one button at a time | The table in "Pad" above |
+| 11 | Action 12 | **Works**: L + X locks / switches the target |
+
+## Debugging in Citra
+
+What worked to see the game's state at run time, and what did not.
+
+* **Citra's GDB stub** (Emulation > Configure > Debug, port 24689) with
+  `arm-none-eabi-gdb` (Arm GNU Toolchain 12.2): with the stub on, Citra waits
+  for a client at boot. It accepts **one connection per emulator run**: after
+  the client leaves (Citra has no `detach`), a new one times out until Citra
+  restarts; a TCP probe of the port before gdb also breaks the handshake
+  (`vMustReplyEmpty: timeout`). Breakpoints work, but a conditional
+  breakpoint on a per-frame routine stops the emulator every frame and the
+  game freezes. A one-shot breakpoint did confirm that the routine runs.
+* **Save states as memory dumps** (what worked): a diagnostic routine writes
+  counters or an event log into the **unused tail of the last `.bss` page**
+  (0x111D128–0x111E000: mapped, zero, used by nothing), the tester plays and
+  saves a state (Emulation > Save state, slot 2), and `tools/citra_state.py`
+  reads `.data` / `.bss` from the `.cst` (zstd after a 0x100-byte header; the
+  live `.data` is found by content, `.text` lives elsewhere). Never *load* a
+  state to test a new patch: it restores the old patched code too.
+* **Diagnostic routines** replace `asm/target_button.s` without touching the
+  embedded bytes: `tools/hud_probe.py ... --target-button --target-asm
+  tools/asm/input_event_log.s --devkitarm DIR`. That one logs, on every change
+  of the player's buttons or actions, the player copy, the actions, pad +0x8C,
+  +0x30C / +0x310 and the GUI set; read it with
+  `tools/citra_state.py STATE.cst --input-log`. Pressing one button at a time,
+  with pauses, gives one clean line per button.

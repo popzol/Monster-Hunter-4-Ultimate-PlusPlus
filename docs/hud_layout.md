@@ -22,10 +22,10 @@ game (says which); **Guess** = plausible from names or values, unverified.
 | `lyt` / `lanl` reader and writer, tools, tests | **Done** — every layout and animation of the dump round-trips |
 | Top-screen layouts identified and scaled by data | **Done**, verified in Citra (probes 1–2) |
 | Option in the randomizer (settings, pipeline, GUI, CLI) | **Done for the data layer** — the executable patches are not wired in yet |
-| Minimap: data + icon patch | Icon positions **verified** (probe 3); icon size in probe 5 (waiting) |
-| Mount gauge: data + face patch | In probe 5 (waiting) |
-| L + X switches the target | Patch in probe 5 (waiting); the "X" hint next to the item selector is not done |
-| Target icon on the top screen | Not started |
+| Minimap: data + icon patch | **Verified** (icon positions probe 3, size probe 5) |
+| Mount gauge: data + face patch | **Verified** (probe 6) |
+| L + X switches the target | **Verified** (probe 11, the player's action 12; see hud_code.md, "Target switch"). Conflicts with the gunners' ammo selection: input to change. The "X" hint next to the item selector is not done |
+| Target icon (monster face) on the top screen | Not started |
 | Minimap without the Map item | Not started — the map does not shrink then |
 
 ## Code and tools
@@ -38,19 +38,22 @@ game (says which); **Guess** = plausible from names or values, unverified.
 | `mh4u_rando/hud/build.py` | `HUD_LAYOUTS` / `CODE_PATCH_LAYOUTS` (what to scale and towards where), `hud_files()` / `write_hud_files()` / `remove_hud_files()`, `find_update()` |
 | `mh4u_rando/hud/code_patch.py` | Executable patches — see [hud_code.md](hud_code.md) |
 | `tools/lyt_dump.py` | Prints the pane tree of the layouts in an ARC (`.arc`, RomFS dump folder or ROM) |
-| `tools/hud_probe.py` | Builds the test mods (below) |
+| `tools/hud_probe.py` | Builds the test mods (below); `--target-asm` puts a diagnostic routine in place of the L + X one |
+| `tools/asm/input_event_log.s` | Diagnostic routine: logs the player's buttons and actions (hud_code.md, "Debugging in Citra") |
+| `tools/citra_state.py` | Reads `.data` / `.bss` (and that log) from a Citra save state |
 | `tests/test_hud.py` | Synthetic files + game files (skipped without the dump / update / ROM) |
 
 ```
 python tools/lyt_dump.py Documentation/0004000000126100 --arc eng/data/core_quest.arc --layout ui202
 python tools/lyt_dump.py "MH4U.3ds" --arc spa/data/core_quest.arc --layout ui202
 python tools/hud_probe.py "MH4U.3ds" --update Documentation/updatefiles/00000000.app --out DIR
-    [--scale 70] [--tint] [--minimap [--target-button] [--merge-ips CURRENT.ips]]
+    [--scale 70] [--tint] [--minimap [--target-button [--target-asm R.s --devkitarm DIR]] [--merge-ips CURRENT.ips]]
+python tools/citra_state.py %APPDATA%/Citra/states/0004000000126100.02.cst --input-log
 ```
 
 `hud_probe.py`: default = every `HUD_LAYOUTS` entry scaled; `--tint` = probe 1
 (colours); `--minimap` adds `CODE_PATCH_LAYOUTS` and writes `exefs/code.ips`
-with `patch_hud()`; `--target-button` adds the L + X patch; `--merge-ips` keeps
+with `patch_hud()`; `--target-button` adds the L + X patch (`--target-asm` assembles another routine in its place); `--merge-ips` keeps
 another patch's changes (e.g. the randomizer's equipment `code.ips`; an earlier
 HUD patch in it is undone first).
 
@@ -330,7 +333,10 @@ The anchor is chosen **per root group** (`ui204` mixes corners).
 | 2 (`--minimap`, before the patches) | Everything at 70 % | All correct except the minimap icons (stay put) and the mount gauge face (outside the gauge). Touch-screen map shrinks too (accepted). Map unchanged without the Map item |
 | 3 | + minimap icon patch | **Icons on their spots**, but too big |
 | 4 | + `ui250` scaled in place, mount face patch | Superseded by 5 |
-| 5 (`--minimap --target-button`) | + L + X target switch | **Waiting**: icon size, mount gauge, L + X (and whether X also attacks) |
+| 5 (`--minimap --target-button`) | + L + X target switch | Minimap **correct** (icons placed and sized); L + X **did nothing** (wrong button bits) |
+| 6 | L + X with other bits | Mount gauge **correct**; L + X did nothing |
+| 7–10 (`--target-asm`) | Diagnostic routines logging the input (read from save states) | The real button bits and the player's actions (hud_code.md, "Pad") |
+| 11 (`--minimap --target-button`) | L + X = the player's action 12 | **L + X locks / switches the target** once the monster's icon is tappable |
 
 ## Open questions
 

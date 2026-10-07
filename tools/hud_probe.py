@@ -1,7 +1,8 @@
 """Build a HUD test mod for Citra (see docs/hud_layout.md).
 
     python tools/hud_probe.py ROM --out DIR [--update UPDATE.app] [--scale 70] [--tint]
-                              [--minimap [--merge-ips CURRENT.ips]]
+                              [--minimap [--merge-ips CURRENT.ips] [--target-button
+                              [--target-asm ROUTINE.s --devkitarm DIR]]]
 
 ROM is the decrypted .3ds. UPDATE is the update's 00000000.app, needed for the
 core_common.arc layouts because the update replaces that file. Default: every
@@ -10,6 +11,9 @@ needs the executable patch (minimap, map icons, mount gauge) and, with UPDATE,
 writes exefs/code.ips with it (mh4u_rando/hud/code_patch.py); --merge-ips keeps the changes of another
 code.ips (e.g. the randomizer's equipment patch) in it. --tint: the first probe
 instead (main HUD scaled, other candidate layouts tinted to identify them).
+--target-button adds the L + X target switch; --target-asm assembles another
+routine in its place (a diagnostic one such as tools/asm/input_event_log.s,
+read back with tools/citra_state.py; needs devkitARM or the Arm GNU Toolchain).
 Writes DIR/romfs/..., DIR/exefs/code.ips and DIR/LEEME.txt; copy romfs and exefs
 into load/mods/0004000000126100/.
 """
@@ -24,8 +28,10 @@ from mh4u_rando.exefs import RomFS, apply_ips, load_code, make_ips  # noqa: E402
 from mh4u_rando.hud import LANGUAGES, LYT_TYPE_HASH, Anchor, hud_files, parse_lyt, scale_arc  # noqa: E402
 from mh4u_rando.hud.build import MAP_ARC, short_name  # noqa: E402
 from mh4u_rando.hud.code_patch import (  # noqa: E402
-    BASE_ADDRESS, CAVE, CAVE_END, ICON_CALLS, MOUNT_FACE_FLOATS, TARGET_TEST, patch_hud, patch_target_button,
+    BASE_ADDRESS, CAVE, CAVE_END, ICON_CALLS, MOUNT_FACE_FLOATS, TARGET_BUTTON, TARGET_ROUTINE, TARGET_TEST,
+    patch_hud, patch_target_button,
 )
+from build_hud_asm import DEFAULT_DEVKITARM, assemble  # noqa: E402
 
 TINTS = {
     "core_quest.arc": {"ui203": ("rojo", (255, 40, 40)), "ui204": ("verde", (40, 220, 40)),
@@ -146,6 +152,8 @@ def main() -> None:
     parser.add_argument("--minimap", action="store_true")
     parser.add_argument("--merge-ips", type=Path, help="code.ips whose changes are kept in the new one")
     parser.add_argument("--target-button", action="store_true", help="also L + X to switch the target")
+    parser.add_argument("--target-asm", type=Path, help="routine assembled instead of asm/target_button.s")
+    parser.add_argument("--devkitarm", type=Path, default=DEFAULT_DEVKITARM, help="bin folder of the assembler")
     args = parser.parse_args()
     factor = args.scale / 100
     rom = RomFS(args.rom)
@@ -167,7 +175,8 @@ def main() -> None:
         ips.parent.mkdir(parents=True, exist_ok=True)
         code = patch_hud(code, factor)
         if args.target_button:
-            code = patch_target_button(code)
+            routine = assemble(args.target_asm, TARGET_ROUTINE, args.devkitarm) if args.target_asm else TARGET_BUTTON
+            code = patch_target_button(code, routine)
         ips.write_bytes(make_ips(original, code))
         print(f"HUD executable patch written to {ips}")
     readme = tint_readme(args.scale, update is not None) if args.tint else \
