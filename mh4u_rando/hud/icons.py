@@ -16,6 +16,8 @@ and points the table at them; quest board pictures (Quest.pictures) are icon
 indices too and are set by the randomizer. See docs/hud_code.md, "Monster icons".
 """
 
+import struct
+import zlib
 from collections.abc import Iterator, Mapping
 from pathlib import Path
 
@@ -64,9 +66,13 @@ def new_icon_cells() -> dict[int, bytes]:
     """Icon index -> its new 36x36 RGBA image."""
     cells = {}
     for monster_id, icon in new_icons().items():
-        width, height, rgba = read_png(icon_image_path(monster_id).read_bytes())
+        path = icon_image_path(monster_id)
+        try:
+            width, height, rgba = read_png(path.read_bytes())
+        except (OSError, ValueError, IndexError, struct.error, zlib.error) as error:
+            raise IconError(f"monster icon {path}: {error} (a {CELL}x{CELL} PNG is expected)") from error
         if (width, height) != (CELL, CELL):
-            raise IconError(f"{icon_image_path(monster_id).name} is {width}x{height}, not {CELL}x{CELL}")
+            raise IconError(f"monster icon {path} is {width}x{height}, not {CELL}x{CELL}")
         cells[icon] = rgba
     return cells
 

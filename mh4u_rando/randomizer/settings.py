@@ -185,7 +185,7 @@ class Settings:
 
     # Interface (game files and executable patches, not randomized)
     hud_scale: HudScale = HudScale.FULL  # each top-screen HUD element shrinks towards its corner
-    new_monster_icons: bool = False      # Fatalis and Gogmazios get icons of their own (needs the update)
+    new_monster_icons: bool = True       # no "?" monster icon: Fatalis and Gogmazios icons (ROM and update), Dalamadur's quests
     target_switch: bool = False          # L + X locks / switches the large-monster target
     target_face_top: bool = False        # the target camera panel's monster faces also on the top screen
 
@@ -199,8 +199,9 @@ class Settings:
 
     @property
     def needs_update(self) -> bool:
-        """Interface options that cannot work without the update's 00000000.app (the HUD size can)."""
-        return self.target_switch or self.target_face_top or self.new_monster_icons
+        """Interface options that cannot work without the update's 00000000.app (the HUD size can; the monster
+        icons are left out without it, with a warning)."""
+        return self.target_switch or self.target_face_top
 
     @property
     def randomizes_equipment(self) -> bool:

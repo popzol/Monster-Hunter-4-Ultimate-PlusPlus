@@ -468,11 +468,13 @@ def test_hud_scale_setting_and_checks(tmp_path):
 def test_interface_settings():
     from mh4u_rando.randomizer import HudScale, Settings
     assert not Settings().patches_interface_code and not Settings().needs_update
+    assert Settings().new_monster_icons  # on by default, but optional: left out without the update
     assert Settings(hud_scale=HudScale.P90).patches_interface_code and not Settings(hud_scale=HudScale.P90).needs_update
-    for name in ("target_switch", "target_face_top", "new_monster_icons"):
+    for name in ("target_switch", "target_face_top"):
         settings = Settings(**{name: True})
         assert settings.patches_interface_code and settings.needs_update
         assert getattr(Settings.from_dict(settings.to_dict()), name) is True
+    assert Settings.from_dict(Settings(new_monster_icons=False).to_dict()).new_monster_icons is False
 
 
 def test_target_options_need_the_update(tmp_path, monkeypatch):
@@ -485,6 +487,23 @@ def test_target_options_need_the_update(tmp_path, monkeypatch):
     monkeypatch.setattr(pipeline, "find_update", lambda: None)
     with pytest.raises(ValueError, match="need the update"):
         pipeline.run(rom, tmp_path, Settings(seed="target", target_face_top=True))
+
+
+def test_monster_icons_without_the_update(tmp_path, monkeypatch):
+    """On by default: without the update the mod is still written, with a notice and no icon files."""
+    from conftest import rom_path
+    from mh4u_rando import pipeline
+    from mh4u_rando.randomizer import Settings
+    rom = rom_path()
+    if rom is None:
+        pytest.skip("no ROM (set MH4U_ROM)")
+    monkeypatch.setattr(pipeline, "find_update", lambda: None)
+    result = pipeline.run(rom, tmp_path, Settings(seed="noupdate"))
+    assert result.icon_paths == [] and result.ips_path is None and not result.interface_patched
+    assert any("monster icons" in w for w in result.warnings)
+    _, _, quests = pipeline.read_quests(result.arc_path)
+    dalamadur = next(q for q in quests.values() if q.quest_id == 10709)
+    assert dalamadur.pictures[:2] == [72, 73]  # needs no update
 
 
 def test_pipeline_writes_the_hud(tmp_path, monkeypatch):
@@ -504,7 +523,7 @@ def test_pipeline_writes_the_hud(tmp_path, monkeypatch):
         assert len(result.hud_paths) > 10 and result.interface_patched and result.ips_path.is_file()
     else:  # data only: core_quest per language, no executable patch
         assert len(result.hud_paths) == 5 and result.ips_path is None
-    result = run(rom, tmp_path, Settings(seed="hud"))  # back to 100 %: the files go away
+    result = run(rom, tmp_path, Settings(seed="hud", new_monster_icons=False))  # back to 100 %: the files go away
     assert not result.hud_paths and not any(p.exists() for p in (tmp_path / "romfs").rglob("core_*.arc"))
 
 
@@ -707,6 +726,6 @@ def test_pipeline_with_every_interface_option(tmp_path):
     assert all(bl_target(patched, site) == CAVE for site in ICON_CALLS)
     assert bl_target(patched, TARGET_TEST) == TARGET_ROUTINE and bl_target(patched, FACE_HOOK) == FACE_ROUTINE
     assert patched != original
-    result = run(rom, tmp_path, Settings(seed="interface"))  # everything off: patch and files go away
+    result = run(rom, tmp_path, Settings(seed="interface", new_monster_icons=False))  # all off: everything goes
     assert result.ips_path is None and not (tmp_path / "exefs" / "code.ips").exists()
     assert not result.hud_paths and not any((tmp_path / "romfs").rglob("core_*.arc"))

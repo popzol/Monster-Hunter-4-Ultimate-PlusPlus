@@ -5,6 +5,7 @@ import pytest
 
 from mh4u_rando.data import load_game_data
 from mh4u_rando.mib import load_mib, parse_mib, write_mib
+from mh4u_rando.randomizer.objectives import UNKNOWN_PICTURE
 from mh4u_rando.randomizer import (
     DuplicateMode, Frequency, ProgressionMode, RewardSource, Settings, StructureMode, SubQuestMode, TextMode,
     randomize_quests, unrandomized_quests, validate_quest,
@@ -212,8 +213,11 @@ def test_default_settings_leave_quests_vanilla(originals, data):
     randomize_quests(quests, Settings(seed="VANILLA"), data)
     for name, original in originals.items():
         changed = {f for f in original.__dataclass_fields__ if getattr(original, f) != getattr(quests[name], f)}
-        # Only the safety repairs of docs/randomizer.md: invalid stat blocks and a missing Map.
-        assert changed <= {"large_meta", "supplies"}, (name, changed)
+        # Only the safety repairs of docs/randomizer.md (invalid stat blocks, a missing Map) and, with the
+        # monster icons option (on by default), the "?" quest board pictures.
+        allowed = {"large_meta", "supplies"} | ({"pictures"} if UNKNOWN_PICTURE in original.pictures else set())
+        assert changed <= allowed, (name, changed)
+        assert UNKNOWN_PICTURE not in quests[name].pictures, name
 
 
 def test_new_objective_text(originals, data):

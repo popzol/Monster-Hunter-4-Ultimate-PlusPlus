@@ -69,34 +69,47 @@ def _quest_type(original: int, multi_wave: bool) -> int:
 
 
 def monster_picture(monster: MonsterInfo, new_icons: bool = False) -> int | None:
-    """Quest board picture of a monster; `new_icons`: the option new_monster_icons is on."""
+    """Quest board picture of a monster; `new_icons`: the new monster icons are in the mod."""
     return monster.new_icon_id if new_icons and monster.new_icon_id is not None else monster.preview_id
 
 
+def monster_pictures(monster: MonsterInfo, data: GameData, new_icons: bool = False) -> list[int]:
+    """Pictures of a monster and of the body part it spawns with (Dalamadur's tail), never "?"."""
+    parts = [monster] + ([data.monsters[monster.spawns_with]] if monster.spawns_with in data.monsters else [])
+    pictures = [monster_picture(m, new_icons) for m in parts]
+    return [p for p in pictures if p is not None and p != UNKNOWN_PICTURE]
+
+
+def _fill(pictures: list[int], count: int) -> list[int]:
+    return (list(dict.fromkeys(pictures)) + [NO_PICTURE] * count)[:count]
+
+
 def apply_pictures(quest: Quest, plan: LineupPlan, data: GameData, new_icons: bool = False) -> None:
+    """The lineup's pictures, a body part right after its owner when there is room."""
     previews = []
     for monster_id in dict.fromkeys(target_monsters(plan) or plan.monster_ids()):
-        preview = monster_picture(data.monsters[monster_id], new_icons)
-        if preview is not None and preview not in previews:
-            previews.append(preview)
-    quest.pictures = (previews + [NO_PICTURE] * len(quest.pictures))[:len(quest.pictures)]
+        monster = data.monsters[monster_id]
+        pictures = monster_pictures(monster, data, new_icons)
+        previews += pictures or [p for p in [monster_picture(monster, new_icons)] if p is not None]
+    quest.pictures = _fill(previews, len(quest.pictures))
 
 
-def show_new_icons(quest: Quest, data: GameData) -> None:
-    """With new_monster_icons, the first "?" picture of a quest becomes the new icons of its large monsters
-    (quests whose lineup was kept still show "?" for them)."""
-    icons = []
-    for wave in quest.large_monsters:
-        for monster in wave:
-            info = data.monsters.get(monster.monster_id)
-            icon = info.new_icon_id if info else None
-            if icon is not None and icon not in icons and icon not in quest.pictures:
-                icons.append(icon)
-    if not icons or UNKNOWN_PICTURE not in quest.pictures:
+def replace_unknown_pictures(quest: Quest, data: GameData, new_icons: bool = False) -> None:
+    """The first "?" picture of a quest becomes the pictures of its large monsters and the other "?" go away
+    (retail Dalamadur and Shah Dalamadur quests, and the Fatalis and Gogmazios when `new_icons`). Left as it is
+    when no large monster has a picture of its own."""
+    if UNKNOWN_PICTURE not in quest.pictures:
+        return
+    pictures = []
+    for monster in quest.all_large_monsters():
+        info = data.monsters.get(monster.monster_id)
+        if info is not None and info.body_part_of is None:
+            pictures += [p for p in monster_pictures(info, data, new_icons) if p not in quest.pictures]
+    if not pictures:
         return
     first = quest.pictures.index(UNKNOWN_PICTURE)
     rest = [p for p in quest.pictures[first + 1:] if p != UNKNOWN_PICTURE]
-    quest.pictures = (quest.pictures[:first] + icons + rest + [NO_PICTURE] * len(quest.pictures))[:len(quest.pictures)]
+    quest.pictures = _fill(quest.pictures[:first] + pictures + rest, len(quest.pictures))
 
 
 def retarget_objectives(quest: Quest, mapping: dict[int, int]) -> None:

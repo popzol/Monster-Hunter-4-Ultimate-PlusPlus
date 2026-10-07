@@ -1,4 +1,5 @@
 import struct
+import zlib
 
 import pytest
 
@@ -12,7 +13,9 @@ from mh4u_rando.hud.icons import (
 from mh4u_rando.hud.png import PngFormatError, read_png, write_png
 from mh4u_rando.hud.tex import HEADER_SIZE, RGBA4444, TEX_TYPE_HASH, TexFormatError, parse_tex
 from mh4u_rando.mib import Monster, Quest
-from mh4u_rando.randomizer.objectives import NO_PICTURE, UNKNOWN_PICTURE, monster_picture, show_new_icons
+from mh4u_rando.randomizer.objectives import (
+    NO_PICTURE, UNKNOWN_PICTURE, apply_pictures, monster_picture, monster_pictures, replace_unknown_pictures,
+)
 
 NEW = {77: 74, 78: 75, 79: 76, 117: 79, 89: 80}
 
@@ -105,19 +108,86 @@ def _quest(monster_ids: list[int], pictures: list[int]) -> Quest:
     return quest
 
 
+EMPTY = [NO_PICTURE] * 4
+DALAMADUR, DALAMADUR_TAIL, SHAH, SHAH_TAIL = 24, 83, 110, 111
+
+
 def test_quest_pictures():
     data = load_game_data()
     assert monster_picture(data.monsters[77]) == UNKNOWN_PICTURE
     assert monster_picture(data.monsters[77], new_icons=True) == 74
     assert monster_picture(data.monsters[1], new_icons=True) == data.monsters[1].preview_id
-    quest = _quest([77, 79], [UNKNOWN_PICTURE, NO_PICTURE, NO_PICTURE, NO_PICTURE, NO_PICTURE])
-    show_new_icons(quest, data)
+    assert monster_pictures(data.monsters[DALAMADUR], data) == [72, 73]
+    assert monster_pictures(data.monsters[SHAH], data) == [121, 122]
+    assert monster_pictures(data.monsters[77], data) == []
+    quest = _quest([77, 79], [UNKNOWN_PICTURE] + EMPTY)
+    replace_unknown_pictures(quest, data, new_icons=True)
     assert quest.pictures == [74, 76, NO_PICTURE, NO_PICTURE, NO_PICTURE]
-    show_new_icons(quest, data)  # nothing left to replace
+    replace_unknown_pictures(quest, data, new_icons=True)  # nothing left to replace
     assert quest.pictures == [74, 76, NO_PICTURE, NO_PICTURE, NO_PICTURE]
-    quest = _quest([1], [UNKNOWN_PICTURE] + [NO_PICTURE] * 4)  # a "?" that is not about these monsters
-    show_new_icons(quest, data)
-    assert quest.pictures == [UNKNOWN_PICTURE] + [NO_PICTURE] * 4
+    quest = _quest([77], [UNKNOWN_PICTURE] + EMPTY)  # without the new icons there is nothing better than "?"
+    replace_unknown_pictures(quest, data, new_icons=False)
+    assert quest.pictures == [UNKNOWN_PICTURE] + EMPTY
+
+
+def test_retail_dalamadur_pictures():
+    """Retail Dalamadur quests show "?" although head and tail have icons; the option shows both."""
+    data = load_game_data()
+    for head, tail, pictures in ((DALAMADUR, DALAMADUR_TAIL, [72, 73]), (SHAH, SHAH_TAIL, [121, 122])):
+        quest = _quest([head, tail], [UNKNOWN_PICTURE] + EMPTY)
+        replace_unknown_pictures(quest, data)
+        assert quest.pictures == pictures + [NO_PICTURE] * 3
+
+
+def test_lineup_pictures_add_the_tail_when_there_is_room():
+    from mh4u_rando.randomizer.plan import LineupPlan, Slot
+    data = load_game_data()
+
+    def pictures(monster_ids: list[int]) -> list[int]:
+        plan = LineupPlan(waves=[[Slot(monster_id=m, is_body_part=data.monsters[m].body_part_of is not None)
+                                  for m in monster_ids]])
+        quest = _quest(monster_ids, [UNKNOWN_PICTURE] + EMPTY)
+        apply_pictures(quest, plan, data, new_icons=True)
+        return quest.pictures
+
+    assert pictures([1, DALAMADUR, DALAMADUR_TAIL]) == [1, 72, 73, NO_PICTURE, NO_PICTURE]
+    assert pictures([1, 2, 3, 6, DALAMADUR, DALAMADUR_TAIL]) == [1, 4, 2, 6, 72]  # no room for the tail
+    assert pictures([77, 89]) == [74, 80, NO_PICTURE, NO_PICTURE, NO_PICTURE]
+    assert UNKNOWN_PICTURE not in pictures([77, 78, 79, 117])
+
+
+def _png(colour: int, depth: int, rows: list[bytes], *chunks: tuple[bytes, bytes]) -> bytes:
+    """A PNG written by hand (rows of packed samples, filter 0), for formats write_png does not make."""
+    def chunk(kind: bytes, body: bytes) -> bytes:
+        return struct.pack(">I", len(body)) + kind + body + struct.pack(">I", zlib.crc32(kind + body))
+    header = struct.pack(">IIBBBBB", 2, len(rows), depth, colour, 0, 0, 0)
+    body = b"".join(chunk(k, b) for k, b in chunks)
+    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", header) + body
+            + chunk(b"IDAT", zlib.compress(b"".join(b"\0" + r for r in rows))) + chunk(b"IEND", b""))
+
+
+def test_png_formats_of_image_editors():
+    red, clear = bytes((255, 0, 0, 255)), bytes((0, 0, 0, 0))
+    # Palette, 4 bits, transparent entry 1.
+    palette = _png(3, 4, [bytes((0x01,))], (b"PLTE", bytes((255, 0, 0, 0, 0, 0))), (b"tRNS", bytes((255, 0))))
+    assert read_png(palette) == (2, 1, red + clear)
+    # Greyscale + alpha, 8 bits; 16-bit RGB; 1-bit greyscale with a colour key.
+    assert read_png(_png(4, 8, [bytes((255, 128, 0, 0))])) == (2, 1, bytes((255, 255, 255, 128)) + clear)
+    assert read_png(_png(2, 16, [bytes((255, 1, 0, 0, 0, 0)) * 2])) == (2, 1, red + red)
+    grey = _png(0, 1, [bytes((0b10000000,))], (b"tRNS", struct.pack(">H", 0)))
+    assert read_png(grey) == (2, 1, bytes((255, 255, 255, 255)) + clear)
+    interlaced = bytearray(_png(6, 8, [bytes(8)]))
+    interlaced[28] = 1  # IHDR interlace byte
+    with pytest.raises(PngFormatError, match="interlac"):
+        read_png(bytes(interlaced))
+
+
+def test_broken_icon_image_is_reported(tmp_path, monkeypatch):
+    from mh4u_rando.hud import icons
+    (tmp_path / "em077.png").write_bytes(write_png(10, 10, bytes(400)))
+    monkeypatch.setattr(icons, "icon_image_path", lambda m: tmp_path / f"em{m:03d}.png")
+    with pytest.raises(IconError, match="em077.png is 10x10"):
+        new_icon_cells()
 
 
 def test_icon_files_on_the_game():

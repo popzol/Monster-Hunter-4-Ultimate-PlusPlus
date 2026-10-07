@@ -29,9 +29,11 @@ is done or discovered.
 
 ## To verify in-game
 
-* New monster icons (`new_monster_icons`, docs/hud_code.md "Monster icons"):
-  quest board, details, target camera, results and hunting log with each
-  Fatalis and Gogmazios; replace the provisional images with final art.
+* Monster icons (`new_monster_icons`, on by default; docs/hud_code.md
+  "Monster icons"): verified with Gogmazios (quest board, details, in the
+  quest). Left: Dalamadur and Shah Dalamadur quests showing head + tail on the
+  quest board; results and hunting log with a Fatalis. **Final art** for the 5
+  PNGs of `mh4u_rando/data/icons/` (the current ones are placeholders).
 
 * HUD size: the hold and fishing gauges and the Frenzy icon (scaled, never
   seen); 90/80/60 %; on a real 3DS with Luma3DS (does the mod's

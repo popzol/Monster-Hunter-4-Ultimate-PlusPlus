@@ -397,10 +397,23 @@ are still the computed ones.
 
 ## Monster icons
 
-Option `new_monster_icons` (`mh4u_rando/hud/icons.py`): the monsters the game
-draws with the "?" icon — Black (77), Crimson (78) and White Fatalis (79),
-Crimson Fatalis (Super) (117) and Gogmazios (89) — get icons of their own.
-Data only: no code is added (the free space at the end of `.text` is not used).
+Option `new_monster_icons` (**on by default**; `mh4u_rando/hud/icons.py`):
+the orange "?" (icon 0) is never shown for a monster. The monsters the game
+draws with it — Black (77), Crimson (78) and White Fatalis (79), Crimson
+Fatalis (Super) (117) and Gogmazios (89) — get icons of their own. Data only:
+no code is added (the free space at the end of `.text` is not used).
+**Verified in Citra** (Gogmazios: quest board, details and in the quest).
+
+Retail quest board pictures with "?" (quest01.arc): the Black Fatalis,
+Gogmazios and Crimson Fatalis (Super) quests (10722, 11014, 11035, 11036) and
+also the **Dalamadur and Shah Dalamadur quests (10709, 10721, 11030)**,
+although head and tail have icons (72 / 73, 121 / 122). The option replaces
+the first "?" with the pictures of the quest's large monsters and drops the
+others (`objectives.replace_unknown_pictures`); for Dalamadur this needs no
+update. New lineups put a body part's picture right after its owner (the tail
+after the head) when one of the 5 slots is free (`objectives.monster_pictures`).
+Without the ROM or the update the run still works: a notice says the Fatalis
+and Gogmazios keep "?", the Dalamadur pictures are still fixed.
 
 * **Atlas**: every monster icon of the GUI is a 36×36 cell of
   `<lang>\lyt\common\texture\cmn_micon_BM_MQ_NOMIP` (TEX, 512×512, RGBA4444).
@@ -426,10 +439,14 @@ Data only: no code is added (the free space at the end of `.text` is not used).
   `curated/monster_icons.json` in every copy of the atlas. The quest board
   pictures (`Quest.pictures`) are icon indices: the randomizer gives new
   lineups the new icons and, in quests left as they were, replaces their "?"
-  (`objectives.show_new_icons`).
-* **Images**: provisional, `tools/make_monster_icons.py` recolours game icons
-  (Silver Rathalos for the Fatalis, Gore Magala for Gogmazios) with gradient
-  maps. Any 36×36 RGBA PNG can replace them.
-* **To verify in Citra**: quest board / details, target camera (and the
-  top-screen face, which mirrors it), results and hunting log with a Fatalis
-  and with Gogmazios; "?" still shown where it was for other reasons.
+  (`objectives.replace_unknown_pictures`).
+* **Images**: `mh4u_rando/data/icons/em<monster id>.png` — em077 Black,
+  em078 Crimson, em079 White Fatalis, em117 Crimson Fatalis (Super), em089
+  Gogmazios. To change one, replace the file: 36×36 pixels, a transparent
+  background, any PNG an image editor saves (RGB / RGBA, palette, greyscale,
+  1–16 bits, `tRNS`; not interlaced). The atlas keeps 4 bits per channel, so
+  smooth gradients and soft alpha edges are banded (like the game's own icons,
+  favour flat colours and a dark outline). A wrong file stops the run before
+  any work with its name and the problem. **The current images are
+  placeholders** (`tools/make_monster_icons.py` recolours Silver Rathalos and
+  Gore Magala): the final art is to be drawn.

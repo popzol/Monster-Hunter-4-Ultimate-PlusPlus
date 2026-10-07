@@ -73,15 +73,18 @@ the update. With any of these executable patches, `exefs/code.ips` is built
 from the update's executable (equipment changes included), so it is only
 valid with the update installed.
 
-`new_monster_icons` (a preset setting, or the GUI's Interface tab, "Icons")
-gives the Fatalis and Gogmazios, which the game shows with the "?" icon,
-icons of their own on the quest board, the target camera and the menus. It
-needs `--rom` and the update; the images (provisional) are
-`mh4u_rando/data/icons/` and can be replaced by any 36×36 PNG. Details in
+`new_monster_icons` (**on by default**; a preset setting, or the GUI's
+Interface tab, "Icons") never shows the orange "?" monster icon: the Fatalis
+and Gogmazios get icons of their own on the quest board, the target camera
+and the menus, and Dalamadur's quests show its head and its tail. The new
+icons need `--rom` and the update (without them the run goes on with a
+warning); with them, `exefs/code.ips` is built from the update's executable.
+The images (placeholders for now) are the 36×36 PNGs of
+`mh4u_rando/data/icons/`: replace a file to change an icon. Details in
 [docs/hud_code.md](docs/hud_code.md), "Monster icons".
 
-Every setting defaults to the original game (all switches off, every mode on
-its least random value), so a preset only needs the options to change.
+Every other setting defaults to the original game (all switches off, every
+mode on its least random value), so a preset only needs the options to change.
 
 Copy the `romfs` and `exefs` folders of `output_folder` into the emulator's
 mod folder for the game (Citra: right click the game > Open Mods Location,

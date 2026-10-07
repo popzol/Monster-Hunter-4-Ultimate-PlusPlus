@@ -56,6 +56,7 @@ class RandomizerContext:
     data: GameData
     map_profiles: MapProfiles
     attempt: int = 0
+    new_icons: bool = False  # the new monster icons are really in the mod (option on, ROM and update found)
 
 
 def randomize_quest(quest: Quest, ctx: RandomizerContext) -> QuestReport:
@@ -173,7 +174,7 @@ def _randomize_large_monster_quest(quest: Quest, info: QuestInfo, ctx: Randomize
 
     if rewrite_objectives and _wave_ids(quest) != original_lineup:
         objectives.apply_main_objectives(quest, plan)
-        objectives.apply_pictures(quest, plan, data, settings.new_monster_icons)
+        objectives.apply_pictures(quest, plan, data, ctx.new_icons)
 
     # Names first: the sub quest text written below must not be rewritten again.
     text.apply_text(quest, plan, data, settings.text)

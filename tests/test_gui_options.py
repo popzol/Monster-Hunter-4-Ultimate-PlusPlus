@@ -32,7 +32,8 @@ def test_every_enum_value_has_a_choice():
 
 def test_defaults_are_vanilla_and_shown_first():
     defaults = Settings()
-    restrictions = {"always_music", "one_monster_per_wave_on_arenas"}  # limit randomness: on by default
+    # Limit randomness, or never show the "?" monster icon: on by default.
+    restrictions = {"always_music", "one_monster_per_wave_on_arenas", "new_monster_icons"}
     for option in all_options():
         value = getattr(defaults, option.field)
         if option.choices:
