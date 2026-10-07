@@ -8,14 +8,18 @@ is done or discovered.
 * **Package the GUI** as an .exe with PyInstaller (the GUI itself is done:
   `python -m mh4u_rando.gui`).
 * **HUD / one-screen play** (docs/hud_layout.md, docs/hud_code.md):
-  * results of probe 12 (every interface option together): the target's face
-    on the top screen (implemented, `asm/target_face.c`; position and size to
-    tune: `code_patch.FACE_SCALE` / `FACE_CORNER_GAP`), two monsters, lock mark;
+  * results of probe 17 (the target face works since probe 16): hidden with
+    the HUD during area loads, clear of the item selector opened with L; the
+    minimap's circle without the Map item centred; then build the face's
+    final version (`hud_probe.py` without `--face-debug`, or the randomizer);
+  * target face: raise it to the height of the item selector's icon (it now
+    sits lower, at the height of the item name bar; screenshot of probe 17 in
+    `input/alejandro/Captura.PNG`): change the y of `code_patch.face_params`
+    (`FACE_CORNER_GAP[1]`) to the icon's centre (`ui205_name_base`);
   * L + X target switch: **works** (probe 11), but gunners use the same
     input (the player's action 12) to select ammo: choose another input for
     them or for everyone;
   * "X" hint next to the item selector's L hints (insert a pane in `ui205`);
-  * the minimap does not shrink without the Map item;
   * base game (no update) support for the executable patches (signatures).
 * **Species base health**: retail analysis shows the stat indices depend on
   the quest rank only (docs/game_rules.md, "Stats"). Find each monster's base
