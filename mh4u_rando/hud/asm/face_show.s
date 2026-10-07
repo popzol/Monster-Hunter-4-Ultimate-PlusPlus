@@ -1,15 +1,17 @@
-@ Hides the top-screen copy of the target camera panel whenever the game hides
-@ the touch-screen panel (docs/hud_code.md, "Target face on the top screen").
+@ Shows / hides the top-screen copy of the target camera panel with the
+@ touch-screen panel (docs/hud_code.md, "Target face on the top screen").
 @
-@ The game hides its touch-screen panels with FUN_00ae53e0(group, 0) in many
-@ places (FUN_00b85b50 hides them all, e.g. while loading an area), often in
-@ frames where the per-frame mirror (target_face.c) does not run. The first
-@ instruction of FUN_00ae53e0, `push {r4, r5, r6}` at 0xAE53E0, becomes
-@ `b` to this routine. When a visible group of the ui601 binder (0x1085650:
-@ panel00, panel01, target00) is being hidden, it hides its copy too:
-@ panel00 / panel01 -> the copy of panel00 (the only face shown on the top
-@ screen), target00 -> the copy of target00. The mirror shows the copy again
-@ once the touch-screen panel is back. Then it runs the original function.
+@ The game shows and hides its touch-screen panels with FUN_00ae53e0(group,
+@ visible): every frame the panel update (FUN_00b93788) hides the three ui601
+@ groups and shows the ones it needs, and FUN_00b85b50 hides every panel
+@ (e.g. while loading an area), in frames where the per-frame mirror
+@ (target_face.c) does not run. The first instruction of FUN_00ae53e0,
+@ `push {r4, r5, r6}` at 0xAE53E0, becomes `b` to this routine. When a group
+@ of the ui601 binder (0x1085650: panel00, panel01, target00) changes
+@ visibility, its copy gets the same: panel00 / panel01 -> the copy of
+@ panel00 (the only face shown on the top screen), target00 -> the copy of
+@ target00. So the copies end every frame as the touch-screen panel does.
+@ Then it runs the original function.
 @
 @ FUN_00ae53e0 is a leaf (r0 group, r1 visible; it pushes r4-r6 only), so
 @ `body` (the replaced instruction + a branch back) can be called like it.
@@ -26,11 +28,13 @@
     .equ COPY_INDEX, 0x5C0            @ code_patch.COPY_INDEX
 
 _start:
-    cmp     r1, #0
-    bne     body                      @ only hiding is propagated
     ldr     r12, [r0, #0x44]
-    tst     r12, #0x400
-    beq     body                      @ already hidden: nothing changes
+    and     r12, r12, #0x400
+    cmp     r1, #0
+    movne   r2, #0x400
+    moveq   r2, #0
+    cmp     r12, r2
+    beq     body                      @ no change
     push    {r0, r1, r4, lr}
     ldr     r12, binder
     mov     r4, #0
@@ -60,8 +64,8 @@ found:
     ldr     r0, [r12, r4, lsl #2]
     cmp     r0, #0
     beq     done
-    mov     r1, #0
-    bl      body                      @ hide the copy
+    ldr     r1, [sp, #4]              @ the same visibility
+    bl      body
 done:
     pop     {r0, r1, r4, lr}
 body:

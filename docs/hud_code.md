@@ -63,10 +63,10 @@ Free space used in the update:
 | 0xDEC7E0 | 0x70 | `asm/target_button.s` (diagnostic routines take its place; they collide with the target face) |
 | 0xDEC850 | 0xA4 | Target face: `asm/face_loader.s` (loads the second `ui601`) |
 | 0xDEC8F4 | 0x38 | Target face: `asm/face_free.s` (releases it) |
-| 0xDEC92C | 0x9C | Target face: `asm/face_show.s` (hides it with the touch panel) |
-| 0xDEC9C8 | 0x0C | Target face: position x, y and scale (`code_patch.face_params`) |
-| 0xDEC9D4 | 0x4D8 | `asm/target_face.c` (ends at 0xDECEAC) |
-| 0xDECEAC | 0x154 | free (the diagnostic build of `target_face.c`, 0x620 bytes, takes its place in probes) |
+| 0xDEC92C | 0xA4 | Target face: `asm/face_show.s` (shows / hides it with the touch panel) |
+| 0xDEC9D0 | 0x0C | Target face: position x, y and scale (`code_patch.face_params`) |
+| 0xDEC9DC | 0x4D8 | `asm/target_face.c` (ends at 0xDECEB4) |
+| 0xDECEB4 | 0x14C | free (the diagnostic build of `target_face.c`, 0x620 bytes, takes its place in probes) |
 
 Each patch checks and fills only its own range (`code_patch.py`: `CAVE`,
 `TARGET_ROUTINE`, `FACE_LOADER` … `FACE_END` = `CAVE_END`), so they can be
@@ -145,15 +145,25 @@ was not needed.
   | 0xB954EC | 0xB95950 | absolute (players) | yes |
   | 0xB87E74 | 0xB82F44, 0xB832C0, 0xB88124 | absolute (monsters) | yes |
   | 0xB8B9F8 | 0xB8BC6C | absolute | yes |
-  | 0xB9793C | 0xB97A90 | absolute but `40 + 128u` (the map layout's own `l_icon`?) | no |
+  | 0xB9793C | 0xB97A90 | absolute, x = 200 − 128u, y = 116 − 128v: the visible circle of the stage map without the Map item | yes |
   | 0xBA3428 | 0xBA36CC | centred `128u − 64` (another map view?) | no |
   | 0xB9A224, 0xB9D374, 0xB83D5C, 0xB858B4 | 0xB9A2E8, 0xB9D4B8, 0xB83DD8, 0xB8592C | relative (`pos += −(x/W)·k`, scrolling?) | no |
 
   Other callers of 0x6C40E0 (0x93AAB4, 0x94F488, 0x82755C, 0x927748) are not
   map code. The Everwood branch of the placement functions (0x5A5F14 offsets)
   does not go through 0x6C40E0 and is not patched.
-* **Patch** (`code_patch.patch_minimap_icons`): the seven "absolute" call
-  sites `bl 0x6C40E0` become `bl 0xDEC784`, a wrapper that calls the
+* **Without the Map item** the minimap is the stage map (`mNN_map.arc`,
+  layouts `ui251`…`ui272`, scaled by data like the area maps): group
+  `uiNNN_l_map` draws `sprite_alpha_clear`, then `sprite_mask_write` (44 × 44,
+  the visible circle), `sprite_mask_blend` and the map, so only the circle
+  around the player shows. `FUN_00b9793c` (from 0xB866DC) places the circle
+  every frame from the player's projected position, with the literals of
+  0xB97AE0…0xB97AFC (read only there): x = 160 − 128u − 10 + 50, y = 120 −
+  128v − 4. Its pane names are in tables like 0xED1C68 (`ui252`: `map`,
+  `map_1`, `sprite_mask_write`, `area01`…`10`).
+* **Patch** (`code_patch.patch_minimap_icons`): the eight "absolute" call
+  sites `bl 0x6C40E0` (the circle's included, probe 16) become
+  `bl 0xDEC784`, a wrapper that calls the
   projection and then maps it like the map data: `x' = s·x + (W/2)(1−s)`,
   `z' = s·z − (W/2)(1−s)`, i.e. `u' = 1 − s(1−u)`, `v' = s·v` — towards the
   top-right corner, whatever each function's constants. The icons' size comes
@@ -299,9 +309,10 @@ while the monster is unknown, else the locked monster, else the first known
 one; L + X (or a tap) cycles like the panel. It is shown only while the touch
 panel is. The touch panel stays where it is.
 
-**Status:** probes 12–14 found the problems below, fixed in probe 15
-(pending): the copy's index, placement, the panes' primitive indices, one
-face with two monsters, and hiding during loads. See "Probes 12 to 14".
+**Status:** probes 12–15 found the problems below (the copy's index,
+placement, the panes' primitive indices, one face with two monsters, hiding
+during loads, visibility every frame), fixed for probe 16 (pending). See
+"Probes 12 to 15".
 
 ### How a layout gets its screen
 
@@ -406,17 +417,20 @@ face with two monsters, and hiding during loads. See "Probes 12 to 14".
 * **Release** (`asm/face_free.s`, at 0xDEC8F4): the `ldr r0, [r0, #0x100]` at
   0xC0F11C, at the start of `FUN_00c0f110`, becomes `bl` to a routine that
   frees slots 1472–1474 with `FUN_00b044f4` and returns the manager in r0.
-* **Hiding** (`asm/face_show.s`, at 0xDEC92C): the first instruction of
+* **Visibility** (`asm/face_show.s`, at 0xDEC92C): the first instruction of
   `FUN_00ae53e0` (`push {r4, r5, r6}`, 0xAE53E0) becomes `b` to a routine
-  that, when a visible group of the binder is being hidden, also hides its
-  copy (`panel00` / `panel01` → the copy of `panel00`, `target00` → the copy
-  of `target00`), then runs the original function (a trampoline: the replaced
-  instruction and `b 0xAE53E4`; the function is a leaf). So the top screen
-  hides whatever the game hides on the touch screen, wherever it happens.
+  that, when a group of the binder changes visibility (shown or hidden), gives
+  its copy the same (`panel00` / `panel01` → the copy of `panel00`,
+  `target00` → the copy of `target00`), then runs the original function (a
+  trampoline: the replaced instruction and `b 0xAE53E4`; the function is a
+  leaf). **`FUN_00b93788` hides the three groups and shows the needed ones
+  every frame**, so propagating only the hiding (probe 15) left the copies
+  hidden for good; with both, the copies end every frame as the touch panel
+  does, and stay hidden while `FUN_00b85b50` keeps the panels hidden.
 * **Mirror** (`asm/target_face.c`, 1240 bytes, C compiled with
   arm-none-eabi-gcc for ARM mode, VFP, linked with `target_face.ld` by
   `tools/build_hud_asm.py`): the per-frame call `bl 0xB94854` at **0xB82B50**
-  (in `FUN_00b826bc`) becomes `bl 0xDEC9D4`, which runs `0xB94854` and then
+  (in `FUN_00b826bc`) becomes `bl 0xDEC9DC`, which runs `0xB94854` and then
   takes the copies (slot 1472 + i, if they have the same name hash):
   * the copy of `panel01` is always hidden; the copy of `panel00` is shown
     while either touch panel is, the copy of `target00` while the touch one is
@@ -439,7 +453,7 @@ face with two monsters, and hiding during loads. See "Probes 12 to 14".
   right edge (the item selector's width, 127, plus 4) and `4 · factor` px
   from the bottom.
 
-### Probes 12 to 14
+### Probes 12 to 15
 
 Probe 12, mod built by the randomizer (HUD 70 %, L + X, target face;
 screenshots in `input/`):
@@ -478,6 +492,11 @@ screenshots in `input/alejandro/`):
   the touch instance's primitive indices in `+0x58` / `+0x24` (copied).
 * With two monsters both faces were shown; nothing was hidden while loading.
 
+Probe 15 (content-only mirror, one face, hiding hook): **nothing on the top
+screen**. `FUN_00b93788` hides the three `ui601` groups every frame before
+showing the needed ones, so the hook, which only propagated hiding, hid the
+copies every frame. Probe 16 propagates showing too.
+
 ### Debugging the target face
 
 `tools/hud_probe.py ... --target-face --face-debug` builds `target_face.c`
@@ -505,6 +524,6 @@ A tree that ends early leaves older entries after it. The diagnostic build is
   is untouched.
 * In-game: the copy loads, draws on the top screen and follows the panel
   (probe 12); with the copy out of the quest range the minimap works (probe
-  13); the copy at its own slots exists (probe 14). Pending (probe 15): size
+  13); the copy at its own slots exists (probe 14). Pending (probe 16): size
   and position, one face with two monsters, the lock mark, hiding while
   loading and when leaving the quest, the cost per frame.

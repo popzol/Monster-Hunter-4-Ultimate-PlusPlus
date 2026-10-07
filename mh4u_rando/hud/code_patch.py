@@ -2,9 +2,10 @@
 
 Minimap icons: the map layouts are shrunk by data towards the map's top-right
 corner, but the code places the minimap icons (ui250) every frame for the
-full-size map. The seven icon placement call sites of FUN_006c40e0 (world ->
-map projection) are redirected to a wrapper (asm/minimap_wrapper.s) that maps
-the projected position the same way. See docs/hud_layout.md, "Minimap".
+full-size map, and likewise the visible circle of the stage map shown without
+the Map item. These eight call sites of FUN_006c40e0 (world -> map
+projection) are redirected to a wrapper (asm/minimap_wrapper.s) that maps the
+projected position the same way. See docs/hud_layout.md, "Minimap".
 
 Mount gauge: FUN_00b98454 moves the monster face (ui204_face) along the bar
 with x = 45 - 98 * progress, in pixels; both constants of its literal pool are
@@ -47,6 +48,7 @@ ICON_CALLS = (
     0xB95950,  # FUN_00b954ec
     0xB82F44, 0xB832C0, 0xB88124,  # FUN_00b87e74
     0xB8BC6C,  # FUN_00b8b9f8
+    0xB97A90,  # FUN_00b9793c: the visible circle of the stage map without the Map item (sprite_mask_write)
 )
 # asm/minimap_wrapper.s linked at CAVE (tools/build_hud_asm.py prints it); two floats at the end.
 MINIMAP_WRAPPER = bytes.fromhex(
@@ -67,8 +69,8 @@ TARGET_BUTTON = bytes.fromhex(
 FACE_LOADER = 0xDEC850
 FACE_FREE = 0xDEC8F4
 FACE_SHOW = 0xDEC92C
-FACE_PARAMS = 0xDEC9C8      # float x, y, scale (struct params in target_face.c)
-FACE_ROUTINE = 0xDEC9D4
+FACE_PARAMS = 0xDEC9D0      # float x, y, scale (struct params in target_face.c)
+FACE_ROUTINE = 0xDEC9DC
 FACE_END = CAVE_END         # room for the diagnostic build too (tools/hud_probe.py --face-debug)
 COPY_INDEX = 0x5C0          # GUI manager slots of the copy's 3 groups (the game uses 20-510 and 1526-1535)
 LAYOUT_LIST, LAYOUT_COUNT, UI601 = 0xEFE17C, 20, 12  # FUN_00c1017c's quest layout list; ui601's entry
@@ -88,10 +90,10 @@ FACE_CORNER_GAP = (131.0, 4.0)
 # asm/face_loader.s, asm/face_free.s, asm/face_show.s and asm/target_face.c linked at FACE_LOADER,
 # FACE_FREE, FACE_SHOW and FACE_ROUTINE (tools/build_hud_asm.py prints them).
 FACE_SHOW_CODE = bytes.fromhex(
-    "000051e32000001a44c090e5010b1ce31d00000a13402de974c09fe50040a0e304219ce7000052e10300000a014084e2"
-    "030054e3f9ffff3a120000ea020054e30040a0134cc09fe500c09ce500005ce30c00000a00c19ce500005ce30900000a"
-    "60219ce5174d84e2020054e10500002a54c19ce504019ce7000050e30100000a0010a0e3000000eb1340bde870002de9"
-    "88e2f3ea5056080134750501")
+    "44c090e501cb0ce2000051e3012ba0130020a00302005ce11d00000a13402de974c09fe50040a0e304219ce7000052e1"
+    "0300000a014084e2030054e3f9ffff3a120000ea020054e30040a0134cc09fe500c09ce500005ce30c00000a00c19ce5"
+    "00005ce30900000a60219ce5174d84e2020054e10500002a54c19ce504019ce7000050e30100000a04109de5000000eb"
+    "1340bde870002de986e2f3ea5056080134750501")
 FACE_FREE_CODE = bytes.fromhex(
     "70402de9004190e5000054e30700000a175da0e30360a0e30400a0e10510a0e1f65ef4eb015085e2016056e2f9ffff1a"
     "0400a0e17080bde8")
@@ -101,7 +103,7 @@ FACE_LOADER_CODE = bytes.fromhex(
     "0600000a0030a0e1172da0e30010a0e30600a0e1ea8af8eb0400a0e1a5d7f7eb08d08de2d040bde810709fe51eff2fe1"
     "ec7205010466e00058900e01ace1ef00e8e1ef00")
 TARGET_FACE = bytes.fromhex(
-    "f0432de914d04de29c9ff6eb14329fe5343593e5000053e36100000a003193e5000053e35e00000a04108de2172da0e3"
+    "f0432de914d04de29a9ff6eb14329fe5343593e5000053e36100000a003193e5000053e35e00000a04108de2172da0e3"
     "0150a0e154e193e5604193e5e8c19fe5040052e10030a0230e00002a0231a0e1423783e2033a83e2500f93e502319ee7"
     "000050e3000053130060a0030160a0130630a0010300000a006093e5000090e5000056e10030a013012082e20c0052e1"
     "043081e4e9ffff1a04809de58c319fe5000058e30840a001507693e5546693e5589693e50600000a0700a0e1690000eb"
@@ -112,21 +114,21 @@ TARGET_FACE = bytes.fromhex(
     "053a83e2501693e5303091e5081091e5303080e50430a0e1940000eb080056e31e00001a14d08de2f083bde888109fe5"
     "0600a0e1210000eb691481e26b1a81e20040a0e1561081e20600a0e11b0000eb50309fe50020a0e19c3293e5000053e3"
     "0500000ad53ed3e5020053e30040a001d0ffff0a010053e3ceffff0a0400a0e11d0000eb000050e3caffff1a0200a0e1"
-    "190000eb000050e30240a011c5ffffea0860a0e3c9ffffea00700501c30500000050080121c22089c8c9de00b7f227fe"
+    "190000eb000050e30240a011c5ffffea0860a0e3c9ffffea00700501c30500000050080121c22089d0c9de00b7f227fe"
     "000050e3080090151eff2f01000050e31eff2f01003090e5010053e11eff2f01140090e5f8ffffea000050e34500d015"
     "2001a011010000121eff2fe1000050e31eff2f01203090e5140093e5000050e3083090155800d315a003a0111eff2fe1"
-    "0c3091e5000053e30200000a0320a0e31220c3e51eff2fe1cee7f3ea000051e30030a01358309005143080158030c303"
+    "0c3091e5000053e30200000a0320a0e31220c3e51eff2fe1cce7f3ea000051e30030a01358309005143080158030c303"
     "58308005103080151eff2fe1f0472de90030a0e30060a0e10140a0e10250a0e1c8709fe5c8809fe5c8909fe5000054e3"
     "00005513f087bd081010d4e5020051e30130a0031800000a1700008a000053e3080095e50f00001a002094e5080052e1"
     "070052110130a0030030a013090052e101308303000053e30600001a000051e30c00000a0600a0e1202095e5201094e5"
     "ddffffeb000000ead3ffffeb0510a0e10600a0e1c9ffffeb0030a0e3144094e5145095e5dcffffea3030a0e3082094e5"
     "031092e7031080e7043083e2500053e3faffff1a583092e5582090e5803003e28020c2e3023083e1583080e5eaffffea"
-    "46e420ddd0d427aa6a852e33003050e21eff2f0110402de9a2ffffeb000051e11080bd080300a0e11040bde886e1f3ea"
+    "46e420ddd0d427aa6a852e33003050e21eff2f0110402de9a2ffffeb000051e11080bd080300a0e11040bde884e1f3ea"
     "f0472de90250a0e10070a0e10140a0e10390a0e10020a0e3bc609fe5bc809fe5000054e300005513f087bd081010d4e5"
     "020051e30120a0030e00000a0d00008a013021e2013003e2023093e1080095e50300001a002094e5060052e108005211"
     "0700000a98ffffeb0510a0e10700a0e18effffeb0020a0e3144094e5145095e5e6ffffea083094e554109fe5007a93ed"
     "027ad1ed277a27ee007a80ed017a93ed277a27ee017a80ed047a93ed277a27ee047a80ed057a93ed277a67ee060052e1"
-    "057ac0ed0910a0010700a0e120109415202095e584ffffebe2ffffea21c220893b3adea1c8c9de00")
+    "057ac0ed0910a0010700a0e120109415202095e584ffffebe2ffffea21c220893b3adea1d0c9de00")
 # FUN_00b94854: the button shortcut test (ldr r0, pad; ldr r0, [r0]; ldr r0, [r0, #0x348]; tst r0, #0x8000) ...
 TARGET_TEST = 0xB948AC
 TARGET_TEST_ORIGINAL = bytes.fromhex("80009fe5000090e5480390e5020910e3")

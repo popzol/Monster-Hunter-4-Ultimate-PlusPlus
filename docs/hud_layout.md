@@ -25,8 +25,8 @@ game (says which); **Guess** = plausible from names or values, unverified.
 | Minimap: data + icon patch | **Verified** (icon positions probe 3, size probe 5) |
 | Mount gauge: data + face patch | **Verified** (probe 6) |
 | L + X switches the target | **Verified** (probe 11, the player's action 12; see hud_code.md, "Target switch"). Conflicts with the gunners' ammo selection: input to change. The "X" hint next to the item selector is not done |
-| Target face (monster icon) on the top screen | Probes 12–14: the copy works but had group index, placement and primitive index bugs; probe 15 pending (hud_code.md, "Target face on the top screen") |
-| Minimap without the Map item | Not started — the map does not shrink then, and the icons (placed for the shrunk map) float beside it (probe 13) |
+| Target face (monster icon) on the top screen | Probes 12–15: the copy works but had group index, placement, primitive index and visibility bugs; probe 16 pending (hud_code.md, "Target face on the top screen") |
+| Minimap without the Map item | The visible circle was placed for the full-size map (probe 13); fixed by the icons' patch, probe 16 pending |
 
 ## Code and tools
 
@@ -300,9 +300,14 @@ so their keys get the same anchored mapping as the pane.
   numbers, exits). The icons need the executable patch
   ([hud_code.md](hud_code.md)). The touch-screen map uses the same files and
   shrinks too — accepted.
-* **The map only shrinks when the hunter carries the Map item**; without it
-  nothing changes (probe 2). The no-Map minimap must come from other files or
-  another code path — to investigate.
+* **Without the Map item** the minimap is the stage map (`mNN_map*.arc`,
+  layouts `ui251`…`ui272`) seen through a circle around the player
+  (`uiNNN_sprite_mask_write`). Those ARCs match `MAP_ARC` and are scaled like
+  the area maps (probe 2's "nothing changes" predates that), but the code
+  places the circle for the full-size map (probe 13: it showed the wrong part
+  of the map). Fixed with the icons' executable patch
+  ([hud_code.md](hud_code.md), "Minimap icons"); in-game check pending
+  (probe 16).
 
 ## How the HUD is scaled
 
@@ -349,7 +354,8 @@ The anchor is chosen **per root group** (`ui204` mixes corners).
 | 12 (pipeline: HUD 70 %, `target_switch`, `target_face_top`) | Combined test of every interface option, mod built by `pipeline.run()` | Target face drawn on the top screen and following the panel, but full size, centred, with its board; **minimap gone**; no lock mark on the top screen (hud_code.md, "Probe 12") |
 | 13 (`--minimap --target-button --target-face --face-debug`) | Copy loaded after the stage map; faces scaled, boards hidden, placed by their centre; draw priority copied; diagnostic snapshot | L + X works; **minimap back** (without the Map item its icons float); **no face**: the area map, loaded at the fixed index 500, overwrote the copy |
 | 14 (same options) | The copy at its own manager slots (1472–1474), released with the GUI layouts | Face big and almost centred, lock mark misplaced plus an extra one on the touch screen (primitive indices copied), both faces with two monsters, nothing hidden while loading |
-| 15 (same options) | Only content copied; one face (locked / first known / "?"); hidden with the touch panel (`FUN_00ae53e0` hook) | **Waiting** |
+| 15 (same options) | Only content copied; one face (locked / first known / "?"); hidden with the touch panel (`FUN_00ae53e0` hook) | **Nothing on the top screen**: the panel update hides the groups every frame before showing them, and the hook only propagated hiding |
+| 16 (same options) | The hook propagates showing too; the minimap's circle without the Map item through the icons' wrapper | **Waiting** |
 
 ## Open questions
 
