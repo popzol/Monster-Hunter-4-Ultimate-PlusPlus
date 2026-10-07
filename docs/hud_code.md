@@ -448,5 +448,7 @@ and Gogmazios keep "?", the Dalamadur pictures are still fixed.
   smooth gradients and soft alpha edges are banded (like the game's own icons,
   favour flat colours and a dark outline). A wrong file stops the run before
   any work with its name and the problem. **The current images are
-  placeholders** (`tools/make_monster_icons.py` recolours Silver Rathalos and
-  Gore Magala): the final art is to be drawn.
+  placeholders** made by `tools/make_monster_icons.py` (gradient maps over
+  game icons): black, crimson and white Rathalos for the Fatalis, a brighter
+  crimson one for the Super, a dark orange Gore Magala for Gogmazios. The
+  final art is to be drawn.

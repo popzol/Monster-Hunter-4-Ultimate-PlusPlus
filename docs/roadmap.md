@@ -31,8 +31,8 @@ is done or discovered.
 
 * Monster icons (`new_monster_icons`, on by default; docs/hud_code.md
   "Monster icons"): verified with Gogmazios (quest board, details, in the
-  quest). Left: Dalamadur and Shah Dalamadur quests showing head + tail on the
-  quest board; results and hunting log with a Fatalis. **Final art** for the 5
+  quest) and Dalamadur (head + tail on the quest board). Left: the Fatalis'
+  placeholders in-game, results and hunting log. **Final art** for the 5
   PNGs of `mh4u_rando/data/icons/` (the current ones are placeholders).
 
 * HUD size: the hold and fishing gauges and the Frenzy icon (scaled, never

@@ -1,6 +1,6 @@
 """Make the provisional new monster icons (mh4u_rando/data/icons/em<id>.png) from icons of the game.
 
-    python tools/make_monster_icons.py SOURCE [--out DIR] [--sheet SHEET.png]
+    python tools/make_monster_icons.py SOURCE [--out DIR] [--sheet SHEET.png] [--only ID ...]
 
 SOURCE is a decrypted .3ds or a RomFS dump folder. Each new icon is an icon of
 the atlas (cmn_micon) recoloured with a gradient map: every pixel's brightness
@@ -24,12 +24,14 @@ Ramp = list[tuple[float, tuple[int, int, int]]]
 SILVER_RATHALOS, GORE_MAGALA = 6, 29
 # Monster id -> (icon used as the base, gradient map from dark to bright).
 RECIPES: dict[int, tuple[int, Ramp]] = {
-    77: (SILVER_RATHALOS, [(0.0, (6, 6, 8)), (0.7, (55, 52, 58)), (0.9, (112, 106, 114)),
-                           (1.0, (200, 40, 30))]),                                                    # Black
-    78: (SILVER_RATHALOS, [(0.0, (20, 2, 4)), (0.6, (150, 15, 22)), (1.0, (225, 70, 55))]),          # Crimson
-    79: (SILVER_RATHALOS, [(0.0, (70, 62, 66)), (0.5, (214, 208, 196)), (1.0, (255, 250, 232))]),    # White
-    117: (SILVER_RATHALOS, [(0.0, (22, 0, 2)), (0.4, (176, 12, 22)), (0.75, (255, 125, 20)),
-                            (1.0, (255, 238, 120))]),                                                 # Crimson (Super)
+    77: (SILVER_RATHALOS, [(0.0, (4, 4, 6)), (0.45, (30, 30, 36)), (0.8, (70, 72, 84)),
+                           (1.0, (130, 136, 152))]),                                                  # Black
+    78: (SILVER_RATHALOS, [(0.0, (20, 0, 6)), (0.45, (90, 8, 24)), (0.8, (160, 20, 44)),
+                           (1.0, (215, 70, 90))]),                                                    # Crimson
+    79: (SILVER_RATHALOS, [(0.0, (40, 42, 52)), (0.45, (150, 154, 168)), (0.8, (228, 226, 222)),
+                           (1.0, (255, 253, 245))]),                                                  # White
+    117: (SILVER_RATHALOS, [(0.0, (20, 0, 4)), (0.4, (120, 10, 30)), (0.75, (210, 50, 40)),
+                            (1.0, (255, 190, 80))]),                                                  # Crimson (Super)
     89: (GORE_MAGALA, [(0.0, (6, 5, 5)), (0.3, (40, 34, 30)), (0.55, (120, 60, 20)), (0.8, (230, 120, 30)),
                        (1.0, (255, 210, 90))]),                                                      # Gogmazios
 }
@@ -82,14 +84,20 @@ def main() -> None:
     parser.add_argument("source", type=Path)
     parser.add_argument("--out", type=Path, default=ICON_DIR)
     parser.add_argument("--sheet", type=Path)
+    parser.add_argument("--only", type=int, nargs="+", metavar="ID", help="monster ids to make (default: all)")
     args = parser.parse_args()
     atlas = parse_tex(read_atlas(args.source))
     missing = set(new_icons()) - set(RECIPES)
     if missing:
         raise SystemExit(f"no recipe for monsters {sorted(missing)} (curated/monster_icons.json)")
+    unknown = set(args.only or ()) - set(RECIPES)
+    if unknown:
+        raise SystemExit(f"no recipe for monsters {sorted(unknown)}")
     args.out.mkdir(parents=True, exist_ok=True)
     pairs = []
     for monster_id, (base, ramp) in RECIPES.items():
+        if args.only and monster_id not in args.only:
+            continue
         source = atlas.get_region(*cell_origin(base), CELL, CELL)
         icon = recolour(source, ramp)
         target = args.out / icon_image_path(monster_id).name
