@@ -25,7 +25,7 @@ data/
     small_monster_rules.json  interchangeable small monster groups
     supply_pool.json    consumables for supply boxes, with max capacity
     monster_icons.json  new icon cell of the monsters shown with "?" (new_monster_icons)
-  icons/                em<id>.png, 36x36 images of those icons (tools/make_monster_icons.py)
+  icons/                em<id>.png, 36x36 images of those icons, replaceable (docs/monster_icons.md)
     tuning.json         every arbitrary probability/parameter, with its description
   gamedata.py           loads and validates everything -> GameData
   tuning.py             reads tuning.json: tuning("equipment", "progressive_sigma")

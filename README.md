@@ -36,6 +36,7 @@ monitor (`romfs/<language>/data`).
 * [docs/equipment_data.md](docs/equipment_data.md) - equipment tables in the executable
 * [docs/hud_layout.md](docs/hud_layout.md) - HUD layouts and the HUD size option
 * [docs/hud_code.md](docs/hud_code.md) - executable patches for the HUD (minimap icons, L + X target switch)
+* [docs/monster_icons.md](docs/monster_icons.md) - monster icons: no "?" icon, how to replace the images
 * [docs/roadmap.md](docs/roadmap.md) - pending work and open questions
 
 ## Usage
@@ -80,8 +81,8 @@ and the menus, and Dalamadur's quests show its head and its tail. The new
 icons need `--rom` and the update (without them the run goes on with a
 warning); with them, `exefs/code.ips` is built from the update's executable.
 The images (placeholders for now) are the 36×36 PNGs of
-`mh4u_rando/data/icons/`: replace a file to change an icon. Details in
-[docs/hud_code.md](docs/hud_code.md), "Monster icons".
+`mh4u_rando/data/icons/`: replace a file to change an icon. Details and how
+to edit them in [docs/monster_icons.md](docs/monster_icons.md).
 
 Every other setting defaults to the original game (all switches off, every
 mode on its least random value), so a preset only needs the options to change.

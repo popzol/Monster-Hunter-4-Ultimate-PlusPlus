@@ -29,8 +29,8 @@ is done or discovered.
 
 ## To verify in-game
 
-* Monster icons (`new_monster_icons`, on by default; docs/hud_code.md
-  "Monster icons"): verified with Gogmazios (quest board, details, in the
+* Monster icons (`new_monster_icons`, on by default; docs/monster_icons.md):
+  verified with Gogmazios (quest board, details, in the
   quest) and Dalamadur (head + tail on the quest board). Left: the Fatalis'
   placeholders in-game, results and hunting log. **Final art** for the 5
   PNGs of `mh4u_rando/data/icons/` (the current ones are placeholders).

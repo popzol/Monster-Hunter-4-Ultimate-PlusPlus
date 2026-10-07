@@ -13,7 +13,7 @@ the base game and the update); FUN_00c0e1b4 (sprite UVs, 13 callers) and
 FUN_00c0e850 (quest details) read it, and 0x7F means "no icon". The option
 draws the images of data/icons/ into free cells (curated/monster_icons.json)
 and points the table at them; quest board pictures (Quest.pictures) are icon
-indices too and are set by the randomizer. See docs/hud_code.md, "Monster icons".
+indices too and are set by the randomizer. See docs/monster_icons.md.
 """
 
 import struct
