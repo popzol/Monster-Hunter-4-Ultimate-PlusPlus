@@ -25,8 +25,8 @@ game (says which); **Guess** = plausible from names or values, unverified.
 | Minimap: data + icon patch | **Verified** (icon positions probe 3, size probe 5) |
 | Mount gauge: data + face patch | **Verified** (probe 6) |
 | L + X switches the target | **Verified** (probe 11, the player's action 12; see hud_code.md, "Target switch"). Conflicts with the gunners' ammo selection: input to change. The "X" hint next to the item selector is not done |
-| Target face (monster icon) on the top screen | Probes 12–15: the copy works but had group index, placement, primitive index and visibility bugs; probe 16 pending (hud_code.md, "Target face on the top screen") |
-| Minimap without the Map item | The visible circle was placed for the full-size map (probe 13); fixed by the icons' patch, probe 16 pending |
+| Target face (monster icon) on the top screen | **Works** (probe 16); hiding during area loads and the gap to the open item selector pending (probe 17; hud_code.md, "Target face on the top screen") |
+| Minimap without the Map item | **Works** (probe 16, the circle follows the shrunk map); the last pixel pending (probe 17) |
 
 ## Code and tools
 
@@ -306,8 +306,8 @@ so their keys get the same anchored mapping as the pane.
   the area maps (probe 2's "nothing changes" predates that), but the code
   places the circle for the full-size map (probe 13: it showed the wrong part
   of the map). Fixed with the icons' executable patch
-  ([hud_code.md](hud_code.md), "Minimap icons"); in-game check pending
-  (probe 16).
+  ([hud_code.md](hud_code.md), "Minimap icons"), verified in probe 16 (1 px
+  low, corrected for probe 17).
 
 ## How the HUD is scaled
 
@@ -355,7 +355,8 @@ The anchor is chosen **per root group** (`ui204` mixes corners).
 | 13 (`--minimap --target-button --target-face --face-debug`) | Copy loaded after the stage map; faces scaled, boards hidden, placed by their centre; draw priority copied; diagnostic snapshot | L + X works; **minimap back** (without the Map item its icons float); **no face**: the area map, loaded at the fixed index 500, overwrote the copy |
 | 14 (same options) | The copy at its own manager slots (1472–1474), released with the GUI layouts | Face big and almost centred, lock mark misplaced plus an extra one on the touch screen (primitive indices copied), both faces with two monsters, nothing hidden while loading |
 | 15 (same options) | Only content copied; one face (locked / first known / "?"); hidden with the touch panel (`FUN_00ae53e0` hook) | **Nothing on the top screen**: the panel update hides the groups every frame before showing them, and the hook only propagated hiding |
-| 16 (same options) | The hook propagates showing too; the minimap's circle without the Map item through the icons' wrapper | **Waiting** |
+| 16 (same options) | The hook propagates showing too; the minimap's circle without the Map item through the icons' wrapper | **Face, lock mark, two monsters and L + X work**; the circle is about 1 px low; the face stays during area loads; the mark overlaps the item selector opened with L |
+| 17 (same options) | The face follows the HUD's health bar (hidden during loads); 144 px gap; the circle's y offset scaled | **Waiting** |
 
 ## Open questions
 

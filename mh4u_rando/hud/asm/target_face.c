@@ -7,8 +7,9 @@
  * the touch-screen instance through its binder (0x1085650: panel00, panel01, target00); every
  * frame this shows one face of it on the top screen:
  *   - the copy of panel01 is always hidden; the copy of panel00 is shown while either touch
- *     panel is, with the face of the touch panel00, or with two monsters the locked one
- *     (target 1 = target_icon01, 2 = target_icon02) or else the first one that is known;
+ *     panel and the HUD's health bar (ui202_tairyoku) are, with the face of the touch panel00,
+ *     or with two monsters the locked one (target 1 = target_icon01, 2 = target_icon02) or
+ *     else the first one that is known;
  *   - the copy of target00 (the lock mark) is shown while the touch one is, over that face;
  *   - both copies sit at PARAMS.x/y; the kept first-level nulls (target_icon00, t_mark00) get
  *     the layout's position and scale times PARAMS.scale (a null's scale reaches its children);
@@ -17,8 +18,8 @@
  *     null) is the pane's own draw primitive index and must never be copied;
  *   - everything else is hidden: boards, effects, the faces' boards (ita), texts (scale 0 on
  *     the null that follows each text).
- * asm/face_show.s hides the copies when the game hides the touch panels in frames where this
- * does not run (area loading...).
+ * asm/face_show.s gives the copies the touch panels' visibility changes, and hides them with
+ * the HUD in frames where this does not run (area loading...).
  *
  * Runtime structures (docs/hud_code.md, "Runtime GUI"): group +0x08 first pane, +0x28 position,
  * +0x44 bit 0x400 visible; pane +0x00 name hash, +0x08 data, +0x0C redraw entry, +0x10 kind
@@ -39,6 +40,7 @@ typedef unsigned char u8;
 #define BINDER ((u32 *)0x01085650)      /* ui601 binder: panel00, panel01, target00 */
 #define TARGET (*(u32 *)0x0105729C)     /* + 0xED5: locked target, 0 none, else 1 / 2 */
 #define COPY_INDEX 0x5C0                /* the copy's groups, in the same order (code_patch.COPY_INDEX) */
+#define HUD_REF (*(u32 *)0x01083EDC)    /* ui202_tairyoku, the health bar (code_patch.HUD_REF) */
 
 struct params {
     float x, y;                         /* top-screen group position (layout coordinates) */
@@ -172,41 +174,27 @@ static int known(u32 null_pane)
 }
 
 #ifdef FACE_DEBUG
-/* Snapshot (docs/hud_code.md, "Debugging the target face"), in the unused tail of .bss: header 8
- * words, then pane trees (per pane: hash, kind, 24 data words): the face's source and the copy's
- * target_icon00 children (6 panes each), then target00, touch and top (10 panes each). */
+/* Snapshot (docs/hud_code.md, "Debugging the target face"), in the unused tail of .bss, 8 words:
+ * "FACE", frame counter, target, visibility bits (bit 0 face shown, bits 1-3 touch panel00,
+ * panel01, target00, bits 4-6 their copies, bit 7 the HUD's health bar), the face's source (the
+ * chosen touch null's first child), the copies of panel00, panel01 and target00. The probes of
+ * dumps of pane data used in probes 13-16 no longer fit. */
 #define DUMP ((u32 *)0x0111D200)
-#define PANE_WORDS 26
 
-static u32 *dump_tree(u32 pane, u32 *out, u32 *end)
-{
-    for (; pane && out + PANE_WORDS <= end; pane = W(pane, 0x14)) {
-        u32 data = W(pane, 8);
-        out[0] = W(pane, 0);
-        out[1] = W(pane, 0x10);
-        for (int i = 0; i < 24; i++)
-            out[2 + i] = data ? W(data, 4 * i) : 0;
-        out = dump_tree(W(pane, 0x20), out + PANE_WORDS, end);
-    }
-    return out;
-}
-
-static void snapshot(const u32 *copies, u32 face, u32 copy_face, u32 face_visible)
+static void snapshot(const u32 *copies, u32 face, u32 face_visible)
 {
     u32 *d = DUMP;
     d[0] = 0x45434146u;  /* "FACE" */
     d[1]++;
     d[2] = TARGET ? *(u8 *)(TARGET + 0xED5) : 0xFFFFFFFFu;
-    d[3] = face_visible;
+    u32 bits = face_visible | visible(HUD_REF) << 7;
+    for (int i = 0; i < 3; i++)
+        bits |= visible(BINDER[i]) << (1 + i) | visible(copies[i]) << (4 + i);
+    d[3] = bits;
     d[4] = face;
     d[5] = copies[0];
     d[6] = copies[1];
     d[7] = copies[2];
-    u32 *faces = d + 8, *marks = faces + 12 * PANE_WORDS;
-    dump_tree(face, faces, faces + 6 * PANE_WORDS);
-    dump_tree(copy_face, faces + 6 * PANE_WORDS, marks);
-    dump_tree(BINDER[2] ? W(BINDER[2], 8) : 0, marks, marks + 10 * PANE_WORDS);
-    dump_tree(copies[2] ? W(copies[2], 8) : 0, marks + 10 * PANE_WORDS, marks + 20 * PANE_WORDS);
 }
 #endif
 
@@ -223,7 +211,7 @@ __attribute__((section(".text.entry"))) void target_face(void)
         copies[i] = from && copy && W(copy, 0) == W(from, 0) ? copy : 0;
     }
     u32 panel00 = BINDER[0], panel01 = BINDER[1], target00 = BINDER[2];
-    int face_visible = copies[0] && (visible(panel00) || visible(panel01));
+    int face_visible = copies[0] && (visible(panel00) || visible(panel01)) && visible(HUD_REF);
     show(copies[1], 0);
     show(copies[0], face_visible);
     show(copies[2], face_visible && visible(target00));
@@ -248,7 +236,6 @@ __attribute__((section(".text.entry"))) void target_face(void)
         }
     }
 #ifdef FACE_DEBUG
-    u32 copy_face = find(copies[0], TARGET_ICON00);
-    snapshot(copies, face, copy_face ? W(copy_face, 0x20) : 0, face_visible);
+    snapshot(copies, face, face_visible);
 #endif
 }

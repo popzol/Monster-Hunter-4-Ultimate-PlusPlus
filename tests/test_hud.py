@@ -520,27 +520,33 @@ def test_encode_bl_round_trip():
 
 
 def synthetic_update_code() -> bytes:
-    from mh4u_rando.hud.code_patch import BASE_ADDRESS, CAVE_END, ICON_CALLS, PROJECT, encode_bl
+    from mh4u_rando.hud.code_patch import (
+        BASE_ADDRESS, CAVE_END, ICON_CALLS, MINIMAP_CIRCLE_OFFSET, PROJECT, encode_bl,
+    )
     code = bytearray(CAVE_END - BASE_ADDRESS)
     for site in ICON_CALLS:
         code[site - BASE_ADDRESS:site - BASE_ADDRESS + 4] = encode_bl(site, PROJECT)
+    struct.pack_into("<f", code, MINIMAP_CIRCLE_OFFSET[0] - BASE_ADDRESS, MINIMAP_CIRCLE_OFFSET[1])
     return bytes(code)
 
 
 def test_patch_minimap_icons():
     from mh4u_rando.hud.code_patch import (
-        BASE_ADDRESS, CAVE, ICON_CALLS, MINIMAP_WRAPPER, WRAPPER_FLOATS, CodePatchError, bl_target,
-        patch_minimap_icons,
+        BASE_ADDRESS, CAVE, ICON_CALLS, MINIMAP_CIRCLE_OFFSET, MINIMAP_WRAPPER, WRAPPER_FLOATS, CodePatchError,
+        bl_target, patch_minimap_icons,
     )
     code = synthetic_update_code()
     patched = patch_minimap_icons(code, 0.7)
     assert all(bl_target(patched, site) == CAVE for site in ICON_CALLS)
+    assert 0xB97A90 in ICON_CALLS  # the visible circle of the stage map without the Map item
     wrapper = patched[CAVE - BASE_ADDRESS:CAVE - BASE_ADDRESS + len(MINIMAP_WRAPPER)]
     assert wrapper[:WRAPPER_FLOATS] == MINIMAP_WRAPPER[:WRAPPER_FLOATS]
     assert struct.unpack_from("<2f", wrapper, WRAPPER_FLOATS) == pytest.approx((0.7, 0.15))
     assert bl_target(patched, CAVE + 12) == 0x6C40E0  # the wrapper still calls the projection
+    circle, offset = MINIMAP_CIRCLE_OFFSET
+    assert struct.unpack_from("<f", patched, circle - BASE_ADDRESS)[0] == pytest.approx(offset * 0.7)
     changed = [i for i, (a, b) in enumerate(zip(code, patched)) if a != b]
-    assert len(changed) <= len(MINIMAP_WRAPPER) + 4 * len(ICON_CALLS)
+    assert len(changed) <= len(MINIMAP_WRAPPER) + 4 * len(ICON_CALLS) + 4
     with pytest.raises(CodePatchError):
         patch_minimap_icons(patched, 0.7)  # already patched: refuses to stack
     with pytest.raises(CodePatchError):
@@ -656,7 +662,7 @@ def branch_target(code: bytes, at: int) -> int | None:
 def test_patch_target_face():
     from mh4u_rando.hud.code_patch import (
         BASE_ADDRESS, CAVE_END, COPY_INDEX, FACE_FREE, FACE_FREE_CODE, FACE_HOOK, FACE_LOADER, FACE_LOADER_CODE,
-        FACE_PARAMS, FACE_ROUTINE, FACE_SHOW, FACE_SHOW_CODE, FREE_HOOK, LAYOUT_LIST, LOADER_HOOK, SHOW_HOOK,
+        FACE_PARAMS, FACE_ROUTINE, FACE_SHOW, FACE_SHOW_CODE, FREE_HOOK, HUD_REF, LAYOUT_LIST, LOADER_HOOK, SHOW_HOOK,
         SHOW_HOOK_ORIGINAL, TARGET_FACE, CodePatchError, bl_target, face_params, patch_target_face,
     )
     code = synthetic_face_code()
@@ -679,6 +685,7 @@ def test_patch_target_face():
     back = [at for at in range(FACE_SHOW, FACE_SHOW + len(show), 4) if branch_target(patched, at) == SHOW_HOOK + 4]
     assert len(back) == 1 and patched[back[0] - 4 - BASE_ADDRESS:back[0] - BASE_ADDRESS] == SHOW_HOOK_ORIGINAL
     assert struct.pack("<I", 0x1085650) in show  # the ui601 binder
+    assert struct.pack("<I", HUD_REF) in show    # the HUD's health bar
     assert patched[LAYOUT_LIST - BASE_ADDRESS:] == code[LAYOUT_LIST - BASE_ADDRESS:]  # the list is untouched
     assert struct.unpack_from("<3f", patched, FACE_PARAMS - BASE_ADDRESS) == pytest.approx(face_params(0.7))
     assert patched[FACE_ROUTINE - BASE_ADDRESS:FACE_ROUTINE - BASE_ADDRESS + len(TARGET_FACE)] == TARGET_FACE

@@ -63,10 +63,10 @@ Free space used in the update:
 | 0xDEC7E0 | 0x70 | `asm/target_button.s` (diagnostic routines take its place; they collide with the target face) |
 | 0xDEC850 | 0xA4 | Target face: `asm/face_loader.s` (loads the second `ui601`) |
 | 0xDEC8F4 | 0x38 | Target face: `asm/face_free.s` (releases it) |
-| 0xDEC92C | 0xA4 | Target face: `asm/face_show.s` (shows / hides it with the touch panel) |
-| 0xDEC9D0 | 0x0C | Target face: position x, y and scale (`code_patch.face_params`) |
-| 0xDEC9DC | 0x4D8 | `asm/target_face.c` (ends at 0xDECEB4) |
-| 0xDECEB4 | 0x14C | free (the diagnostic build of `target_face.c`, 0x620 bytes, takes its place in probes) |
+| 0xDEC92C | 0xF8 | Target face: `asm/face_show.s` (shows / hides it with the touch panel and the HUD) |
+| 0xDECA24 | 0x0C | Target face: position x, y and scale (`code_patch.face_params`) |
+| 0xDECA30 | 0x4F0 | `asm/target_face.c` (ends at 0xDECF20) |
+| 0xDECF20 | 0xE0 | free (the diagnostic build of `target_face.c`, 0x594 bytes, takes its place in probes) |
 
 Each patch checks and fills only its own range (`code_patch.py`: `CAVE`,
 `TARGET_ROUTINE`, `FACE_LOADER` … `FACE_END` = `CAVE_END`), so they can be
@@ -160,7 +160,12 @@ was not needed.
   every frame from the player's projected position, with the literals of
   0xB97AE0…0xB97AFC (read only there): x = 160 − 128u − 10 + 50, y = 120 −
   128v − 4. Its pane names are in tables like 0xED1C68 (`ui252`: `map`,
-  `map_1`, `sprite_mask_write`, `area01`…`10`).
+  `map_1`, `sprite_mask_write`, `area01`…`10`). Through the wrapper below,
+  x = 200 − 128u' is exactly the data's mapping towards (72, 120), but
+  y = 116 − 128v' leaves the circle 4 · (1 − s) px low (about 1 px at 70 %,
+  seen in probe 16), so the patch also scales the `4.0` at **0xB97AFC** by
+  `s` (`code_patch.MINIMAP_CIRCLE_OFFSET`). The icons keep their offset (the
+  map's top edge and the icons' origin are not known to differ).
 * **Patch** (`code_patch.patch_minimap_icons`): the eight "absolute" call
   sites `bl 0x6C40E0` (the circle's included, probe 16) become
   `bl 0xDEC784`, a wrapper that calls the
@@ -307,12 +312,14 @@ face of the touch-screen target camera panel is also drawn on the top screen,
 small, left of the item selector, with the lock mark over it. It shows "?"
 while the monster is unknown, else the locked monster, else the first known
 one; L + X (or a tap) cycles like the panel. It is shown only while the touch
-panel is. The touch panel stays where it is.
+panel and the top-screen HUD (its health bar) are. The touch panel stays
+where it is.
 
-**Status:** probes 12–15 found the problems below (the copy's index,
-placement, the panes' primitive indices, one face with two monsters, hiding
-during loads, visibility every frame), fixed for probe 16 (pending). See
-"Probes 12 to 15".
+**Status:** works in Citra (probe 16): one small face left of the item
+selector, the lock mark over it, one face with two monsters, L + X. Probe 17
+(pending) hides it with the HUD during area loads, keeps it clear of the item
+selector opened with L, and centres the minimap's circle. See "Probes 12 to
+16".
 
 ### How a layout gets its screen
 
@@ -385,8 +392,30 @@ during loads, visibility every frame), fixed for probe 16 (pending). See
   the target `*(*(0x105729C) + 0xED5)` is 0. **Target 1 is `target_icon01`
   (left), target 2 `target_icon02` (right)** (probe 13, state 4).
 * **`FUN_00b85b50` hides every touch-screen panel** (`ui601`'s three groups
-  included) with `FUN_00ae53e0(group, 0)`; `FUN_00b826bc` calls it in states
-  where it does not reach the panel update (area loading…).
+  included) with `FUN_00ae53e0(group, 0)` (from `FUN_00b82268` and others).
+  The touch panels stay visible during area loads.
+
+### When the HUD is drawn
+
+`FUN_00b826bc` is the quest HUD's per-frame function (`FUN_00b84170` updates
+the top-screen HUD, `FUN_00b94854` the target panel, then a jump table on
+`*(0x108260C) + 0xAA` runs the touch panels' updates, `FUN_00b93788`
+included). It returns at once if the player's `*(*(*0x108260C + 0xE30))` is
+0, then:
+
+* if `*(*(0xFB6B7C) + 0x2FB1)` is 0, it calls **`FUN_00b8e0b8`, which hides
+  the top-screen HUD** and returns before everything else (area loads,
+  cutscenes…). `FUN_00b8e0b8` hides with `FUN_00ae53e0(group, 0)` the binder
+  tables `ui202` (0x1083ED8, 23 groups: `time`, `tairyoku`, `stamina`, …),
+  `ui205` (0x1084870, 5), `ui203` (0x10845F0, 8), 0x1083CB8 (with draw
+  priorities), 0x1083EB4 (2) and more (`FUN_00b9d870`, `FUN_00b87554`…);
+* else, if `FUN_0019fbf0(*0xFB5EDC)` is not 0, it hides the same groups
+  inline but still runs the panel update;
+* else `FUN_00b84170` shows and updates the HUD.
+
+So the HUD's own groups tell whether it is shown; the target face follows
+**`ui202_tairyoku`, the health bar, `*(0x1083EDC)`** (`code_patch.HUD_REF`;
+entry 0 is the clock).
 * Runtime panes (from `FUN_00b03030` / `FUN_00b03f90`): pane +0x00 name hash,
   +0x08 data, +0x0C redraw entry (else `0xAE6BCC(group, pane)`), +0x10 kind
   (0 sprite, 1 null, 2 text, 3 boundary), +0x14 next sibling, +0x20 first child;
@@ -419,22 +448,27 @@ during loads, visibility every frame), fixed for probe 16 (pending). See
   frees slots 1472–1474 with `FUN_00b044f4` and returns the manager in r0.
 * **Visibility** (`asm/face_show.s`, at 0xDEC92C): the first instruction of
   `FUN_00ae53e0` (`push {r4, r5, r6}`, 0xAE53E0) becomes `b` to a routine
-  that, when a group of the binder changes visibility (shown or hidden), gives
-  its copy the same (`panel00` / `panel01` → the copy of `panel00`,
-  `target00` → the copy of `target00`), then runs the original function (a
-  trampoline: the replaced instruction and `b 0xAE53E4`; the function is a
-  leaf). **`FUN_00b93788` hides the three groups and shows the needed ones
-  every frame**, so propagating only the hiding (probe 15) left the copies
-  hidden for good; with both, the copies end every frame as the touch panel
-  does, and stay hidden while `FUN_00b85b50` keeps the panels hidden.
-* **Mirror** (`asm/target_face.c`, 1240 bytes, C compiled with
+  that looks at the calls that change a group's visibility, then runs the
+  original function (a trampoline: the replaced instruction and
+  `b 0xAE53E4`; the function is a leaf):
+  * a group of the binder: its copy gets the same (`panel00` / `panel01` →
+    the copy of `panel00`, `target00` → the copy of `target00`), but showing
+    only while the health bar is shown. **`FUN_00b93788` hides the three
+    groups and shows the needed ones every frame**, so propagating only the
+    hiding (probe 15) left the copies hidden for good; with both, the copies
+    end every frame as the touch panel does;
+  * the health bar `*(0x1083EDC)` being hidden (`FUN_00b8e0b8`…): both copies
+    are hidden. That path skips the mirror, which is why following the touch
+    panel alone kept the face during area loads (probe 16). The mirror shows
+    them again with the HUD.
+* **Mirror** (`asm/target_face.c`, 1264 bytes, C compiled with
   arm-none-eabi-gcc for ARM mode, VFP, linked with `target_face.ld` by
   `tools/build_hud_asm.py`): the per-frame call `bl 0xB94854` at **0xB82B50**
-  (in `FUN_00b826bc`) becomes `bl 0xDEC9DC`, which runs `0xB94854` and then
+  (in `FUN_00b826bc`) becomes `bl 0xDECA30`, which runs `0xB94854` and then
   takes the copies (slot 1472 + i, if they have the same name hash):
   * the copy of `panel01` is always hidden; the copy of `panel00` is shown
-    while either touch panel is, the copy of `target00` while the touch one is
-    too; both sit at `params.xy` (z copied);
+    while either touch panel and the health bar are, the copy of `target00`
+    while the touch one is too; both sit at `params.xy` (z copied);
   * the face's content comes from the touch `panel00`'s `target_icon00`, or
     with two monsters from `target_icon01` / `target_icon02`: the locked one,
     else the first whose face sprite is shown (a known monster), else
@@ -449,11 +483,14 @@ during loads, visibility every frame), fixed for probe 16 (pending). See
     redraw.
 * **Placement** (`code_patch.face_params(factor)`): scale `0.6 · factor` (the
   face is then about the size of the item selector's icon); the face
-  (`icon00`, centred at (80, 86) · scale) ends `131 · factor` px from the
-  right edge (the item selector's width, 127, plus 4) and `4 · factor` px
-  from the bottom.
+  (`icon00`, centred at (80, 86) · scale) ends `144 · factor` px from the
+  right edge and `4 · factor` px from the bottom. The item selector opened
+  with L (`ui205_shita_ita`) reaches 137 px from the right edge at 100 %
+  (`ui205_y_button01`, x −71 ± 8); the lock mark (60 · scale wide) sticks out
+  of the face (48 · scale) by 6 · scale on each side; plus 2 px. With 131
+  (probe 16) the mark overlapped the open selector.
 
-### Probes 12 to 15
+### Probes 12 to 16
 
 Probe 12, mod built by the randomizer (HUD 70 %, L + X, target face;
 screenshots in `input/`):
@@ -497,21 +534,32 @@ screen**. `FUN_00b93788` hides the three `ui601` groups every frame before
 showing the needed ones, so the hook, which only propagated hiding, hid the
 copies every frame. Probe 16 propagates showing too.
 
+Probe 16 (screenshots in `input/alejandro/`, states in
+`output/estados_prueba16`): **works** — one small face left of the item
+selector, the lock mark over it, one face with two monsters (target 2 →
+`icon02` in the snapshot), each copy pane with its own primitive index and the
+touch content. Left: the face and mark stay during area loads (the touch panel
+does not hide then: the HUD is hidden by `FUN_00b8e0b8`, see "When the HUD is
+drawn"); the mark overlaps the item selector opened with L; the minimap's
+circle without the Map item is about 1 px low. All three fixed for probe 17.
+
 ### Debugging the target face
 
 `tools/hud_probe.py ... --target-face --face-debug` builds `target_face.c`
-with `FACE_DEBUG`: every frame it also writes a snapshot into the unused tail
-of `.bss`, read from a save state with `tools/citra_state.py STATE.cst
---face-dump` (hashes named from the RomFS dump's layouts):
+with `FACE_DEBUG`: every frame it also writes 8 words at 0x111D200 (the
+unused tail of `.bss`), read from a save state with `tools/citra_state.py
+STATE.cst --face-dump`: "FACE", a frame counter, the target
+(`*(0x105729C) + 0xED5`), visibility bits (face shown, the three touch
+groups, their copies, the health bar), the face source (children of the
+chosen touch null) and the three copies. Probes 13–16 also dumped pane trees
+(hash, kind, 24 data words per pane: the face source and the copy's face, the
+touch and copy `target00`); that no longer fits next to the visibility code.
+The diagnostic build is 0x594 bytes and takes the normal one's place.
 
-| Address | Contents |
-|---|---|
-| 0x111D200 | "FACE", frame counter, target (`*(0x105729C) + 0xED5`), face shown, face source (children of the chosen touch null), copies of `panel00`, `panel01`, `target00` |
-| 0x111D220 | Pane trees, per pane hash, kind and 24 data words: face source (6 panes), the copy's `target_icon00` children (6), `target00` touch (10) and copy (10) |
-
-A tree that ends early leaves older entries after it. The diagnostic build is
-0x620 bytes and takes the normal one's place in probes (it fits up to
-`CAVE_END`).
+Pane data of a save state (heap, `0x08xxxxxx`) is not mapped by the tool: it
+was read by finding a known object in the decompressed state (the copy of
+`panel00`, by its name hash and position) and taking its offset as the base;
+the state's memory is not 4-byte aligned.
 
 ### Verified and not verified
 
@@ -519,11 +567,11 @@ A tree that ends early leaves older entries after it. The diagnostic build is
   (`test_embedded_code_matches_the_sources`, needs devkitARM); on the
   update's executable the patch applies with the HUD size and L + X in any
   order; the loader hook calls `0x2B51C0`, `0xC0F474` and the release
-  routine, which calls `0xB044F4`; `FUN_00ae53e0` jumps to the hiding routine,
-  which jumps back to 0xAE53E4 after the replaced instruction; the quest list
-  is untouched.
+  routine, which calls `0xB044F4`; `FUN_00ae53e0` jumps to the visibility
+  routine, which jumps back to 0xAE53E4 after the replaced instruction; the
+  quest list is untouched.
 * In-game: the copy loads, draws on the top screen and follows the panel
   (probe 12); with the copy out of the quest range the minimap works (probe
-  13); the copy at its own slots exists (probe 14). Pending (probe 16): size
-  and position, one face with two monsters, the lock mark, hiding while
-  loading and when leaving the quest, the cost per frame.
+  13); the copy at its own slots exists (probe 14); the face, the lock mark,
+  two monsters and L + X work (probe 16). Pending (probe 17): hiding with the
+  HUD during area loads, the gap to the open item selector.
