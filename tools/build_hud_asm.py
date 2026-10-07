@@ -1,5 +1,5 @@
 """Build mh4u_rando/hud/asm/* with devkitARM (or the Arm GNU Toolchain) and compare them with the bytes
-embedded in mh4u_rando/hud/code_patch.py (MINIMAP_WRAPPER, TARGET_BUTTON, FACE_LOADER_CODE, TARGET_FACE).
+embedded in mh4u_rando/hud/code_patch.py (MINIMAP_WRAPPER, TARGET_BUTTON, FACE_LOADER_CODE, FACE_FREE_CODE, TARGET_FACE).
 Also prints the size of the diagnostic build of target_face.c (-DFACE_DEBUG, tools/hud_probe.py
 --face-debug), which may use the free space up to CAVE_END.
 
@@ -20,8 +20,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from mh4u_rando.hud.code_patch import (  # noqa: E402
-    CAVE, CAVE_END, FACE_LOADER, FACE_LOADER_CODE, FACE_PARAMS, FACE_ROUTINE, MINIMAP_WRAPPER, PANEL_UPDATE, TARGET_BUTTON,
-    TARGET_FACE, TARGET_ROUTINE,
+    CAVE, CAVE_END, FACE_FREE, FACE_FREE_CODE, FACE_LOADER, FACE_LOADER_CODE, FACE_PARAMS, FACE_ROUTINE,
+    MINIMAP_WRAPPER, PANEL_UPDATE, TARGET_BUTTON, TARGET_FACE, TARGET_ROUTINE,
 )
 
 ASM = ROOT / "mh4u_rando" / "hud" / "asm"
@@ -29,10 +29,11 @@ ASM = ROOT / "mh4u_rando" / "hud" / "asm"
 SOURCES = {"minimap_wrapper.s": (CAVE, MINIMAP_WRAPPER, "MINIMAP_WRAPPER"),
            "target_button.s": (TARGET_ROUTINE, TARGET_BUTTON, "TARGET_BUTTON"),
            "face_loader.s": (FACE_LOADER, FACE_LOADER_CODE, "FACE_LOADER_CODE"),
+           "face_free.s": (FACE_FREE, FACE_FREE_CODE, "FACE_FREE_CODE"),
            "target_face.c": (FACE_ROUTINE, TARGET_FACE, "TARGET_FACE")}
-# Game functions and patch data used by C sources.
+# Game functions and patch data used by the sources.
 GAME_SYMBOLS = {"panel_update": PANEL_UPDATE, "group_show": 0xAE53E0, "group_priority": 0xAE63C8,
-                "pane_redraw": 0xAE6BCC, "face_params": FACE_PARAMS}
+                "pane_redraw": 0xAE6BCC, "face_params": FACE_PARAMS, "FACE_FREE": FACE_FREE}
 C_FLAGS = ("-Os", "-Wall", "-Wextra", "-Werror", "-marm", "-mcpu=mpcore", "-mfloat-abi=softfp", "-mfpu=vfp",
            "-ffreestanding", "-fno-builtin", "-nostdlib", "-fno-pic", "-fno-common", "-ffunction-sections")
 DEFAULT_DEVKITARM = Path("C:/devkitPro/devkitARM/bin")
@@ -45,14 +46,14 @@ def assemble(source: Path, address: int, bin_dir: Path, defines: tuple[str, ...]
 
     with tempfile.TemporaryDirectory() as tmp:
         obj, elf, raw = (Path(tmp) / name for name in ("out.o", "out.elf", "out.bin"))
+        symbols = [f"--defsym={name}={value:#x}" for name, value in GAME_SYMBOLS.items()]
         if source.suffix == ".c":
             run("gcc", "-c", *C_FLAGS, *(f"-D{name}" for name in defines), "-o", obj, source)
-            symbols = [f"--defsym={name}={value:#x}" for name, value in GAME_SYMBOLS.items()]
             run("ld", f"--defsym=LINK_ADDRESS={address:#x}", *symbols, "-T", source.with_suffix(".ld"),
                 "-o", elf, obj)
         else:
             run("as", "-o", obj, source)
-            run("ld", f"-Ttext={address:#x}", "-o", elf, obj)
+            run("ld", f"-Ttext={address:#x}", *symbols, "-o", elf, obj)
         run("objcopy", "-O", "binary", elf, raw)
         return raw.read_bytes()
 

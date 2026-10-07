@@ -25,8 +25,8 @@ game (says which); **Guess** = plausible from names or values, unverified.
 | Minimap: data + icon patch | **Verified** (icon positions probe 3, size probe 5) |
 | Mount gauge: data + face patch | **Verified** (probe 6) |
 | L + X switches the target | **Verified** (probe 11, the player's action 12; see hud_code.md, "Target switch"). Conflicts with the gunners' ammo selection: input to change. The "X" hint next to the item selector is not done |
-| Target face (monster icon) on the top screen | Probe 12: works, but with three bugs (minimap gone, face too big and centred, no lock mark); fixes in probe 13, pending (hud_code.md, "Target face on the top screen") |
-| Minimap without the Map item | Not started — the map does not shrink then |
+| Target face (monster icon) on the top screen | Probes 12–13: the copy works but had placement and group index bugs; probe 14 pending (hud_code.md, "Target face on the top screen") |
+| Minimap without the Map item | Not started — the map does not shrink then, and the icons (placed for the shrunk map) float beside it (probe 13) |
 
 ## Code and tools
 
@@ -347,7 +347,8 @@ The anchor is chosen **per root group** (`ui204` mixes corners).
 | 7–10 (`--target-asm`) | Diagnostic routines logging the input (read from save states) | The real button bits and the player's actions (hud_code.md, "Pad") |
 | 11 (`--minimap --target-button`) | L + X = the player's action 12 | **L + X locks / switches the target** once the monster's icon is tappable |
 | 12 (pipeline: HUD 70 %, `target_switch`, `target_face_top`) | Combined test of every interface option, mod built by `pipeline.run()` | Target face drawn on the top screen and following the panel, but full size, centred, with its board; **minimap gone**; no lock mark on the top screen (hud_code.md, "Probe 12") |
-| 13 (`--minimap --target-button --target-face --face-debug`) | Copy loaded after the stage map; faces scaled, boards hidden, placed by their centre; draw priority copied; diagnostic snapshot | **Waiting** |
+| 13 (`--minimap --target-button --target-face --face-debug`) | Copy loaded after the stage map; faces scaled, boards hidden, placed by their centre; draw priority copied; diagnostic snapshot | L + X works; **minimap back** (without the Map item its icons float); **no face**: the area map, loaded at the fixed index 500, overwrote the copy |
+| 14 (same options) | The copy at its own manager slots (1472–1474), released with the GUI layouts | **Waiting** |
 
 ## Open questions
 

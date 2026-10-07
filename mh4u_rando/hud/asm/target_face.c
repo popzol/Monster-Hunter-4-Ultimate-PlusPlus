@@ -32,6 +32,7 @@ typedef unsigned char u8;
 
 #define GUI (*(u32 *)0x01057534)        /* GUI object; + 0x100 = layout manager */
 #define BINDER ((u32 *)0x01085650)      /* ui601 binder: panel00, panel01, target00 */
+#define COPY_INDEX 0x5C0                /* the copy's groups, in the same order (code_patch.COPY_INDEX) */
 
 struct params {
     float x, y;                         /* top-screen group position (layout coordinates) */
@@ -109,15 +110,11 @@ static void mirror(u32 group, u32 from, u32 to, int state)
     }
 }
 
-static u32 top_copy(u32 slots, u32 count, u32 group)
+/* The copy of binder group i: manager slot COPY_INDEX + i, if it holds a group of the same name. */
+static u32 top_copy(u32 slots, u32 count, int i, u32 group)
 {
-    u32 hash = W(group, 0);
-    while (count--) {
-        u32 other = W(slots, count * 4);
-        if (other && other != group && W(other, 0) == hash)
-            return other;
-    }
-    return 0;
+    u32 index = COPY_INDEX + i, copy = index < count ? W(slots, index * 4) : 0;
+    return copy && W(copy, 0) == W(group, 0) ? copy : 0;
 }
 
 #ifdef FACE_DEBUG
@@ -190,7 +187,7 @@ __attribute__((section(".text.entry"))) void target_face(void)
     float scale = face_params.scale, base_x = F(base, 0x28), base_y = F(base, 0x2C);  /* panel00 */
     for (int i = 0; i < 3; i++) {
         u32 from = BINDER[i];
-        u32 to = copies[i] = from ? top_copy(slots, count, from) : 0;
+        u32 to = copies[i] = from ? top_copy(slots, count, i, from) : 0;
         if (!to)
             continue;
         u32 priority = W(from, 0x18);
@@ -202,6 +199,7 @@ __attribute__((section(".text.entry"))) void target_face(void)
             continue;
         F(to, 0x28) = face_params.x + (F(from, 0x28) - base_x) * scale;
         F(to, 0x2C) = face_params.y + (F(from, 0x2C) - base_y) * scale;
+        F(to, 0x30) = F(from, 0x30);
         mirror(to, W(from, 8), W(to, 8), FIRST_LEVEL);
     }
 #ifdef FACE_DEBUG

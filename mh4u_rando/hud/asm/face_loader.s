@@ -1,21 +1,24 @@
 @ Loads a second instance of the target camera panel (ui601) on the top screen
 @ (docs/hud_code.md, "Target face on the top screen").
 @
-@ FUN_00c1017c loads the quest layouts (list 0xEFE17C) and then the stage map
-@ (the minimap, ui251...ui271) at the next group indices; the minimap breaks if
-@ anything is loaded before it. So the copy is loaded after the map: the
-@ `ldr r7, =0xEFE1E8` at 0xC10430, where every map path joins, becomes `bl` to
-@ this routine, which repeats the loader's sequence for ui601 on screen 0 at
-@ group index r5, adds the groups created to r5 and does the replaced load.
-@ The copy stays inside the quest range (gui + 0x238 ... gui + 0x23A), so it
-@ gets the same setup and is released with the other quest layouts.
+@ Group indices are taken: FUN_00c1017c puts the quest layouts and the stage
+@ map (the minimap) at gui + 0x238 ... gui + 0x23A (363-499), and FUN_00c10928
+@ puts the area map at the fixed index 500. A copy inside that range moves the
+@ stage map (probe 12: no minimap) or is overwritten by the area map (probe
+@ 13: no face). So the copy goes to the fixed indices COPY_INDEX... (the game
+@ uses 20-510 and 1526-1535), released by face_free.s.
 @
-@ Caller state: r5 next group index, r6 gui, sl = 0xFB6B7C (pointer to the
-@ file loader), [sp + 4] resource handle, [sp + 8] language byte. r0-r3 and
-@ r12 are free; r4 is set by the caller right after; r7 receives the
-@ replaced literal.
+@ The `ldr r7, =0xEFE1E8` at 0xC10430 in FUN_00c1017c, where every stage map
+@ path joins, becomes `bl` to this routine: it releases a leftover copy,
+@ repeats the loader's sequence for ui601 on screen 0 at COPY_INDEX and does
+@ the replaced load.
 @
-@ Build: tools/build_hud_asm.py (devkitARM), linked at its patch address.
+@ Caller state: r6 gui, sl = 0xFB6B7C (pointer to the file loader), [sp + 4]
+@ resource handle, [sp + 8] language byte. r0-r3 and r12 are free; r4 is set
+@ by the caller right after; r7 receives the replaced literal.
+@
+@ Build: tools/build_hud_asm.py (devkitARM), linked at its patch address;
+@ FACE_FREE is passed with --defsym.
 
     .arch armv6k
     .arm
@@ -24,11 +27,14 @@
     .equ LOAD_FILE, 0x002B51C0        @ FUN_002b51c0(loader, &handle, path, language, 0)
     .equ CREATE_GROUPS, 0x00C0F474    @ FUN_00c0f474(gui, screen, first index, layout) -> groups
     .equ RELEASE, 0x00BE2768          @ FUN_00be2768(layout)
+    .equ COPY_INDEX, 0x5C0            @ code_patch.COPY_INDEX
     .equ FRAME, 24                    @ what this routine pushes: caller's sp = sp + FRAME
 
 _start:
     push    {r4, r6, r7, lr}
     sub     sp, sp, #8
+    mov     r0, r6
+    bl      FACE_FREE
     mov     r0, #0
     str     r0, [sp]                  @ 5th argument
     ldr     r2, ui601_path
@@ -48,16 +54,16 @@ _start:
     ldr     r12, [r1, #0x38]
     ldr     r1, layout_type
     blx     r12                       @ the layout resource
-    mov     r4, r0
+    movs    r4, r0
+    beq     loaded
     mov     r3, r0
-    mov     r2, r5
+    mov     r2, #COPY_INDEX
     mov     r1, #0                    @ top screen
     mov     r0, r6
     bl      CREATE_GROUPS
-    add     r5, r5, r0
-    cmp     r4, #0
-    movne   r0, r4
-    blne    RELEASE
+    mov     r0, r4
+    bl      RELEASE
+loaded:
     add     sp, sp, #8
     pop     {r4, r6, r7, lr}
     ldr     r7, extra_layouts         @ the replaced instruction

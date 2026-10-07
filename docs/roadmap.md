@@ -8,15 +8,16 @@ is done or discovered.
 * **Package the GUI** as an .exe with PyInstaller (the GUI itself is done:
   `python -m mh4u_rando.gui`).
 * **HUD / one-screen play** (docs/hud_layout.md, docs/hud_code.md):
-  * results of probe 13 (target face fixes after probe 12): minimap back, face
-    size and position (`code_patch.FACE_SCALE` / `FACE_CORNER_GAP`), two
-    monsters; the lock mark on the top screen (read the save state with
-    `citra_state.py --face-dump` and fix it);
+  * results of probe 14 (target face at its own GUI manager slots): face size
+    and position (`code_patch.FACE_SCALE` / `FACE_CORNER_GAP`), two monsters,
+    the lock mark on the top screen (save state + `citra_state.py
+    --face-dump`), leaving the quest;
   * L + X target switch: **works** (probe 11), but gunners use the same
     input (the player's action 12) to select ammo: choose another input for
     them or for everyone;
   * "X" hint next to the item selector's L hints (insert a pane in `ui205`);
-  * the minimap does not shrink without the Map item;
+  * the minimap does not shrink without the Map item, and its icons (placed for
+    the shrunk map) float beside it (probe 13);
   * base game (no update) support for the executable patches (signatures).
 * **Species base health**: retail analysis shows the stat indices depend on
   the quest rank only (docs/game_rules.md, "Stats"). Find each monster's base

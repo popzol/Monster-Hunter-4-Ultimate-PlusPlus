@@ -31,7 +31,7 @@ from mh4u_rando.exefs import RomFS, apply_ips, load_code, make_ips  # noqa: E402
 from mh4u_rando.hud import LANGUAGES, LYT_TYPE_HASH, Anchor, hud_files, parse_lyt, scale_arc  # noqa: E402
 from mh4u_rando.hud.build import MAP_ARC, short_name  # noqa: E402
 from mh4u_rando.hud.code_patch import (  # noqa: E402
-    BASE_ADDRESS, CAVE, CAVE_END, FACE_HOOK, FACE_ROUTINE, ICON_CALLS, LOADER_HOOK, MOUNT_FACE_FLOATS,
+    BASE_ADDRESS, CAVE, CAVE_END, FACE_HOOK, FACE_ROUTINE, FREE_HOOK, ICON_CALLS, LOADER_HOOK, MOUNT_FACE_FLOATS,
     TARGET_BUTTON, TARGET_ROUTINE, TARGET_TEST, patch_hud, patch_target_button, patch_target_face,
 )
 from build_hud_asm import ASM, DEFAULT_DEVKITARM, assemble  # noqa: E402
@@ -140,7 +140,7 @@ def without_hud_patch(code: bytes, original: bytes) -> bytes:
     out = bytearray(code)
     spans = [(CAVE, CAVE_END)] + [(site, site + 4) for site in ICON_CALLS] + \
         [(address, address + 4) for address in MOUNT_FACE_FLOATS] + [(TARGET_TEST, TARGET_TEST + 16)] + \
-        [(LOADER_HOOK, LOADER_HOOK + 4), (FACE_HOOK, FACE_HOOK + 4)]
+        [(LOADER_HOOK, LOADER_HOOK + 4), (FREE_HOOK, FREE_HOOK + 4), (FACE_HOOK, FACE_HOOK + 4)]
     for start, end in spans:
         out[start - BASE_ADDRESS:end - BASE_ADDRESS] = original[start - BASE_ADDRESS:end - BASE_ADDRESS]
     return bytes(out)
@@ -186,7 +186,7 @@ def main() -> None:
             code = patch_target_button(code, routine)
         if args.target_face and args.face_debug:
             routine = assemble(ASM / "target_face.c", FACE_ROUTINE, args.devkitarm, ("FACE_DEBUG",))
-            code = patch_target_face(code, factor, routine, end=CAVE_END)
+            code = patch_target_face(code, factor, routine)
         elif args.target_face:
             code = patch_target_face(code, factor)
         ips.write_bytes(make_ips(original, code))

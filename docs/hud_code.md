@@ -61,16 +61,15 @@ Free space used in the update:
 |---|---|---|
 | 0xDEC784 | 0x5C | `asm/minimap_wrapper.s` |
 | 0xDEC7E0 | 0x70 | `asm/target_button.s` (diagnostic routines take its place; they collide with the target face) |
-| 0xDEC850 | 0xA0 | Target face: `asm/face_loader.s` (loads the second `ui601`) |
-| 0xDEC8F0 | 0x0C | Target face: position x, y and scale (`code_patch.face_params`) |
-| 0xDEC8FC | 0x304 | `asm/target_face.c` (fills the range up to 0xDECC00 exactly) |
-| 0xDECC00 | 0x400 | free |
+| 0xDEC850 | 0xA4 | Target face: `asm/face_loader.s` (loads the second `ui601`) |
+| 0xDEC8F4 | 0x38 | Target face: `asm/face_free.s` (releases it) |
+| 0xDEC92C | 0x0C | Target face: position x, y and scale (`code_patch.face_params`) |
+| 0xDEC938 | 0x300 | `asm/target_face.c` (ends at 0xDECC38) |
+| 0xDECC38 | 0x3C8 | free (the diagnostic build of `target_face.c`, 0x570 bytes, takes its place in probes) |
 
 Each patch checks and fills only its own range (`code_patch.py`: `CAVE`,
-`TARGET_ROUTINE`, `FACE_LOADER` … `FACE_END`, `CAVE_END`), so they can be
-applied in any order and next to other changes. Only the target face's
-diagnostic build (`hud_probe.py --face-debug`, 0x564 bytes) goes past
-0xDECC00, up to `CAVE_END`; it is never part of the randomizer's patch.
+`TARGET_ROUTINE`, `FACE_LOADER` … `FACE_END` = `CAVE_END`), so they can be
+applied in any order and next to other changes.
 
 Citra and Luma apply `code.ips` to the executable that runs — the update's
 when it is installed. Code addresses differ between base and update, so the
@@ -292,17 +291,17 @@ What worked to see the game's state at run time, and what did not.
 ## Target face on the top screen
 
 Option `target_face_top` (`code_patch.patch_target_face`, `asm/face_loader.s`,
-`asm/target_face.c`): the touch-screen target camera panel's monster faces
+`asm/face_free.s`, `asm/target_face.c`): the touch-screen target camera panel's monster faces
 (with the state icon and the lock marks) are also drawn on the top screen,
 small, left of the item selector, and behave exactly like the panel ("?"
 before the monster is found, two faces with two large monsters, the lock mark
 following L + X or a tap). The touch panel stays where it is.
 
 **Status:** probe 12 showed the copy working (faces and textures follow the
-panel) but found three bugs, fixed for probe 13 (pending): the minimap
-disappeared, the face was drawn full size in the middle of the screen with
-its brown board, and the lock mark was not shown on the top screen. See
-"Probe 12" below.
+panel) but the minimap disappeared and the face was full size, centred, with
+its board and without the lock mark. Probe 13 brought the minimap back but
+showed no face at all: the area map overwrote the copy. Probe 14 (pending)
+puts the copy at its own manager slots. See "Probes 12 and 13" below.
 
 ### How a layout gets its screen
 
@@ -323,14 +322,22 @@ its brown board, and the lock mark was not shown on the top screen. See
   root groups at consecutive indices of the GUI manager (`FUN_00b03d40`) and
   writes `*(manager + screen + 0x245)` into bits 14–17 of `group + 0x44`
   (measured: 0 on the top screen, 7 on the touch screen).
-* The quest layouts and the map take indices from `gui + 0x238` (363 in a
-  quest) to `gui + 0x23A` (500); `FUN_00c10ce8` loads more from `gui + 0x23A`
-  to `gui + 0x23E`. Every reader of these fields found in the code
-  (`FUN_00c0f110`, `FUN_00c0e6d0`, `FUN_00c10c8c`, …) uses them as ranges to
-  show, hide or release. **But a layout inserted before the map made the
-  minimap disappear** (probe 12), so the copy is loaded after the map.
+* **Group indices of the GUI manager** (measured in probe 13's save state,
+  1536 slots): `FUN_00c10740` puts the common layouts at 20 … `gui + 0x238`
+  (363); `FUN_00c1017c` the quest layouts and the stage map at 363 …
+  `gui + 0x23A` (500; the stage map `ui268` was at 498–499); **`FUN_00c10928`
+  puts the area map (`ui298a07_l_area`, `_l_map1`, `_l_yaji`, `_l_icon`,
+  `_l_koware`) at the fixed index 500**, count in `gui + 0x23E` (5);
+  `FUN_00c105f4` uses the last 10 slots (1526–1535). Other loaders
+  (`FUN_00c10ce8`, `FUN_00c1163c`) start at `+0x238` / `+0x23A`. The quest
+  range is released by `FUN_00c0f110` with `FUN_00b044f4(manager, index)`,
+  which skips empty slots.
+* So a layout inserted in the quest range breaks something: before the stage
+  map it moved the map (probe 12: no minimap); after it, the area map at 500
+  overwrote it (probe 13: no face). **The copy goes to its own slots,
+  `COPY_INDEX` = 1472–1474**, and the patch releases it.
   `FUN_00b045a8` (group by hash) returns the first match, so a duplicate
-  layout after the original never replaces it in lookups.
+  layout never replaces the original in lookups.
 * Manager pools, measured in a quest (save state; manager =
   `*(*(0x1057534) + 0x100)`): groups 0x600 slots (used 20–503), nulls
   0xCAD / 0x1C20, sprites 0x15C2 / 0x4650, texts 0x734 / 0x1388, boundaries
@@ -380,22 +387,25 @@ its brown board, and the lock mark was not shown on the top screen. See
 ### The patch
 
 * **Second instance** (`asm/face_loader.s`, at 0xDEC850): the instruction at
-  0xC10430 becomes `bl` to a routine that repeats the loader's sequence for
-  `ui601` (`0x2B51C0` file, the resource's vtable `+0x38`, `0xC0F474(gui, 0,
-  r5, layout)`, `0xBE2768`), adds the groups to `r5` and does the replaced
-  `ldr r7`. The copy is the last layout of the quest range, after the map, so
-  every other layout keeps its index; it gets the same setup (`+0x30`) and is
-  released with them. The quest list itself is not modified. The game keeps
-  driving the first (touch) instance through the binder; the copy is never
-  touched by it.
-* **Mirror** (`asm/target_face.c`, 772 bytes, C compiled with
+  0xC10430 (in `FUN_00c1017c`, after the stage map) becomes `bl` to a routine
+  that releases a leftover copy, repeats the loader's sequence for `ui601`
+  (`0x2B51C0` file, the resource's vtable `+0x38`, `0xC0F474(gui, 0,
+  COPY_INDEX, layout)`, `0xBE2768`) and does the replaced `ldr r7`. Every
+  layout of the game keeps its index and the quest list is not modified. The
+  game keeps driving the first (touch) instance through the binder; the copy
+  is never touched by it.
+* **Release** (`asm/face_free.s`, at 0xDEC8F4): the `ldr r0, [r0, #0x100]` at
+  0xC0F11C, at the start of `FUN_00c0f110`, becomes `bl` to a routine that
+  frees slots 1472–1474 with `FUN_00b044f4` and returns the manager in r0.
+* **Mirror** (`asm/target_face.c`, 768 bytes, C compiled with
   arm-none-eabi-gcc for ARM mode, VFP, linked with `target_face.ld` by
   `tools/build_hud_asm.py`): the per-frame call `bl 0xB94854` at **0xB82B50**
-  (in `FUN_00b826bc`) becomes `bl 0xDEC8FC`, which runs `0xB94854` and then,
-  for each of the binder's three groups, finds the copy (same hash, another
-  slot, scanning the manager from the end) and:
-  * copies its draw priority (`0xAE63C8`) and visibility (`0xAE53E0`) and
-    sets its position to `params.xy + (group − panel00) · scale`;
+  (in `FUN_00b826bc`) becomes `bl 0xDEC938`, which runs `0xB94854` and then,
+  for each of the binder's three groups, takes its copy (slot 1472 + i, if it
+  has the same name hash) and:
+  * copies its draw priority (`0xAE63C8`), visibility (`0xAE53E0`) and z
+    (`+0x30`), and sets its position to `params.xy + (group − panel00) ·
+    scale`;
   * walks both pane trees together: first-level panes other than the faces
     (`target_icon00/01/02`), `t_mark00` and `batu00` are hidden, and so are
     the faces' boards `ita00/01/02`. Hiding clears the visibility flag of every
@@ -410,10 +420,10 @@ its brown board, and the lock mark was not shown on the top screen. See
   selector's width, 127, plus 4) and `4 · factor` px from the bottom. One
   monster's face sits between the two faces' places.
 
-### Probe 12
+### Probes 12 and 13
 
-Mod built by the randomizer (HUD 70 %, L + X, target face; screenshots in
-`input/`):
+Probe 12, mod built by the randomizer (HUD 70 %, L + X, target face;
+screenshots in `input/`):
 
 * The copy loads and draws on the top screen; the faces follow the panel: "?"
   before the monster is found, then its face (Seltas Queen), and the
@@ -426,9 +436,22 @@ Mod built by the randomizer (HUD 70 %, L + X, target face; screenshots in
   board is `ita00`. Now every position and sprite scale is scaled, `ita` is
   hidden and the placement uses centres.
 * **L + X locked the target** (the touch panel shows the lock mark over the
-  face) **but no mark on the top screen**. Not explained yet: probe 13 copies
-  the draw priority and scales the mark like the faces, and its diagnostic
-  build records the state (next section).
+  face) **but no mark on the top screen**. Not explained yet: the draw
+  priority is now copied and the mark scaled like the faces.
+
+Probe 13 (`hud_probe.py --face-debug`, copy after the stage map; save states
+with one and two monsters, kept in `output/estados_prueba13`):
+
+* L + X works; **the minimap is back** with the Map item (without it its
+  icons float: the map without the item is not shrunk, a known gap).
+* **No face on the top screen.** The snapshot: quest range 363–503 (the copy
+  was created at 500–502), but slots 500–504 hold the area map `ui298a07_*`,
+  loaded by `FUN_00c10928` at the fixed index 500, and the binder groups have
+  no copy. Hence the copy's own slots (probe 14).
+* Touch-screen values with the target locked: `target00` visible, at the
+  same position as `panel00` (0, −36), priority 0x085C0400 (panels
+  0x08540400); `t_mark00` (80, 84), `mark00/01` (−144/−146, −100/−102) at
+  scale 1.2, their sprites at (120, 85) with flags 0x84 (visible).
 
 ### Debugging the target face
 
@@ -444,16 +467,18 @@ of `.bss`, read from a save state with `tools/citra_state.py STATE.cst
 | 0x111D2A0 | 160 slots from `gui + 0x238`: group hash, `+0x44` (visible bit 10, screen bits 14–17) |
 | 0x111D7A0 | `target00` pane trees, touch then top instance: 10 panes × (hash, kind, 24 data words) |
 
-The diagnostic build is 0x564 bytes and uses the free space up to
-`CAVE_END`.
+The diagnostic build is 0x570 bytes and takes the normal one's place in
+probes. The slots dumped are those of the quest range; the copy's pointers
+are in the group lines.
 
 ### Verified and not verified
 
 * Offline: the bytes built from the sources match the embedded ones
   (`test_embedded_code_matches_the_sources`, needs devkitARM); on the
   update's executable the patch applies with the HUD size and L + X in any
-  order, the loader hook calls `0x2B51C0` and `0xC0F474`, the quest list is
-  untouched, and nothing is written from 0xDECC00 on.
-* In-game (probe 12): the copy loads, draws on the top screen and follows the
-  panel. Pending (probe 13): the minimap with the copy after the map, the size
-  and position, two monsters, the lock mark, the cost per frame.
+  order, the loader hook calls `0x2B51C0`, `0xC0F474` and the release
+  routine, which calls `0xB044F4`, and the quest list is untouched.
+* In-game: the copy loads, draws on the top screen and follows the panel
+  (probe 12); with the copy out of the quest range the minimap works (probe
+  13). Pending (probe 14): the face at its own slots, size and position, two
+  monsters, the lock mark, leaving the quest (release), the cost per frame.
