@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git branch:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(python tools/gen_codemap.py)",
+      "Bash(python -m mh4u_rando.data.query:*)"
+    ],
+    "deny": [
+      "Read(./Documentation/0004000000126100/**)",
+      "Read(./Documentation/exefs/**)",
+      "Read(./Documentation/updatefiles/**)",
+      "Read(./output/**)",
+      "Read(./Scripts/**)",
+      "Read(./Input/**)",
+      "Read(./test_output/**)",
+      "Read(**/*.arc)"
+    ]
+  }
+}

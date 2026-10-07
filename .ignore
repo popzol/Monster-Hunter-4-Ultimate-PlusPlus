@@ -1,0 +1,13 @@
+Documentation/0004000000126100/
+Documentation/exefs/
+Documentation/updatefiles/
+Documentation/*.PNG
+Documentation/*.png
+output/
+Scripts/
+Input/
+input/
+test_output/
+.pytest_cache/
+__pycache__/
+*.arc

@@ -23,3 +23,7 @@ Documentation/*.png
 
 # Personal game dumps dropped in by hand (ROM, update, emulator files)
 input/
+Input/
+
+# Personal editor settings
+.vscode/

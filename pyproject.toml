@@ -7,3 +7,4 @@ dependencies = ["customtkinter>=5.2"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "-q --tb=short"
