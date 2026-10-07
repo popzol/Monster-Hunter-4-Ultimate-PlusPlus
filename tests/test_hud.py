@@ -625,27 +625,39 @@ def test_patch_target_button_on_the_game():
 
 
 def synthetic_face_code() -> bytes:
-    """An executable with what patch_target_face checks: the instructions replaced in the layout loader and
-    releaser, the quest layout list (20 path pointers + 0) and the call to the target panel update."""
+    """An executable with what patch_target_face checks: the instructions replaced in the layout loader,
+    releaser and group show function, the quest layout list (20 path pointers + 0) and the call to the
+    target panel update."""
     from mh4u_rando.hud.code_patch import (
         BASE_ADDRESS, CAVE_END, FACE_HOOK, FREE_HOOK, FREE_HOOK_ORIGINAL, LAYOUT_COUNT, LAYOUT_LIST, LOADER_HOOK,
-        LOADER_HOOK_ORIGINAL, PANEL_UPDATE, encode_bl,
+        LOADER_HOOK_ORIGINAL, PANEL_UPDATE, SHOW_HOOK, SHOW_HOOK_ORIGINAL, encode_bl,
     )
     code = bytearray(LAYOUT_LIST + 0x100 - BASE_ADDRESS)
     assert len(code) > CAVE_END - BASE_ADDRESS
-    code[LOADER_HOOK - BASE_ADDRESS:LOADER_HOOK - BASE_ADDRESS + 4] = LOADER_HOOK_ORIGINAL
-    code[FREE_HOOK - BASE_ADDRESS:FREE_HOOK - BASE_ADDRESS + 4] = FREE_HOOK_ORIGINAL
+    for hook, original in ((LOADER_HOOK, LOADER_HOOK_ORIGINAL), (FREE_HOOK, FREE_HOOK_ORIGINAL),
+                           (SHOW_HOOK, SHOW_HOOK_ORIGINAL)):
+        code[hook - BASE_ADDRESS:hook - BASE_ADDRESS + 4] = original
     struct.pack_into(f"<{LAYOUT_COUNT + 1}I", code, LAYOUT_LIST - BASE_ADDRESS,
                      *(0xEAC000 + 0x10 * i for i in range(LAYOUT_COUNT)), 0)
     code[FACE_HOOK - BASE_ADDRESS:FACE_HOOK - BASE_ADDRESS + 4] = encode_bl(FACE_HOOK, PANEL_UPDATE)
     return bytes(code)
 
 
+def branch_target(code: bytes, at: int) -> int | None:
+    """Target of the ARM `b` (always) at `at`."""
+    from mh4u_rando.hud.code_patch import BASE_ADDRESS
+    word = struct.unpack_from("<I", code, at - BASE_ADDRESS)[0]
+    if word >> 24 != 0xEA:
+        return None
+    delta = word & 0xFFFFFF
+    return at + 8 + 4 * (delta - (1 << 24) if delta & 0x800000 else delta)
+
+
 def test_patch_target_face():
     from mh4u_rando.hud.code_patch import (
         BASE_ADDRESS, CAVE_END, COPY_INDEX, FACE_FREE, FACE_FREE_CODE, FACE_HOOK, FACE_LOADER, FACE_LOADER_CODE,
-        FACE_PARAMS, FACE_ROUTINE, FREE_HOOK, LAYOUT_LIST, LOADER_HOOK, TARGET_FACE, CodePatchError, bl_target,
-        face_params, patch_target_face,
+        FACE_PARAMS, FACE_ROUTINE, FACE_SHOW, FACE_SHOW_CODE, FREE_HOOK, LAYOUT_LIST, LOADER_HOOK, SHOW_HOOK,
+        SHOW_HOOK_ORIGINAL, TARGET_FACE, CodePatchError, bl_target, face_params, patch_target_face,
     )
     code = synthetic_face_code()
     patched = patch_target_face(code, 0.7)
@@ -656,10 +668,17 @@ def test_patch_target_face():
     assert literals == (LAYOUT_LIST + 12 * 4, 0xEFE1E8)  # ui601's path; the replaced instruction's literal
     assert bl_target(patched, FACE_LOADER + 12) == FACE_FREE  # a leftover copy is released first
     free = patched[FACE_FREE - BASE_ADDRESS:FACE_FREE - BASE_ADDRESS + len(FACE_FREE_CODE)]
-    assert free == FACE_FREE_CODE and FACE_FREE + len(FACE_FREE_CODE) <= FACE_PARAMS
+    assert free == FACE_FREE_CODE and FACE_FREE + len(FACE_FREE_CODE) <= FACE_SHOW
     mov_copy_index = 0xE3A00D17  # mov rN, #0x5C0 (0x17 rotated right by 26), with N in bits 12-15
     assert COPY_INDEX == 0x5C0
     assert struct.pack("<I", mov_copy_index | 2 << 12) in loader and struct.pack("<I", mov_copy_index | 5 << 12) in free
+    # FUN_00ae53e0 jumps to face_show.s, which ends with the replaced instruction and a jump back.
+    show = patched[FACE_SHOW - BASE_ADDRESS:FACE_SHOW - BASE_ADDRESS + len(FACE_SHOW_CODE)]
+    assert show == FACE_SHOW_CODE and FACE_SHOW + len(FACE_SHOW_CODE) <= FACE_PARAMS
+    assert branch_target(patched, SHOW_HOOK) == FACE_SHOW
+    back = [at for at in range(FACE_SHOW, FACE_SHOW + len(show), 4) if branch_target(patched, at) == SHOW_HOOK + 4]
+    assert len(back) == 1 and patched[back[0] - 4 - BASE_ADDRESS:back[0] - BASE_ADDRESS] == SHOW_HOOK_ORIGINAL
+    assert struct.pack("<I", 0x1085650) in show  # the ui601 binder
     assert patched[LAYOUT_LIST - BASE_ADDRESS:] == code[LAYOUT_LIST - BASE_ADDRESS:]  # the list is untouched
     assert struct.unpack_from("<3f", patched, FACE_PARAMS - BASE_ADDRESS) == pytest.approx(face_params(0.7))
     assert patched[FACE_ROUTINE - BASE_ADDRESS:FACE_ROUTINE - BASE_ADDRESS + len(TARGET_FACE)] == TARGET_FACE
@@ -680,8 +699,8 @@ def test_face_params_follow_the_hud_size():
     for factor in (1.0, 0.7):
         x, y, scale = face_params(factor)
         assert scale == pytest.approx(FACE_SCALE * factor)
-        half = 40 * 1.2 / 2 * scale                        # ui601_icon02, centred at (40, 86) * scale
-        right = 200 - (x + 40 * scale) + half              # two monsters: right face's right edge
+        half = 40 * 1.2 / 2 * scale                        # ui601_icon00, centred at (80, 86) * scale
+        right = 200 - (x + 80 * scale) + half              # the face's right edge
         bottom = 120 - (y + 86 * scale) + half
         assert right == pytest.approx(400 - FACE_CORNER_GAP[0] * factor)
         assert bottom == pytest.approx(240 - FACE_CORNER_GAP[1] * factor)
@@ -689,8 +708,8 @@ def test_face_params_follow_the_hud_size():
 
 def test_patch_target_face_on_the_game():
     from mh4u_rando.hud.code_patch import (
-        FACE_FREE, FACE_LOADER, FACE_ROUTINE, FREE_HOOK, LOADER_HOOK, PANEL_UPDATE, bl_target, patch_hud,
-        patch_target_button, patch_target_face,
+        FACE_FREE, FACE_LOADER, FACE_ROUTINE, FACE_SHOW, FREE_HOOK, LOADER_HOOK, PANEL_UPDATE, SHOW_HOOK, bl_target,
+        patch_hud, patch_target_button, patch_target_face,
     )
     update = ROOT / "Documentation" / "exefs" / "code_update.bin"
     if not update.is_file():
@@ -701,6 +720,7 @@ def test_patch_target_face_on_the_game():
     calls = [bl_target(patched, FACE_LOADER + 4 * i) for i in range(40)]
     assert {0x2B51C0, 0xC0F474, FACE_FREE} <= set(calls)       # loads ui601 and creates its groups
     assert 0xB044F4 in [bl_target(patched, FACE_FREE + 4 * i) for i in range(14)]  # releases them
+    assert branch_target(patched, SHOW_HOOK) == FACE_SHOW                     # hides them with the panel
     assert PANEL_UPDATE in [bl_target(patched, FACE_ROUTINE + 4 * i) for i in range(5)]
     patch_hud(patch_target_face(code), 0.7)  # in any order
 

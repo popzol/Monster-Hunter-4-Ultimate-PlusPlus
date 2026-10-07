@@ -8,10 +8,11 @@ is done or discovered.
 * **Package the GUI** as an .exe with PyInstaller (the GUI itself is done:
   `python -m mh4u_rando.gui`).
 * **HUD / one-screen play** (docs/hud_layout.md, docs/hud_code.md):
-  * results of probe 14 (target face at its own GUI manager slots): face size
-    and position (`code_patch.FACE_SCALE` / `FACE_CORNER_GAP`), two monsters,
-    the lock mark on the top screen (save state + `citra_state.py
-    --face-dump`), leaving the quest;
+  * results of probe 15 (target face: one face, content-only mirror, hidden
+    with the touch panel): size and position (`code_patch.FACE_SCALE` /
+    `FACE_CORNER_GAP`), the face shown with two monsters, the lock mark,
+    hiding while loading and when leaving the quest (save states +
+    `citra_state.py --face-dump`);
   * L + X target switch: **works** (probe 11), but gunners use the same
     input (the player's action 12) to select ammo: choose another input for
     them or for everyone;

@@ -19,9 +19,10 @@ pressed, after the game's button configuration). See docs/hud_code.md,
 
 Target face: a second instance of the target camera panel's layout (ui601) is
 loaded on the top screen at fixed GUI manager slots (asm/face_loader.s,
-released by asm/face_free.s), and asm/target_face.c copies the touch-screen
-instance's faces onto it every frame, left of the item selector. See
-docs/hud_code.md, "Target face on the top screen".
+released by asm/face_free.s, hidden with the touch panel by asm/face_show.s),
+and asm/target_face.c shows one face of the touch-screen instance on it every
+frame, left of the item selector. See docs/hud_code.md, "Target face on the
+top screen".
 
 The free space at the end of .text is shared: minimap wrapper, target switch
 and target face, up to CAVE_END. Each patch only checks and fills its own
@@ -61,12 +62,13 @@ TARGET_BUTTON = bytes.fromhex(
     "64c09fe500c09ce500005ce30700000a0ecc8ce230c09ce500005ce30300000acc039ce5010a10e30100a0131eff2f11"
     "2cc09fe500c09ce548039ce5020910e30000a0031eff2f0118c09fe500c09ce52b00dce5010050e30000a0130100a003"
     "1eff2fe1e07205017c6bfb000c260801")
-# Target face on the top screen: asm/face_loader.s, asm/face_free.s, the placement and
-# asm/target_face.c, after the target switch routine.
+# Target face on the top screen: asm/face_loader.s, asm/face_free.s, asm/face_show.s, the placement
+# and asm/target_face.c, after the target switch routine.
 FACE_LOADER = 0xDEC850
 FACE_FREE = 0xDEC8F4
-FACE_PARAMS = 0xDEC92C      # float x, y, scale (struct params in target_face.c)
-FACE_ROUTINE = 0xDEC938
+FACE_SHOW = 0xDEC92C
+FACE_PARAMS = 0xDEC9C8      # float x, y, scale (struct params in target_face.c)
+FACE_ROUTINE = 0xDEC9D4
 FACE_END = CAVE_END         # room for the diagnostic build too (tools/hud_probe.py --face-debug)
 COPY_INDEX = 0x5C0          # GUI manager slots of the copy's 3 groups (the game uses 20-510 and 1526-1535)
 LAYOUT_LIST, LAYOUT_COUNT, UI601 = 0xEFE17C, 20, 12  # FUN_00c1017c's quest layout list; ui601's entry
@@ -74,15 +76,22 @@ LOADER_HOOK = 0xC10430      # FUN_00c1017c, after the stage map: ldr r7, =0xEFE1
 LOADER_HOOK_ORIGINAL = bytes.fromhex("20719fe5")
 FREE_HOOK = 0xC0F11C        # FUN_00c0f110 (releases the GUI layouts): ldr r0, [r0, #0x100]
 FREE_HOOK_ORIGINAL = bytes.fromhex("000190e5")
+SHOW_HOOK = 0xAE53E0        # FUN_00ae53e0 (show / hide a group), first instruction: push {r4, r5, r6}
+SHOW_HOOK_ORIGINAL = bytes.fromhex("70002de9")
 FACE_HOOK = 0xB82B50        # FUN_00b826bc: bl FUN_00b94854 (target panel update, every frame)
 PANEL_UPDATE = 0xB94854
-# Size of the faces relative to the touch panel, and the gaps (right, bottom) between the
-# two-monster panel's right face and the screen's bottom-right corner at 100 %, in pixels: the
-# item selector's width (127) plus a 4-pixel margin, and 4 pixels.
+# Size of the face relative to the touch panel, and the gaps (right, bottom) between the face and
+# the screen's bottom-right corner at 100 %, in pixels: the item selector's width (127) plus a
+# 4-pixel margin, and 4 pixels.
 FACE_SCALE = 0.6
 FACE_CORNER_GAP = (131.0, 4.0)
-# asm/face_loader.s, asm/face_free.s and asm/target_face.c linked at FACE_LOADER, FACE_FREE and
-# FACE_ROUTINE (tools/build_hud_asm.py prints them).
+# asm/face_loader.s, asm/face_free.s, asm/face_show.s and asm/target_face.c linked at FACE_LOADER,
+# FACE_FREE, FACE_SHOW and FACE_ROUTINE (tools/build_hud_asm.py prints them).
+FACE_SHOW_CODE = bytes.fromhex(
+    "000051e32000001a44c090e5010b1ce31d00000a13402de974c09fe50040a0e304219ce7000052e10300000a014084e2"
+    "030054e3f9ffff3a120000ea020054e30040a0134cc09fe500c09ce500005ce30c00000a00c19ce500005ce30900000a"
+    "60219ce5174d84e2020054e10500002a54c19ce504019ce7000050e30100000a0010a0e3000000eb1340bde870002de9"
+    "88e2f3ea5056080134750501")
 FACE_FREE_CODE = bytes.fromhex(
     "70402de9004190e5000054e30700000a175da0e30360a0e30400a0e10510a0e1f65ef4eb015085e2016056e2f9ffff1a"
     "0400a0e17080bde8")
@@ -92,22 +101,32 @@ FACE_LOADER_CODE = bytes.fromhex(
     "0600000a0030a0e1172da0e30010a0e30600a0e1ea8af8eb0400a0e1a5d7f7eb08d08de2d040bde810709fe51eff2fe1"
     "ec7205010466e00058900e01ace1ef00e8e1ef00")
 TARGET_FACE = bytes.fromhex(
-    "f84f2de9048b2dedc39ff6eb1c319fe51c219fe5343593e5502692e5000053e300319315000052e3000053133d00000a"
-    "00819fe50a8ad2ed028a98ed0b9a92ed177da0e354a193e560b193e5e8909fe50731a0e1423783e2033a83e2505f93e5"
-    "000055e32c00000a07005be12a00009a07419ae7000054e32700000a002094e5003095e5030052e12300001a181095e5"
-    "0400a0e1a129a0e17220efe6a11da0e17ae6f3eb446095e5443094e52665a0e12335a0e1016006e2013003e2060053e1"
-    "0200000a0610a0e10400a0e175e2f3eb000056e31000000a0a7a95ed007ad8ed687a37ee087a47ee0a7ac4ed0b7a95ed"
-    "017ad8ed497a37ee087a47ee0b7ac4ed303095e50400a0e1303084e5082094e50030a0e3081095e5080000eb017087e2"
-    "090057e1c9ffff1a048bbdecf88fbde800700501005008012cc9de00c3050000f84f2de9026043e2166f6fe10380a0e1"
-    "0070a0e10150a0e10240a0e10030a0e3a662a0e1000055e300005413f88fbd080020a0e310e0d5e500c095e554119fe5"
-    "000091e500005ce10300000a012082e2080052e3041081e2f8ffff1a02005ee30130a0033e00000a3d00008a033096e1"
-    "0130a013080094e50500001a040052e30300009a013028e2013003e2080052e30130831301202ee2030012e101c002e2"
-    "58209015201095e58020c213582080153500001a000051e300a0a01301a0030200005ae30020a0131420801510208015"
-    "2d00001a000053e32b00001a00005ce35ca0a01328a0a00308b095e502c2a0e10c909be70c9080e704c08ce20c005ae1"
-    "faffff8a90c09fe5022280e0027adced007a92ed277a27ee007a82ed017a92ed277a27ee01005ee3017a82ed0f00001a"
-    "0700a0e1202094e5013083e2afffffeb0c3094e5000053e30320a0131220c3150200001a0410a0e10700a0e1fce7f3eb"
-    "0030a0e3145095e5144094e5acffffea0a7a90ed277a27ee0a7a80ed0b7a90ed277a67ee0b7ac0edecffffea01005ee3"
-    "eaffff1ae5ffffea18ccde002cc9de0021c22089b7f227fe0da32e673b3adea15af4ea6a46e420ddd0d427aa6a852e33")
+    "f0432de914d04de29c9ff6eb14329fe5343593e5000053e36100000a003193e5000053e35e00000a04108de2172da0e3"
+    "0150a0e154e193e5604193e5e8c19fe5040052e10030a0230e00002a0231a0e1423783e2033a83e2500f93e502319ee7"
+    "000050e3000053130060a0030160a0130630a0010300000a006093e5000090e5000056e10030a013012082e20c0052e1"
+    "043081e4e9ffff1a04809de58c319fe5000058e30840a001507693e5546693e5589693e50600000a0700a0e1690000eb"
+    "004050e20200001a0600a0e1650000eb0040a0e10010a0e308009de5ba0000eb0410a0e10800a0e1b70000eb000054e3"
+    "0410a0010c309de50200000a0900a0e1580000eb0010a0e10300a0e1ae0000eb000054e32200000a0700a0e1510000eb"
+    "000050e32000000a0700a0e100119fe5420000eb0040a0e1000054e3204094150060a0e3147f6fe1e8809fe5a772a0e1"
+    "060095e7000050e30730a01101308703000053e30c00001a003098e5082090e5283080e5043098e52c3080e5423786e2"
+    "053a83e2501693e5303091e5081091e5303080e50430a0e1940000eb080056e31e00001a14d08de2f083bde888109fe5"
+    "0600a0e1210000eb691481e26b1a81e20040a0e1561081e20600a0e11b0000eb50309fe50020a0e19c3293e5000053e3"
+    "0500000ad53ed3e5020053e30040a001d0ffff0a010053e3ceffff0a0400a0e11d0000eb000050e3caffff1a0200a0e1"
+    "190000eb000050e30240a011c5ffffea0860a0e3c9ffffea00700501c30500000050080121c22089c8c9de00b7f227fe"
+    "000050e3080090151eff2f01000050e31eff2f01003090e5010053e11eff2f01140090e5f8ffffea000050e34500d015"
+    "2001a011010000121eff2fe1000050e31eff2f01203090e5140093e5000050e3083090155800d315a003a0111eff2fe1"
+    "0c3091e5000053e30200000a0320a0e31220c3e51eff2fe1cee7f3ea000051e30030a01358309005143080158030c303"
+    "58308005103080151eff2fe1f0472de90030a0e30060a0e10140a0e10250a0e1c8709fe5c8809fe5c8909fe5000054e3"
+    "00005513f087bd081010d4e5020051e30130a0031800000a1700008a000053e3080095e50f00001a002094e5080052e1"
+    "070052110130a0030030a013090052e101308303000053e30600001a000051e30c00000a0600a0e1202095e5201094e5"
+    "ddffffeb000000ead3ffffeb0510a0e10600a0e1c9ffffeb0030a0e3144094e5145095e5dcffffea3030a0e3082094e5"
+    "031092e7031080e7043083e2500053e3faffff1a583092e5582090e5803003e28020c2e3023083e1583080e5eaffffea"
+    "46e420ddd0d427aa6a852e33003050e21eff2f0110402de9a2ffffeb000051e11080bd080300a0e11040bde886e1f3ea"
+    "f0472de90250a0e10070a0e10140a0e10390a0e10020a0e3bc609fe5bc809fe5000054e300005513f087bd081010d4e5"
+    "020051e30120a0030e00000a0d00008a013021e2013003e2023093e1080095e50300001a002094e5060052e108005211"
+    "0700000a98ffffeb0510a0e10700a0e18effffeb0020a0e3144094e5145095e5e6ffffea083094e554109fe5007a93ed"
+    "027ad1ed277a27ee007a80ed017a93ed277a27ee017a80ed047a93ed277a27ee047a80ed057a93ed277a67ee060052e1"
+    "057ac0ed0910a0010700a0e120109415202095e584ffffebe2ffffea21c220893b3adea1c8c9de00")
 # FUN_00b94854: the button shortcut test (ldr r0, pad; ldr r0, [r0]; ldr r0, [r0, #0x348]; tst r0, #0x8000) ...
 TARGET_TEST = 0xB948AC
 TARGET_TEST_ORIGINAL = bytes.fromhex("80009fe5000090e5480390e5020910e3")
@@ -203,48 +222,53 @@ def patch_target_button(code: bytes, routine_code: bytes = TARGET_BUTTON) -> byt
 
 
 def face_params(factor: float) -> tuple[float, float, float]:
-    """Top-screen position (layout coordinates) and scale of the target faces for a HUD `factor`.
+    """Top-screen position (layout coordinates) and scale of the target face for a HUD `factor`.
 
-    Like the item selector, the faces keep their gap to the bottom-right corner times `factor`:
-    the two-monster panel's right face (ui601_icon02, 40 x 40 pixels at scale 1.2, centred at
-    (120, 86) in ui601_target_icon02 at x -80) ends FACE_CORNER_GAP from the corner. A sprite's
-    position is its centre, at screen (200 - x, 120 - y) (measured in probe 12).
+    Like the item selector, the face keeps its gap to the bottom-right corner times `factor`:
+    the one-monster face (ui601_icon00, 40 x 40 pixels at scale 1.2, centred at (120, 86) in
+    ui601_target_icon00 at x -40, all scaled by `scale`) ends FACE_CORNER_GAP from the corner. A
+    sprite's position is its centre, at screen (200 - x, 120 - y) (measured in probe 12).
     """
     scale = FACE_SCALE * factor
     right = 400 - FACE_CORNER_GAP[0] * factor
     bottom = 240 - FACE_CORNER_GAP[1] * factor
     half = 40 * 1.2 / 2
-    x = 200 - right + (half - (120 - 80)) * scale
+    x = 200 - right + (half - (120 - 40)) * scale
     y = 120 - bottom + (half - 86) * scale
     return x, y, scale
 
 
 def patch_target_face(code: bytes, factor: float = 1.0, routine_code: bytes | None = None) -> bytes:
-    """`code` showing the target camera panel's monster faces on the top screen too.
+    """`code` showing the target camera panel's monster face on the top screen too.
 
     asm/face_loader.s loads ui601 a second time, on the top screen, at the GUI manager slots
-    COPY_INDEX..., asm/face_free.s releases it with the other layouts, and the per-frame target
-    panel update is redirected to asm/target_face.c, which mirrors the touch-screen faces onto it.
-    `routine_code` replaces the latter (the diagnostic build of tools/hud_probe.py --face-debug).
+    COPY_INDEX..., asm/face_free.s releases it with the other layouts, asm/face_show.s hides it
+    with the touch-screen panel, and the per-frame target panel update is redirected to
+    asm/target_face.c, which mirrors the touch-screen face onto it. `routine_code` replaces the
+    latter (the diagnostic build of tools/hud_probe.py --face-debug).
     """
     routine_code = TARGET_FACE if routine_code is None else routine_code
     out = bytearray(code)
     area = slice(_offset(FACE_LOADER), _offset(FACE_END))
-    if (len(out) < area.stop or any(out[area]) or FACE_ROUTINE + len(routine_code) > FACE_END
-            or FACE_LOADER + len(FACE_LOADER_CODE) > FACE_FREE or FACE_FREE + len(FACE_FREE_CODE) > FACE_PARAMS):
+    blocks = ((FACE_LOADER, FACE_LOADER_CODE, FACE_FREE), (FACE_FREE, FACE_FREE_CODE, FACE_SHOW),
+              (FACE_SHOW, FACE_SHOW_CODE, FACE_PARAMS), (FACE_ROUTINE, routine_code, FACE_END))
+    if len(out) < area.stop or any(out[area]) or any(address + len(data) > end for address, data, end in blocks):
         raise CodePatchError("no free space for the target face")
-    hooks = {LOADER_HOOK: (LOADER_HOOK_ORIGINAL, FACE_LOADER), FREE_HOOK: (FREE_HOOK_ORIGINAL, FACE_FREE)}
-    if (any(out[_offset(at):_offset(at) + 4] != original for at, (original, _) in hooks.items())
+    # address: (original instruction, routine, bl or b)
+    hooks = {LOADER_HOOK: (LOADER_HOOK_ORIGINAL, FACE_LOADER, True),
+             FREE_HOOK: (FREE_HOOK_ORIGINAL, FACE_FREE, True),
+             SHOW_HOOK: (SHOW_HOOK_ORIGINAL, FACE_SHOW, False)}
+    if (any(out[_offset(at):_offset(at) + 4] != original for at, (original, _, _) in hooks.items())
             or bl_target(out, FACE_HOOK) != PANEL_UPDATE):
         raise CodePatchError("unexpected layout code or panel update: not the update's executable")
     paths = struct.unpack_from(f"<{LAYOUT_COUNT + 1}I", out, _offset(LAYOUT_LIST))
     if paths[-1] != 0 or not all(paths[:-1]):
         raise CodePatchError("unexpected quest layout list: not the update's executable")
-    for address, data in ((FACE_LOADER, FACE_LOADER_CODE), (FACE_FREE, FACE_FREE_CODE), (FACE_ROUTINE, routine_code)):
+    for address, data, _ in blocks:
         out[_offset(address):_offset(address) + len(data)] = data
     struct.pack_into("<3f", out, _offset(FACE_PARAMS), *face_params(factor))
-    for at, (_, routine) in hooks.items():
-        out[_offset(at):_offset(at) + 4] = encode_bl(at, routine)
+    for at, (_, routine, link) in hooks.items():
+        out[_offset(at):_offset(at) + 4] = encode_branch(at, routine, link=link)
     out[_offset(FACE_HOOK):_offset(FACE_HOOK) + 4] = encode_bl(FACE_HOOK, FACE_ROUTINE)
     return bytes(out)
 

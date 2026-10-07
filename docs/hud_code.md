@@ -63,9 +63,10 @@ Free space used in the update:
 | 0xDEC7E0 | 0x70 | `asm/target_button.s` (diagnostic routines take its place; they collide with the target face) |
 | 0xDEC850 | 0xA4 | Target face: `asm/face_loader.s` (loads the second `ui601`) |
 | 0xDEC8F4 | 0x38 | Target face: `asm/face_free.s` (releases it) |
-| 0xDEC92C | 0x0C | Target face: position x, y and scale (`code_patch.face_params`) |
-| 0xDEC938 | 0x300 | `asm/target_face.c` (ends at 0xDECC38) |
-| 0xDECC38 | 0x3C8 | free (the diagnostic build of `target_face.c`, 0x570 bytes, takes its place in probes) |
+| 0xDEC92C | 0x9C | Target face: `asm/face_show.s` (hides it with the touch panel) |
+| 0xDEC9C8 | 0x0C | Target face: position x, y and scale (`code_patch.face_params`) |
+| 0xDEC9D4 | 0x4D8 | `asm/target_face.c` (ends at 0xDECEAC) |
+| 0xDECEAC | 0x154 | free (the diagnostic build of `target_face.c`, 0x620 bytes, takes its place in probes) |
 
 Each patch checks and fills only its own range (`code_patch.py`: `CAVE`,
 `TARGET_ROUTINE`, `FACE_LOADER` … `FACE_END` = `CAVE_END`), so they can be
@@ -291,17 +292,16 @@ What worked to see the game's state at run time, and what did not.
 ## Target face on the top screen
 
 Option `target_face_top` (`code_patch.patch_target_face`, `asm/face_loader.s`,
-`asm/face_free.s`, `asm/target_face.c`): the touch-screen target camera panel's monster faces
-(with the state icon and the lock marks) are also drawn on the top screen,
-small, left of the item selector, and behave exactly like the panel ("?"
-before the monster is found, two faces with two large monsters, the lock mark
-following L + X or a tap). The touch panel stays where it is.
+`asm/face_free.s`, `asm/face_show.s`, `asm/target_face.c`): **one** monster
+face of the touch-screen target camera panel is also drawn on the top screen,
+small, left of the item selector, with the lock mark over it. It shows "?"
+while the monster is unknown, else the locked monster, else the first known
+one; L + X (or a tap) cycles like the panel. It is shown only while the touch
+panel is. The touch panel stays where it is.
 
-**Status:** probe 12 showed the copy working (faces and textures follow the
-panel) but the minimap disappeared and the face was full size, centred, with
-its board and without the lock mark. Probe 13 brought the minimap back but
-showed no face at all: the area map overwrote the copy. Probe 14 (pending)
-puts the copy at its own manager slots. See "Probes 12 and 13" below.
+**Status:** probes 12–14 found the problems below, fixed in probe 15
+(pending): the copy's index, placement, the panes' primitive indices, one
+face with two monsters, and hiding during loads. See "Probes 12 to 14".
 
 ### How a layout gets its screen
 
@@ -321,7 +321,9 @@ puts the copy at its own manager slots. See "Probes 12 and 13" below.
 * For each layout, `FUN_00c0f474(gui, screen, first_index, file)` creates its
   root groups at consecutive indices of the GUI manager (`FUN_00b03d40`) and
   writes `*(manager + screen + 0x245)` into bits 14–17 of `group + 0x44`
-  (measured: 0 on the top screen, 7 on the touch screen).
+  (measured: 0 on the top screen, 7 on the touch screen). Bits 18–31 of
+  `+0x44` are the group's index, its **draw order** (`FUN_00ae53e0` keeps the
+  shown groups sorted by it).
 * **Group indices of the GUI manager** (measured in probe 13's save state,
   1536 slots): `FUN_00c10740` puts the common layouts at 20 … `gui + 0x238`
   (363); `FUN_00c1017c` the quest layouts and the stage map at 363 …
@@ -360,29 +362,36 @@ puts the copy at its own manager slots. See "Probes 12 and 13" below.
 * `0xB8CE08(slot)` places `panel00/01` (group +0x28 position) from the run-time
   slot table **0x1086028** (6 × {x, y, z, 0}: x 0 / −160, y −36 / −104 / −172;
   touch screen = (160 − x, 120 − y)), then calls `0xAE63C8(group, 1, 10)`
-  (`target00`: 11), which sets the group's **draw priority** (bits 27–31 and
-  19–26 of `group + 0x18`) and re-sorts it.
+  (`target00`: 11), which sets the group's draw priority (bits 27–31 and 19–26
+  of `group + 0x18`).
 * `0xB93788` (from `0xB92E74`) is the panel's display update: it shows
   `panel00` or `panel01`, sets each face sprite's visibility (data +0x58 bit
   0x80), its colours, the state text (`0x5A9164`), and the face itself with
   `0xC0E1B4(…, data + 0x10)`, which writes the texture region at data
   **+0x30 / +0x34** and the corner colours (+0x40…+0x4C) from the monster's
-  icon index. It also moves `target00` to the locked slot (table at
-  `DAT_00b9484c`, ± an offset with two monsters) and hides it when
-  `*(0x105729C) + 0xED5` = 0.
+  icon index. It also moves `target00` to the locked face (group x +40 for
+  target 1, −40 for target 2 with two monsters, 0 with one) and hides it when
+  the target `*(*(0x105729C) + 0xED5)` is 0. **Target 1 is `target_icon01`
+  (left), target 2 `target_icon02` (right)** (probe 13, state 4).
+* **`FUN_00b85b50` hides every touch-screen panel** (`ui601`'s three groups
+  included) with `FUN_00ae53e0(group, 0)`; `FUN_00b826bc` calls it in states
+  where it does not reach the panel update (area loading…).
 * Runtime panes (from `FUN_00b03030` / `FUN_00b03f90`): pane +0x00 name hash,
   +0x08 data, +0x0C redraw entry (else `0xAE6BCC(group, pane)`), +0x10 kind
   (0 sprite, 1 null, 2 text, 3 boundary), +0x14 next sibling, +0x20 first child;
-  a group's first pane is at group +0x08. Sprite data: +0x10 position, +0x20
-  size, +0x28 scale, +0x30 texture region, +0x40 colours, +0x50 rotation?,
-  +0x58 flags. Null data: +0x00 position, +0x10 scale, +0x18 colour, +0x24
-  flags. A text is followed by its own null (position, scale, colour).
-* **Measured in probe 12** (the copy's position was known, the screenshots
-  match it to the pixel): positions add up through the tree (group + nulls +
-  sprite), **`ui601`'s sprites are placed by their centre** at screen
-  (200 − x, 120 − y), and **a null's scale does not reach its children** (it
-  only scales the text bound to it): the faces kept their full size although
-  their nulls were at 0.42.
+  a group's first pane is at group +0x08. Sprite data: +0x10 position (the
+  sprite's centre for `ui601`), +0x20 size, +0x28 scale, +0x30 texture region,
+  +0x40 colours, +0x50 rotation?, +0x58 flags. Null data: +0x00 position,
+  +0x10 scale, +0x18 colour, +0x24 flags. A text is followed by its own null.
+* **Bits 8–23 of a sprite's `+0x58` and of a null's `+0x24` are the pane's
+  own draw primitive index** (consecutive within an instance: `icon00`
+  0x2B2D, `no_mon00` 0x2B2E…), only the low byte holds flags (sprite 0x80 =
+  visible). Copying these words between instances makes a pane draw through
+  the other instance's primitive (probe 14: the copy's lock mark appeared on
+  the touch screen and its faces stayed as created).
+* Positions add up through the tree and **a null's scale applies to its
+  children's positions and sizes**: the touch lock mark lands on the face
+  only because `mark00`'s scale 1.2 multiplies its sprites' (120, 85).
 
 ### The patch
 
@@ -397,30 +406,40 @@ puts the copy at its own manager slots. See "Probes 12 and 13" below.
 * **Release** (`asm/face_free.s`, at 0xDEC8F4): the `ldr r0, [r0, #0x100]` at
   0xC0F11C, at the start of `FUN_00c0f110`, becomes `bl` to a routine that
   frees slots 1472–1474 with `FUN_00b044f4` and returns the manager in r0.
-* **Mirror** (`asm/target_face.c`, 768 bytes, C compiled with
+* **Hiding** (`asm/face_show.s`, at 0xDEC92C): the first instruction of
+  `FUN_00ae53e0` (`push {r4, r5, r6}`, 0xAE53E0) becomes `b` to a routine
+  that, when a visible group of the binder is being hidden, also hides its
+  copy (`panel00` / `panel01` → the copy of `panel00`, `target00` → the copy
+  of `target00`), then runs the original function (a trampoline: the replaced
+  instruction and `b 0xAE53E4`; the function is a leaf). So the top screen
+  hides whatever the game hides on the touch screen, wherever it happens.
+* **Mirror** (`asm/target_face.c`, 1240 bytes, C compiled with
   arm-none-eabi-gcc for ARM mode, VFP, linked with `target_face.ld` by
   `tools/build_hud_asm.py`): the per-frame call `bl 0xB94854` at **0xB82B50**
-  (in `FUN_00b826bc`) becomes `bl 0xDEC938`, which runs `0xB94854` and then,
-  for each of the binder's three groups, takes its copy (slot 1472 + i, if it
-  has the same name hash) and:
-  * copies its draw priority (`0xAE63C8`), visibility (`0xAE53E0`) and z
-    (`+0x30`), and sets its position to `params.xy + (group − panel00) ·
-    scale`;
-  * walks both pane trees together: first-level panes other than the faces
-    (`target_icon00/01/02`), `t_mark00` and `batu00` are hidden, and so are
-    the faces' boards `ita00/01/02`. Hiding clears the visibility flag of every
-    sprite below (texts: scale 0 on their null). Kept sprites and nulls are
-    copied (texture region, colours, flags) and **every position and sprite
-    scale is multiplied by `scale`**, at every depth (null scales are copied
-    unchanged, since they do not propagate). Every pane written is queued for
+  (in `FUN_00b826bc`) becomes `bl 0xDEC9D4`, which runs `0xB94854` and then
+  takes the copies (slot 1472 + i, if they have the same name hash):
+  * the copy of `panel01` is always hidden; the copy of `panel00` is shown
+    while either touch panel is, the copy of `target00` while the touch one is
+    too; both sit at `params.xy` (z copied);
+  * the face's content comes from the touch `panel00`'s `target_icon00`, or
+    with two monsters from `target_icon01` / `target_icon02`: the locked one,
+    else the first whose face sprite is shown (a known monster), else
+    `target_icon01` ("?"). The three subtrees have the same structure;
+  * first-level nulls `target_icon00` and `t_mark00` get the layout's
+    position and scale (read from the touch instance) × `scale`; other
+    first-level panes are hidden (null scale 0, sprite flag);
+  * below them only **content** is copied: texture region and colours
+    (`+0x30…+0x4F`) and the visibility bit 0x80 of `+0x58`; the faces' boards
+    `ita00/01/02` and the texts (scale 0 on their null) are hidden. Nulls
+    below keep their own layout values. Every pane written is queued for
     redraw.
 * **Placement** (`code_patch.face_params(factor)`): scale `0.6 · factor` (the
-  face is then about the size of the item selector's icon); the two-monster
-  panel's right face ends `131 · factor` px from the right edge (the item
-  selector's width, 127, plus 4) and `4 · factor` px from the bottom. One
-  monster's face sits between the two faces' places.
+  face is then about the size of the item selector's icon); the face
+  (`icon00`, centred at (80, 86) · scale) ends `131 · factor` px from the
+  right edge (the item selector's width, 127, plus 4) and `4 · factor` px
+  from the bottom.
 
-### Probes 12 and 13
+### Probes 12 to 14
 
 Probe 12, mod built by the randomizer (HUD 70 %, L + X, target face;
 screenshots in `input/`):
@@ -429,29 +448,35 @@ screenshots in `input/`):
   before the monster is found, then its face (Seltas Queen), and the
   Fatalis's own "?" icon (the monster icons are a separate option).
 * **The minimap disappeared**, with and without the Map item: the copy was
-  inserted before the stage map. Now loaded after it.
-* **The face was full size, in the middle of the screen, with a brown
-  board**: group position −96, −131 put the sprite's centre exactly where it
-  appeared, so positions are centres and null scales do not propagate; the
-  board is `ita00`. Now every position and sprite scale is scaled, `ita` is
-  hidden and the placement uses centres.
-* **L + X locked the target** (the touch panel shows the lock mark over the
-  face) **but no mark on the top screen**. Not explained yet: the draw
-  priority is now copied and the mark scaled like the faces.
+  inserted before the stage map.
+* **The face was full size, in the middle of the screen, with a brown board**
+  (`ita00`): the group position −96, −131 put the sprite's centre exactly
+  where it appeared (so positions are centres). The size was not because null
+  scales do not propagate, as believed then, but because the primitive index
+  was copied (probe 14).
+* **L + X locked the target but no mark on the top screen.**
 
 Probe 13 (`hud_probe.py --face-debug`, copy after the stage map; save states
-with one and two monsters, kept in `output/estados_prueba13`):
+in `output/estados_prueba13`):
 
 * L + X works; **the minimap is back** with the Map item (without it its
   icons float: the map without the item is not shrunk, a known gap).
-* **No face on the top screen.** The snapshot: quest range 363–503 (the copy
-  was created at 500–502), but slots 500–504 hold the area map `ui298a07_*`,
-  loaded by `FUN_00c10928` at the fixed index 500, and the binder groups have
-  no copy. Hence the copy's own slots (probe 14).
+* **No face on the top screen**: the area map, loaded by `FUN_00c10928` at the
+  fixed index 500, overwrote the copy (created at 500–502).
 * Touch-screen values with the target locked: `target00` visible, at the
   same position as `panel00` (0, −36), priority 0x085C0400 (panels
   0x08540400); `t_mark00` (80, 84), `mark00/01` (−144/−146, −100/−102) at
   scale 1.2, their sprites at (120, 85) with flags 0x84 (visible).
+
+Probe 14 (copy at slots 1472–1474; states in `output/estados_prueba14`,
+screenshots in `input/alejandro/`):
+
+* The copy exists and is released, but the faces were big and almost centred,
+  the lock mark showed for a frame over the face and then small elsewhere,
+  with **an extra small mark on the touch screen**; after an area change it
+  realigned. The snapshot showed the copy's data correctly scaled, but with
+  the touch instance's primitive indices in `+0x58` / `+0x24` (copied).
+* With two monsters both faces were shown; nothing was hidden while loading.
 
 ### Debugging the target face
 
@@ -462,23 +487,24 @@ of `.bss`, read from a save state with `tools/citra_state.py STATE.cst
 
 | Address | Contents |
 |---|---|
-| 0x111D200 | "FACE", frame counter, target (`*(0x105729C) + 0xED5`), `gui + 0x238/0x23A`, `+0x23C/0x23E`, manager slot count |
-| 0x111D220 | `panel00`, `panel01`, `target00`: 10 words each — touch / top pointer, `+0x18` priority, `+0x28/+0x2C` position, `+0x44` flags |
-| 0x111D2A0 | 160 slots from `gui + 0x238`: group hash, `+0x44` (visible bit 10, screen bits 14–17) |
-| 0x111D7A0 | `target00` pane trees, touch then top instance: 10 panes × (hash, kind, 24 data words) |
+| 0x111D200 | "FACE", frame counter, target (`*(0x105729C) + 0xED5`), face shown, face source (children of the chosen touch null), copies of `panel00`, `panel01`, `target00` |
+| 0x111D220 | Pane trees, per pane hash, kind and 24 data words: face source (6 panes), the copy's `target_icon00` children (6), `target00` touch (10) and copy (10) |
 
-The diagnostic build is 0x570 bytes and takes the normal one's place in
-probes. The slots dumped are those of the quest range; the copy's pointers
-are in the group lines.
+A tree that ends early leaves older entries after it. The diagnostic build is
+0x620 bytes and takes the normal one's place in probes (it fits up to
+`CAVE_END`).
 
 ### Verified and not verified
 
 * Offline: the bytes built from the sources match the embedded ones
   (`test_embedded_code_matches_the_sources`, needs devkitARM); on the
   update's executable the patch applies with the HUD size and L + X in any
-  order, the loader hook calls `0x2B51C0`, `0xC0F474` and the release
-  routine, which calls `0xB044F4`, and the quest list is untouched.
+  order; the loader hook calls `0x2B51C0`, `0xC0F474` and the release
+  routine, which calls `0xB044F4`; `FUN_00ae53e0` jumps to the hiding routine,
+  which jumps back to 0xAE53E4 after the replaced instruction; the quest list
+  is untouched.
 * In-game: the copy loads, draws on the top screen and follows the panel
   (probe 12); with the copy out of the quest range the minimap works (probe
-  13). Pending (probe 14): the face at its own slots, size and position, two
-  monsters, the lock mark, leaving the quest (release), the cost per frame.
+  13); the copy at its own slots exists (probe 14). Pending (probe 15): size
+  and position, one face with two monsters, the lock mark, hiding while
+  loading and when leaving the quest, the cost per frame.

@@ -32,12 +32,13 @@ PAD_POINTER = 0x10572E0    # .bss, non-zero once the game runs
 INPUT_LOG_HEAD = 0x111D1F0
 INPUT_LOG_RING = 0x111D200
 INPUT_LOG_ENTRIES = 100
-# Target face snapshot (mh4u_rando/hud/asm/target_face.c, FACE_DEBUG): header, 3 groups, quest range
-# slots, then the target00 pane trees of the touch-screen and top-screen instances.
+# Target face snapshot (mh4u_rando/hud/asm/target_face.c, FACE_DEBUG): a header, then pane trees
+# (hash, kind, 24 data words per pane), stale entries possible past each tree's end.
 FACE_DUMP = 0x111D200
 FACE_MAGIC = 0x45434146
-FACE_GROUPS = ("panel00", "panel01", "target00")
-FACE_SLOTS, FACE_PANES, PANE_WORDS = 160, 10, 26
+FACE_HEADER, PANE_WORDS = 8, 26
+FACE_TREES = (("face source (touch screen)", 6), ("face of the copy (target_icon00)", 6),
+              ("target00, touch screen", 10), ("target00, copy", 10))
 
 
 def load_state(path: Path) -> bytes:
@@ -111,33 +112,21 @@ def f32(word: int) -> float:
 
 
 def print_face_dump(view: DataView, names: dict[int, str]) -> None:
-    words = [view.u32(FACE_DUMP + 4 * i) for i in range(40 + 2 * FACE_SLOTS + 2 * PANE_WORDS * FACE_PANES)]
+    words = [view.u32(FACE_DUMP + 4 * i) for i in range(FACE_HEADER + PANE_WORDS * sum(n for _, n in FACE_TREES))]
     if words[0] != FACE_MAGIC:
         raise SystemExit("no target face snapshot in this state (not the --face-debug build?)")
 
     def name(h: int) -> str:
         return names.get(h, f"{h:08x}")
 
-    start, end = words[3] & 0xFFFF, words[3] >> 16
-    print(f"frames {words[1]}, target {words[2]:#x}, quest groups {start}..{end}, "
-          f"later {words[4] & 0xFFFF}..{words[4] >> 16}, manager slots {words[5]}")
-    print("group     instance pointer  priority  position          +0x44 (visible 0x400, screen bits 14-17)")
-    for i, group in enumerate(FACE_GROUPS):
-        g = words[8 + 10 * i:18 + 10 * i]
-        for k, which in enumerate(("touch", "top")):
-            print(f"{group:9} {which:8} {g[k]:08x}  {g[2 + k]:08x}  ({f32(g[4 + 2 * k]):7.1f}, {f32(g[5 + 2 * k]):7.1f})"
-                  f"  {g[8 + k]:08x} visible {g[8 + k] >> 10 & 1} screen {g[8 + k] >> 14 & 0xF}")
-    print("quest range slots: index  group  visible  screen")
-    for i in range(FACE_SLOTS):
-        h, flags = words[40 + 2 * i], words[41 + 2 * i]
-        if h:
-            print(f"  {start + i:4}  {name(h):28} {flags >> 10 & 1}  {flags >> 14 & 0xF}")
-    base = 40 + 2 * FACE_SLOTS
-    for k, which in enumerate(("touch", "top")):
-        print(f"target00 panes, {which} instance:")
-        for p in range(FACE_PANES):
-            at = base + PANE_WORDS * (FACE_PANES * k + p)
+    print(f"frames {words[1]}, target {words[2]:#x}, face shown {words[3]}, face source {words[4]:08x}, "
+          f"copies panel00 {words[5]:08x} panel01 {words[6]:08x} target00 {words[7]:08x}")
+    at = FACE_HEADER
+    for title, count in FACE_TREES:
+        print(f"{title}:")
+        for _ in range(count):
             w = words[at:at + PANE_WORDS]
+            at += PANE_WORDS
             if not w[0] and not w[1]:
                 continue
             kind, d = w[1] & 0xFF, w[2:]

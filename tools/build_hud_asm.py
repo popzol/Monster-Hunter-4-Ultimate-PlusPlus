@@ -1,5 +1,5 @@
 """Build mh4u_rando/hud/asm/* with devkitARM (or the Arm GNU Toolchain) and compare them with the bytes
-embedded in mh4u_rando/hud/code_patch.py (MINIMAP_WRAPPER, TARGET_BUTTON, FACE_LOADER_CODE, FACE_FREE_CODE, TARGET_FACE).
+embedded in mh4u_rando/hud/code_patch.py (MINIMAP_WRAPPER, TARGET_BUTTON, FACE_LOADER_CODE, FACE_FREE_CODE, FACE_SHOW_CODE, TARGET_FACE).
 Also prints the size of the diagnostic build of target_face.c (-DFACE_DEBUG, tools/hud_probe.py
 --face-debug), which may use the free space up to CAVE_END.
 
@@ -21,7 +21,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from mh4u_rando.hud.code_patch import (  # noqa: E402
     CAVE, CAVE_END, FACE_FREE, FACE_FREE_CODE, FACE_LOADER, FACE_LOADER_CODE, FACE_PARAMS, FACE_ROUTINE,
-    MINIMAP_WRAPPER, PANEL_UPDATE, TARGET_BUTTON, TARGET_FACE, TARGET_ROUTINE,
+    FACE_SHOW, FACE_SHOW_CODE, MINIMAP_WRAPPER, PANEL_UPDATE, SHOW_HOOK, TARGET_BUTTON, TARGET_FACE,
+    TARGET_ROUTINE,
 )
 
 ASM = ROOT / "mh4u_rando" / "hud" / "asm"
@@ -30,10 +31,11 @@ SOURCES = {"minimap_wrapper.s": (CAVE, MINIMAP_WRAPPER, "MINIMAP_WRAPPER"),
            "target_button.s": (TARGET_ROUTINE, TARGET_BUTTON, "TARGET_BUTTON"),
            "face_loader.s": (FACE_LOADER, FACE_LOADER_CODE, "FACE_LOADER_CODE"),
            "face_free.s": (FACE_FREE, FACE_FREE_CODE, "FACE_FREE_CODE"),
+           "face_show.s": (FACE_SHOW, FACE_SHOW_CODE, "FACE_SHOW_CODE"),
            "target_face.c": (FACE_ROUTINE, TARGET_FACE, "TARGET_FACE")}
 # Game functions and patch data used by the sources.
-GAME_SYMBOLS = {"panel_update": PANEL_UPDATE, "group_show": 0xAE53E0, "group_priority": 0xAE63C8,
-                "pane_redraw": 0xAE6BCC, "face_params": FACE_PARAMS, "FACE_FREE": FACE_FREE}
+GAME_SYMBOLS = {"panel_update": PANEL_UPDATE, "group_show": SHOW_HOOK, "pane_redraw": 0xAE6BCC,
+                "face_params": FACE_PARAMS, "FACE_FREE": FACE_FREE, "FACE_SHOW_BODY": SHOW_HOOK + 4}
 C_FLAGS = ("-Os", "-Wall", "-Wextra", "-Werror", "-marm", "-mcpu=mpcore", "-mfloat-abi=softfp", "-mfpu=vfp",
            "-ffreestanding", "-fno-builtin", "-nostdlib", "-fno-pic", "-fno-common", "-ffunction-sections")
 DEFAULT_DEVKITARM = Path("C:/devkitPro/devkitARM/bin")
