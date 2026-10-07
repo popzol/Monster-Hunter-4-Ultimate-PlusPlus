@@ -63,6 +63,4 @@ python -m mh4u_rando.gui
   or temporary files; delete scratch files after an investigation.
 * Do not use screen captures (e.g. `ImageGrab`) to check the GUI: they can capture
   private windows. Test the GUI through `tests/test_gui_*.py` instead.
-* Other agents/PCs work in parallel on branches: run `git fetch` and check
-  `git log`/`git status` before touching shared files (`docs/hud_code.md`,
-  `code_patch.py`, `docs/roadmap.md`).
+
