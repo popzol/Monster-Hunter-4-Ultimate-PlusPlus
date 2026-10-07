@@ -12,6 +12,10 @@ is done or discovered.
     the HUD during area loads, clear of the item selector opened with L; the
     minimap's circle without the Map item centred; then build the face's
     final version (`hud_probe.py` without `--face-debug`, or the randomizer);
+  * target face: raise it to the height of the item selector's icon (it now
+    sits lower, at the height of the item name bar; screenshot of probe 17 in
+    `input/alejandro/Captura.PNG`): change the y of `code_patch.face_params`
+    (`FACE_CORNER_GAP[1]`) to the icon's centre (`ui205_name_base`);
   * L + X target switch: **works** (probe 11), but gunners use the same
     input (the player's action 12) to select ammo: choose another input for
     them or for everyone;
