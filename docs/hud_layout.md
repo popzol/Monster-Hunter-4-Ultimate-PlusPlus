@@ -77,7 +77,7 @@ Target" (`Settings.target_switch`, `Settings.target_face_top`; CLI
 `patch_target_face()` (the target's face on the top screen). Whenever one of
 these executable patches is on, `exefs/code.ips` is built from the **update's**
 executable (`load_code(update .app)`) with the equipment changes, then
-`code_patch.patch_interface()`; otherwise it is
+`code_patch.patch_interface()` (and the monster icons' patch); otherwise it is
 built from the ROM's executable as before. Without the update, the HUD size
 only changes data files, and the target options (`Settings.needs_update`) stop
 the run with an error.
@@ -343,7 +343,7 @@ The anchor is chosen **per root group** (`ui204` mixes corners).
 | 6 | L + X with other bits | Mount gauge **correct**; L + X did nothing |
 | 7–10 (`--target-asm`) | Diagnostic routines logging the input (read from save states) | The real button bits and the player's actions (hud_code.md, "Pad") |
 | 11 (`--minimap --target-button`) | L + X = the player's action 12 | **L + X locks / switches the target** once the monster's icon is tappable |
-| 12 (pipeline: HUD 70 %, `target_switch`, `target_face_top`) | Combined test of every interface option, mod built by `pipeline.run()` | **Waiting**: target face on the top screen, everything else unchanged |
+| 12 (pipeline: HUD 70 %, `target_switch`, `target_face_top`, `new_monster_icons`) | Combined test of every interface option, mod built by `pipeline.run()` | **Waiting**: target face on the top screen, icons, everything else unchanged |
 
 ## Open questions
 

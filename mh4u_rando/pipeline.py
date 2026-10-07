@@ -7,7 +7,7 @@ executable (code.bin or the update's .app).
 Output layout (copy its contents into load/mods/0004000000126100/):
 
     romfs/loc/data/quest01.arc     randomized quests
-    romfs/<lang>/data/core_*.arc   smaller top-screen HUD (HUD size below 100 %)
+    romfs/<lang>/data/core_*.arc   smaller top-screen HUD (HUD size below 100 %) and the new monster icons
     exefs/code.ips                 equipment changes and the interface's executable patches (HUD size,
                                    L + X target switch, target face); built from the update's executable
                                    when there are interface patches, from the ROM's otherwise
@@ -27,6 +27,7 @@ from .data import GameData, load_game_data
 from .exefs import ExtractError, RomFS, is_container, load_code, make_ips
 from .hud import UPDATE_TITLE_ID, find_update, hud_files, remove_hud_files
 from .hud.code_patch import patch_interface
+from .hud.icons import icon_files, patch_monster_icons, remove_icon_files
 from .mib import Quest, parse_mib, write_mib
 from .randomizer import (
     HudScale, QuestReport, Settings, randomize_quests, unrandomized_quests, write_spoiler_json, write_spoiler_text,
@@ -67,6 +68,7 @@ class RunResult:
     equipment_report: EquipmentReport | None = None
     hud_scale: HudScale = HudScale.FULL
     hud_paths: list[Path] = field(default_factory=list)  # files of the smaller HUD
+    icon_paths: list[Path] = field(default_factory=list)  # files with the new monster icons
     hud_update: Path | None = None  # update .app used for the HUD (prompts over the characters need it)
     interface_patched: bool = False  # code.ips carries the interface patches (built from the update's executable)
 
@@ -142,16 +144,23 @@ def open_update(update_path: Path | None) -> tuple[RomFS | None, Path | None]:
 
 def write_interface_files(result: "RunResult", rom: RomFS | None, update: RomFS | None, settings: Settings,
                           with_code_patch: bool) -> None:
-    """The HUD size's RomFS files; files of an earlier run are removed first (they would still be loaded)."""
+    """The HUD size's and the new icons' RomFS files. Both may change the same ARCs (core_quest, core_common),
+    so the icons are drawn on the HUD's copies and everything is written once; files of an earlier run are
+    removed first (they would still be loaded)."""
     output_dir = result.output_dir
     remove_hud_files(output_dir)
+    remove_icon_files(output_dir)
     resize_hud = settings.hud_scale != HudScale.FULL
     hud = dict(hud_files(rom, update, settings.hud_scale.factor, with_code_patch)) if resize_hud else {}
-    for path, data in hud.items():
+    icons = dict(icon_files(rom, update, hud)) if settings.new_monster_icons and update is not None else {}
+    for path, data in {**hud, **icons}.items():
         target = output_dir / "romfs" / path
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(data)
-        result.hud_paths.append(target)
+        if path in hud:
+            result.hud_paths.append(target)
+        if path in icons:
+            result.icon_paths.append(target)
     if resize_hud:
         result.hud_scale = HudScale(settings.hud_scale)
 
@@ -176,7 +185,7 @@ def run(game: Path, output_dir: Path, settings: Settings,
             raise ValueError("the interface options need the game ROM")
         update, update_used = open_update(update_path)
         if update is None and settings.needs_update:
-            raise ValueError("the target options need the update's 00000000.app (installed in "
+            raise ValueError("the target and monster icon options need the update's 00000000.app (installed in "
                              "Citra, Azahar or Lime3DS, or given)")
     patch_interface_code = update_used is not None and settings.patches_interface_code
     code = None
@@ -222,6 +231,8 @@ def run(game: Path, output_dir: Path, settings: Settings,
     if patch_interface_code:
         patched = patch_interface(patched, settings.hud_scale.factor, settings.target_switch,
                                   settings.target_face_top)
+        if settings.new_monster_icons:
+            patched = patch_monster_icons(patched)
         result.interface_patched = True
     ips_path.parent.mkdir(parents=True, exist_ok=True)
     ips_path.write_bytes(make_ips(code, patched))

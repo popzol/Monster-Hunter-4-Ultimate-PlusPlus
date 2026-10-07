@@ -1,0 +1,10 @@
+{
+ "description": "Monsters that have no icon of their own in the game (it shows the '?' icon, picture 0) and the free cell of the icon atlas (cmn_micon) that the new_monster_icons option gives them. Cells 74-76 and 79-83 are empty in the game; 77 and 78 hold unused drawings and are left alone. Images: data/icons/em<id>.png, 36x36 RGBA (docs/hud_code.md, 'Monster icons').",
+ "icons": {
+  "77": {"name": "Black Fatalis", "cell": 74},
+  "78": {"name": "Crimson Fatalis", "cell": 75},
+  "79": {"name": "White Fatalis", "cell": 76},
+  "117": {"name": "Crimson Fatalis (Super)", "cell": 79},
+  "89": {"name": "Gogmazios", "cell": 80}
+ }
+}

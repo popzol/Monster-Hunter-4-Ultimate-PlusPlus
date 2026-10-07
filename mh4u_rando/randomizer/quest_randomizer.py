@@ -173,7 +173,7 @@ def _randomize_large_monster_quest(quest: Quest, info: QuestInfo, ctx: Randomize
 
     if rewrite_objectives and _wave_ids(quest) != original_lineup:
         objectives.apply_main_objectives(quest, plan)
-        objectives.apply_pictures(quest, plan, data)
+        objectives.apply_pictures(quest, plan, data, settings.new_monster_icons)
 
     # Names first: the sub quest text written below must not be rewritten again.
     text.apply_text(quest, plan, data, settings.text)

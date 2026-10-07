@@ -60,6 +60,7 @@ LOG_HUD_NO_UPDATE = T("No se ha encontrado la actualización (00000000.app): el 
                       "the characters keep their size.")
 LOG_INTERFACE_PATCH = T("Parche del ejecutable de la actualización (interfaz): {path}",
                         "Patch of the update's executable (interface): {path}")
+LOG_ICONS = T("Iconos nuevos de monstruos: {count} archivos", "New monster icons: {count} files")
 LOG_SUMMARY = T("{randomized} misiones randomizadas, {skipped} sin cambios por diseño, {notes} con ajustes relajados.",
                 "{randomized} quests randomized, {skipped} unchanged by design, {notes} with relaxed preferences.")
 LOG_WARNING = T("AVISO", "WARNING")

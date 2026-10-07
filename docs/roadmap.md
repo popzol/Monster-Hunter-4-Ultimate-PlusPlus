@@ -29,6 +29,10 @@ is done or discovered.
 
 ## To verify in-game
 
+* New monster icons (`new_monster_icons`, docs/hud_code.md "Monster icons"):
+  quest board, details, target camera, results and hunting log with each
+  Fatalis and Gogmazios; replace the provisional images with final art.
+
 * HUD size: the hold and fishing gauges and the Frenzy icon (scaled, never
   seen); 90/80/60 %; on a real 3DS with Luma3DS (does the mod's
   `core_common.arc` override the update's there too?).

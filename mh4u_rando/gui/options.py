@@ -544,6 +544,16 @@ INTERFACE_SECTIONS: tuple[Section, ...] = (
              "ROM y la actualización.",
              "For playing with the top screen only. They work with the target camera panel on the touch screen, "
              "and only once the monster has been found (like the panel). They need the ROM and the update.")),
+        Group(T("Iconos", "Icons"), (
+            Option("new_monster_icons", T("Iconos para Fatalis y Gogmazios", "Icons for Fatalis and Gogmazios"),
+                   T("Los Fatalis (negro, carmesí, blanco y carmesí súper) y Gogmazios, que el juego muestra con "
+                     "el icono «?», reciben un icono propio en el tablón, la cámara de objetivo y los menús. Son "
+                     "provisionales (recoloreados de otros iconos del juego).",
+                     "The Fatalis (black, crimson, white and super crimson) and Gogmazios, which the game shows "
+                     "with the \"?\" icon, get an icon of their own on the quest board, the target camera and the "
+                     "menus. They are provisional (recoloured from other icons of the game).")),
+        ), T("Necesita la ROM y la actualización: el atlas de iconos está en archivos de la actualización.",
+             "Needs the ROM and the update: the icon atlas is in the update's files.")),
     )),
 )
 

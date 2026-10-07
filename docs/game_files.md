@@ -81,7 +81,7 @@ Both dump folders are git-ignored. Tools:
 
 | Hash | Magic | Format |
 |---|---|---|
-| 241F5DEB | `TEX` | Texture |
+| 241F5DEB | `TEX` | Texture (v0xA5; GUI atlases in RGBA4444 are read and written by `mh4u_rando/hud/tex.py`) |
 | 58A15856 | `MOD` | 3D model |
 | 2749C8A8 | `MRL` | Material list |
 | 76820D81 | `LMT` | Motion (animations) |

@@ -469,7 +469,7 @@ def test_interface_settings():
     from mh4u_rando.randomizer import HudScale, Settings
     assert not Settings().patches_interface_code and not Settings().needs_update
     assert Settings(hud_scale=HudScale.P90).patches_interface_code and not Settings(hud_scale=HudScale.P90).needs_update
-    for name in ("target_switch", "target_face_top"):
+    for name in ("target_switch", "target_face_top", "new_monster_icons"):
         settings = Settings(**{name: True})
         assert settings.patches_interface_code and settings.needs_update
         assert getattr(Settings.from_dict(settings.to_dict()), name) is True

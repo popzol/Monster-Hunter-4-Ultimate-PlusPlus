@@ -66,7 +66,7 @@ Free space used in the update:
 | 0xDEC8C0 | 0x0C | Target face: position x, y and scale (`code_patch.face_params`) |
 | 0xDEC8D0 | 0x300 | `asm/target_face.c` |
 | 0xDECBD0 | 0x30 | free (the target face's range ends at 0xDECC00) |
-| 0xDECC00 | 0x400 | free |
+| 0xDECC00 | 0x400 | free (the monster icons patch data only, see "Monster icons") |
 
 Each patch checks and fills only its own range (`code_patch.py`: `CAVE`,
 `TARGET_ROUTINE`, `FACE_LIST` … `FACE_END`, `CAVE_END`), so they can be
@@ -394,3 +394,42 @@ are still the computed ones.
 * Not yet in-game (probe 12): that the second instance loads and draws on
   the top screen, the exact position and size, two monsters, the lock mark,
   that the touch panel is unchanged, and the cost per frame.
+
+## Monster icons
+
+Option `new_monster_icons` (`mh4u_rando/hud/icons.py`): the monsters the game
+draws with the "?" icon — Black (77), Crimson (78) and White Fatalis (79),
+Crimson Fatalis (Super) (117) and Gogmazios (89) — get icons of their own.
+Data only: no code is added (the free space at the end of `.text` is not used).
+
+* **Atlas**: every monster icon of the GUI is a 36×36 cell of
+  `<lang>\lyt\common\texture\cmn_micon_BM_MQ_NOMIP` (TEX, 512×512, RGBA4444).
+  It is in `core_common.arc` and, except in English, also in `core_quest`,
+  `core_result`, `core_lobby` and `core_dlc` (English layouts there use the
+  `core_common` copy). Layouts using it: `ui601` (target camera), `ui010`,
+  `ui015`, `ui032`, `ui210`, `ui408`, `ui430`, `ui501`, `ui505`, `ui510`,
+  `ui520`, `ui540`.
+* **Index → cell** (0xC0E8FC): 0–97 = left block, 7 per row, top-left at
+  (36·(i % 7), 36·(i / 7)); 99–123 = right block (all used); 98 and ≥ 124 =
+  nothing. The indices are those of `constants.previews` (0 = "?", 84 =
+  danger, 123 = Apex…). **Empty cells: 74, 75, 76, 79–83** (77 and 78 hold
+  unused drawings).
+* **Monster → icon table**: u8[124] at **0xE06698** (`.rodata`, same address
+  and contents in the base game and the update); 0x7F = no icon (rocks). Read
+  by 0xC0E1B4(?, sprite, monster) — sets the sprite's UVs, 13 callers, among
+  them the target camera (0xB93788) — and 0xC0E850(?, monster) — returns the
+  index, used by the quest details (0xA244B8, which also adds 0x7B Apex / 0x54
+  danger). Both copy the table to the stack and check `monster < 124`.
+* **Patch**: `patch_monster_icons` writes the new cells into the table (it
+  checks the first entries and that each target entry is 0);
+  `icon_files` draws `data/icons/em<id>.png` into the cells of
+  `curated/monster_icons.json` in every copy of the atlas. The quest board
+  pictures (`Quest.pictures`) are icon indices: the randomizer gives new
+  lineups the new icons and, in quests left as they were, replaces their "?"
+  (`objectives.show_new_icons`).
+* **Images**: provisional, `tools/make_monster_icons.py` recolours game icons
+  (Silver Rathalos for the Fatalis, Gore Magala for Gogmazios) with gradient
+  maps. Any 36×36 RGBA PNG can replace them.
+* **To verify in Citra**: quest board / details, target camera (and the
+  top-screen face, which mirrors it), results and hunting log with a Fatalis
+  and with Gogmazios; "?" still shown where it was for other reasons.

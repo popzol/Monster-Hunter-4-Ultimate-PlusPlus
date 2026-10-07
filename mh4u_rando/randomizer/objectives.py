@@ -14,11 +14,12 @@ import random
 from collections import Counter
 from dataclasses import dataclass, field
 
-from ..data import GameData
+from ..data import GameData, MonsterInfo
 from ..mib import MONSTER_OBJECTIVES, ObjectiveType, Objective, Quest, QuestType
 from .plan import LineupPlan
 
 NO_PICTURE = 98
+UNKNOWN_PICTURE = 0  # "?", the picture of monsters without an icon of their own
 MAX_MAIN_OBJECTIVES = 2
 
 _SINGLE_TO_ALL = {QuestType.SLAY: QuestType.SLAY_ALL, QuestType.HUNT: QuestType.HUNT_ALL,
@@ -67,13 +68,35 @@ def _quest_type(original: int, multi_wave: bool) -> int:
     return _ALL_TO_SINGLE.get(original, QuestType.HUNT if original is QuestType.CAPTURE else original)
 
 
-def apply_pictures(quest: Quest, plan: LineupPlan, data: GameData) -> None:
+def monster_picture(monster: MonsterInfo, new_icons: bool = False) -> int | None:
+    """Quest board picture of a monster; `new_icons`: the option new_monster_icons is on."""
+    return monster.new_icon_id if new_icons and monster.new_icon_id is not None else monster.preview_id
+
+
+def apply_pictures(quest: Quest, plan: LineupPlan, data: GameData, new_icons: bool = False) -> None:
     previews = []
     for monster_id in dict.fromkeys(target_monsters(plan) or plan.monster_ids()):
-        preview = data.monsters[monster_id].preview_id
+        preview = monster_picture(data.monsters[monster_id], new_icons)
         if preview is not None and preview not in previews:
             previews.append(preview)
     quest.pictures = (previews + [NO_PICTURE] * len(quest.pictures))[:len(quest.pictures)]
+
+
+def show_new_icons(quest: Quest, data: GameData) -> None:
+    """With new_monster_icons, the first "?" picture of a quest becomes the new icons of its large monsters
+    (quests whose lineup was kept still show "?" for them)."""
+    icons = []
+    for wave in quest.large_monsters:
+        for monster in wave:
+            info = data.monsters.get(monster.monster_id)
+            icon = info.new_icon_id if info else None
+            if icon is not None and icon not in icons and icon not in quest.pictures:
+                icons.append(icon)
+    if not icons or UNKNOWN_PICTURE not in quest.pictures:
+        return
+    first = quest.pictures.index(UNKNOWN_PICTURE)
+    rest = [p for p in quest.pictures[first + 1:] if p != UNKNOWN_PICTURE]
+    quest.pictures = (quest.pictures[:first] + icons + rest + [NO_PICTURE] * len(quest.pictures))[:len(quest.pictures)]
 
 
 def retarget_objectives(quest: Quest, mapping: dict[int, int]) -> None:

@@ -118,7 +118,8 @@ class MonsterInfo:
     allowed_maps: tuple[int, ...] | None = None  # None = any map
     fixed_areas: dict[int, int] = field(default_factory=dict)  # map id -> forced area
     fixed_position: Point | None = None  # scripted spawn (Dalamadur): always this position
-    preview_id: int | None = None        # quest board picture
+    preview_id: int | None = None        # quest board picture (icon of the cmn_micon atlas)
+    new_icon_id: int | None = None       # icon given by the new_monster_icons option (curated/monster_icons.json)
     special_variants: dict[int, str] = field(default_factory=dict)
     break_parts: dict[int, str] = field(default_factory=dict)
     material_ids: tuple[int, ...] = ()   # items this monster provides (carves/rewards)
@@ -271,7 +272,7 @@ def _build_maps(generated: dict, curated: dict) -> dict[int, MapInfo]:
 
 
 def _build_monsters(generated: dict, curated: dict, maps: dict[int, MapInfo],
-                    materials: dict, names: dict) -> dict[int, MonsterInfo]:
+                    materials: dict, names: dict, icons: dict) -> dict[int, MonsterInfo]:
     finale = set(curated["groups"]["finale_monsters"]["monsters"])
     monsters = {}
     for key, gen in generated.items():
@@ -297,6 +298,7 @@ def _build_monsters(generated: dict, curated: dict, maps: dict[int, MapInfo],
             fixed_areas=_int_keys(rules.get("fixed_areas", {})),
             fixed_position=tuple(rules["fixed_position"]) if "fixed_position" in rules else None,
             preview_id=gen["preview_id"],
+            new_icon_id=icons[key]["cell"] if key in icons else None,
             special_variants=_int_keys(gen["special_variants"]),
             break_parts=_int_keys(gen["break_parts"]),
             material_ids=tuple(materials.get(key, ())),
@@ -307,6 +309,9 @@ def _build_monsters(generated: dict, curated: dict, maps: dict[int, MapInfo],
     for key in curated["monsters"]:
         if int(key) not in monsters:
             raise GameDataError(f"curated/monster_rules.json references unknown monster {key}")
+    for key in icons:
+        if int(key) not in monsters:
+            raise GameDataError(f"curated/monster_icons.json references unknown monster {key}")
     for m in monsters.values():
         for ref in (m.spawns_with, m.body_part_of):
             if ref is not None and ref not in monsters:
@@ -340,7 +345,8 @@ def load_game_data(data_dir: Path = DATA_DIR) -> GameData:
     return GameData(
         monsters=_build_monsters(_read(generated / "monsters.json"), monster_rules, maps,
                                  _read(generated / "monster_materials.json"),
-                                 _read(curated / "monster_names.json")["names"]),
+                                 _read(curated / "monster_names.json")["names"],
+                                 _read(curated / "monster_icons.json")["icons"]),
         maps=maps,
         items=_build_items(_read(generated / "items.json"), _read(generated / "item_categories.json")),
         quests=_build_quests(_read(curated / "quest_rules.json")),

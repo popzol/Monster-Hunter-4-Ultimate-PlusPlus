@@ -73,6 +73,13 @@ the update. With any of these executable patches, `exefs/code.ips` is built
 from the update's executable (equipment changes included), so it is only
 valid with the update installed.
 
+`new_monster_icons` (a preset setting, or the GUI's Interface tab, "Icons")
+gives the Fatalis and Gogmazios, which the game shows with the "?" icon,
+icons of their own on the quest board, the target camera and the menus. It
+needs `--rom` and the update; the images (provisional) are
+`mh4u_rando/data/icons/` and can be replaced by any 36×36 PNG. Details in
+[docs/hud_code.md](docs/hud_code.md), "Monster icons".
+
 Every setting defaults to the original game (all switches off, every mode on
 its least random value), so a preset only needs the options to change.
 

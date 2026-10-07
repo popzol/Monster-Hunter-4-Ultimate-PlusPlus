@@ -6,6 +6,7 @@ from collections.abc import Callable
 from ..data import GameData, load_game_data
 from ..mib import Quest
 from .maps import MapProfiles
+from .objectives import show_new_icons
 from .quest_randomizer import RandomizerContext, randomize_quest
 from .report import QuestReport
 from .rng import new_seed
@@ -26,6 +27,8 @@ def randomize_quests(quests: dict[str, Quest], settings: Settings, data: GameDat
     reports = []
     for index, name in enumerate(sorted(quests)):
         report = randomize_quest(quests[name], ctx)
+        if settings.new_monster_icons:
+            show_new_icons(quests[name], data)
         reports.append(report)
         if progress:
             progress(index + 1, len(quests), report)

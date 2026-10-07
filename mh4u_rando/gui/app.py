@@ -436,6 +436,8 @@ class RandomizerApp(ctk.CTk):
                                              count=len(result.equipment_report.pieces)))
         if result.interface_patched:
             self._log(S.LOG_INTERFACE_PATCH.format(self.language, path=result.ips_path))
+        if result.icon_paths:
+            self._log(S.LOG_ICONS.format(self.language, count=len(result.icon_paths)))
         if result.hud_paths:
             self._log(S.LOG_HUD.format(self.language, scale=result.hud_scale.value, count=len(result.hud_paths),
                                        path=result.output_dir / "romfs"))
