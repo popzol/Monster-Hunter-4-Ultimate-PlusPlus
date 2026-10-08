@@ -130,6 +130,14 @@ its public classes and functions with their signatures.
   - `read(path: str) -> bytes`
   - `walk(dir_offset: int=0, prefix: str='')` - Every file path of the RomFS.
 
+### `mh4u_rando/exefs/starting_items.py` - Starting items (option starting_items): what a new character finds in the item box.
+- class `StartingItemsError(ValueError)`
+- `effective_starting_items(items: Sequence[Sequence[int]], expanded: bool) -> list[list[int]]` - What the new game gets: `items` (the user's list) on top of EXPANDED_ITEMS when `expanded`, where...
+- `max_quantity(item_id: int, data: GameData) -> int` - Largest quantity allowed for an item: its pouch limit (item sets fill the pouch), at most a box s...
+- `check_starting_items(items: Sequence[Sequence[int]], data: GameData) -> list[str]` - Why `items` ([item id, quantity] pairs) cannot be written; empty when they can.
+- `read_starting_items(code: bytes) -> list[list[list[int]]]` - The loadouts of `code`, each a list of [item id, quantity] of its used slots.
+- `patch_starting_items(code: bytes, items: Sequence[Sequence[int]]) -> bytes` - `code` (base game or update) with `items` as the only starting items, in loadout 0 from its first...
+
 ### `mh4u_rando/gui/__init__.py` - Graphical interface (customtkinter). Start with `python -m mh4u_rando.gui`.
 
 ### `mh4u_rando/gui/__main__.py`
@@ -192,6 +200,15 @@ its public classes and functions with their signatures.
   - `normalize(changed: RangeEnd) -> None` - Clamp both numbers to the limits; if N > M, move the number that was not just edited.
 - class `SetAllWidget` - Drop-down that sets every compact option of a group to the same value ("Mixed" while they differ).
   - `refresh() -> None`
+  - `set_enabled(enabled: bool) -> None`
+- class `ItemListWidget` - A list of [item id, quantity] (starting_items): one row per item with a drop-down filtered by wha...
+  - `get() -> list[list[int]]`
+  - `set(value) -> None`
+  - `add() -> None`
+  - `remove(index: int) -> None`
+  - `move(index: int, delta: int) -> None`
+  - `choose(index: int, name: str) -> bool` - Put the item called `name` in row `index`; False (row unchanged) if unknown or in another row.
+  - `set_quantity(index: int, text: str) -> None`
   - `set_enabled(enabled: bool) -> None`
 
 ### `mh4u_rando/hud/__init__.py` - In-game HUD: MT Framework GUI layouts (lyt), their animations (lanl) and the HUD size option.

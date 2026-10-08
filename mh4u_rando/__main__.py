@@ -8,6 +8,7 @@ up lock / switch the target, --target-face shows the target's face on the top
 screen too (all need --rom and the update's 00000000.app, found in
 Citra/Azahar/Lime3DS or given with --update; without it the HUD size only
 changes data files).
+The new game's items (starting_items, expanded_starting_inventory) are set in the preset only.
 Advanced: --arc quest01.arc (instead of --rom) plus --code code.bin|game.3ds|update.app.
 The output folder is a mod folder: copy its contents into Citra's
 load/mods/0004000000126100/.
@@ -17,6 +18,8 @@ import argparse
 import sys
 from pathlib import Path
 
+from .data import load_game_data
+from .exefs.starting_items import check_starting_items, effective_starting_items
 from .pipeline import run
 from .randomizer import HudScale, Settings
 
@@ -52,6 +55,12 @@ def main(argv=None) -> int:
         parser.error("the preset randomizes equipment: use --rom, or add --code to --arc")
     if settings.patches_interface_code and args.arc:
         parser.error("the interface options (HUD size, target) need --rom")
+    starting_items = effective_starting_items(settings.starting_items, settings.expanded_starting_inventory)
+    if starting_items and args.arc and args.code is None:
+        parser.error("the preset sets starting items: use --rom, or add --code to --arc")
+    errors = check_starting_items(starting_items, load_game_data())
+    if errors:
+        parser.error("; ".join(errors))
 
     def progress(done, total, report):
         print(f"\r[{done}/{total}] {report.title or report.quest_id}"[:79].ljust(79), end="", flush=True)

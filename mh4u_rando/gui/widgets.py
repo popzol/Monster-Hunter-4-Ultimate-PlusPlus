@@ -1,16 +1,20 @@
 """Widgets bound to `Settings` fields, built from the declarative options."""
 
 import tkinter as tk
+from collections import Counter
 from enum import Enum
 
 import customtkinter as ctk
 
+from ..data import load_game_data
+from ..exefs.starting_items import SKIPPED_ITEMS, SLOTS, max_quantity
 from . import strings as S
 from . import theme
 from .i18n import EMPTY, T
 from .options import Group, Option
 
 TOOLTIP_DELAY_MS = 450
+DEFAULT_NEW_ITEM = 8  # Potion, the first item a new row of an item list gets
 
 
 class Tooltip:
@@ -145,7 +149,8 @@ class OptionWidget:
 class GroupCard(ctk.CTkFrame):
     """A titled card of options."""
 
-    def __init__(self, master, group: Group, defaults, widgets: dict[str, OptionWidget], language: str):
+    def __init__(self, master, group: Group, defaults, widgets: dict[str, "OptionWidget | ItemListWidget"],
+                 language: str):
         super().__init__(master, fg_color=theme.CARD, border_width=1, border_color=theme.CARD_BORDER, corner_radius=12)
         ctk.CTkLabel(self, text=group.title(language).upper(), text_color=theme.HEADING,
                      font=theme.font(12, "bold")).pack(anchor="w", padx=16, pady=(12, 0))
@@ -162,7 +167,13 @@ class GroupCard(ctk.CTkFrame):
                 pair.frame.pack(anchor="w", fill="x", pady=(0, 4))
                 widgets[option.field], widgets[option.range_to] = pair.low, pair.high
                 continue
-            widget = OptionWidget(body, option, getattr(defaults, option.field), language)
+            default = getattr(defaults, option.field)
+            if isinstance(default, list):
+                items = ItemListWidget(body, option, default, language)
+                items.frame.pack(anchor="w", fill="x", pady=(0, 4))
+                widgets[option.field] = items
+                continue
+            widget = OptionWidget(body, option, default, language)
             widget.frame.pack(anchor="w", fill="x", pady=(0, 4))
             widgets[option.field] = widget
             built.append(widget)
@@ -261,3 +272,166 @@ class SetAllWidget:
 
     def set_enabled(self, enabled: bool) -> None:
         self.menu.configure(state="normal" if enabled else "disabled")
+
+
+class ItemListWidget:
+    """A list of [item id, quantity] (starting_items): one row per item with a drop-down filtered by what is
+    typed, its quantity and buttons to move or remove it. Behaves like an OptionWidget for the window."""
+
+    MAX_SHOWN = 40  # names listed in a drop-down at once
+
+    def __init__(self, master, option: Option, value: list, language: str):
+        self.option = option
+        self.language = language
+        self.data = load_game_data()
+        usable = sorted((i for i in self.data.items.values() if i.usable and i.item_id not in SKIPPED_ITEMS),
+                        key=lambda i: (i.name.lower(), i.item_id))
+        repeated = Counter(i.name for i in usable)
+        self.names = {i.item_id: i.name if repeated[i.name] == 1 else f"{i.name} [{i.item_id}]" for i in usable}
+        self.ids = {name: item_id for item_id, name in self.names.items()}
+        self.rows: list[list[int]] = []
+        self.enabled = True
+        self._controls = []
+        self._generation = 0
+        self.frame = ctk.CTkFrame(master, fg_color="transparent")
+        header = ctk.CTkFrame(self.frame, fg_color="transparent")
+        header.pack(fill="x", pady=(0, 4))
+        label = ctk.CTkLabel(header, text=option.label(language), font=theme.font())
+        label.pack(side="left")
+        tip(label, option.tooltip, language)
+        self.count_label = ctk.CTkLabel(header, text="", text_color=theme.TEXT_MUTED, font=theme.font(12))
+        self.count_label.pack(side="right")
+        self.body = ctk.CTkFrame(self.frame, fg_color="transparent")
+        self.body.pack(fill="x")
+        footer = ctk.CTkFrame(self.frame, fg_color="transparent")
+        footer.pack(fill="x", pady=(4, 0))
+        self.add_button = ctk.CTkButton(footer, text=S.ADD_ITEM(language), height=28, font=theme.font(12, "bold"),
+                                        fg_color=theme.NEUTRAL, hover_color=theme.NEUTRAL_HOVER,
+                                        text_color=theme.TEXT, command=self.add)
+        self.add_button.pack(side="left")
+        self.clear_button = ctk.CTkButton(footer, text=S.CLEAR_ITEMS(language), height=28, width=90,
+                                          font=theme.font(12), fg_color=theme.NEUTRAL,
+                                          hover_color=theme.NEUTRAL_HOVER, text_color=theme.TEXT,
+                                          command=lambda: self.set([]))
+        self.clear_button.pack(side="right")
+        tip(self.clear_button, S.CLEAR_ITEMS_TIP, language)
+        self.set(value)
+
+    # ----- model ---------------------------------------------------------------
+
+    def get(self) -> list[list[int]]:
+        return [[item_id, self._clamp(item_id, quantity)] for item_id, quantity in self.rows]
+
+    def set(self, value) -> None:
+        self.rows = [[item_id, quantity] for item_id, quantity in value if item_id in self.names][:SLOTS]
+        self._render()
+
+    def add(self) -> None:
+        if len(self.rows) >= SLOTS:
+            return
+        used = {item_id for item_id, _ in self.rows}
+        item_id = next(i for i in (DEFAULT_NEW_ITEM, *self.names) if i in self.names and i not in used)
+        self.rows.append([item_id, 1])
+        self._render()
+
+    def remove(self, index: int) -> None:
+        del self.rows[index]
+        self._render()
+
+    def move(self, index: int, delta: int) -> None:
+        other = index + delta
+        if 0 <= other < len(self.rows):
+            self.rows[index], self.rows[other] = self.rows[other], self.rows[index]
+            self._render()
+
+    def choose(self, index: int, name: str) -> bool:
+        """Put the item called `name` in row `index`; False (row unchanged) if unknown or in another row."""
+        item_id = self.ids.get(name)
+        if item_id is None or any(row[0] == item_id for n, row in enumerate(self.rows) if n != index):
+            return False
+        self.rows[index] = [item_id, self._clamp(item_id, self.rows[index][1])]
+        return True
+
+    def set_quantity(self, index: int, text: str) -> None:
+        item_id = self.rows[index][0]
+        self.rows[index][1] = self._clamp(item_id, int(text) if text.isdigit() else 1)
+
+    def _clamp(self, item_id: int, quantity: int) -> int:
+        return max(1, min(max_quantity(item_id, self.data), quantity))
+
+    # ----- view ----------------------------------------------------------------
+
+    def _render(self) -> None:
+        self._generation += 1  # events of destroyed rows (e.g. a late FocusOut) are ignored
+        for child in self.body.winfo_children():
+            child.destroy()
+        self._controls = []
+        if not self.rows:
+            ctk.CTkLabel(self.body, text=S.NO_ITEMS(self.language), text_color=theme.TEXT_MUTED,
+                         font=theme.font(12)).pack(anchor="w")
+        for index, (item_id, quantity) in enumerate(self.rows):
+            self._render_row(index, item_id, quantity)
+        self.count_label.configure(text=S.ITEM_COUNT.format(self.language, count=len(self.rows), limit=SLOTS))
+        self.set_enabled(self.enabled)
+
+    def _render_row(self, index: int, item_id: int, quantity: int) -> None:
+        row = ctk.CTkFrame(self.body, fg_color="transparent")
+        row.pack(fill="x", pady=1)
+        names = list(self.ids)
+        combo = ctk.CTkComboBox(row, values=names[:self.MAX_SHOWN], height=26, font=theme.font(12),
+                                dropdown_font=theme.font(12))
+        combo.set(self.names[item_id])
+        combo.pack(side="left", fill="x", expand=True)
+        tip(combo, S.ITEM_SEARCH_TIP, self.language)
+        generation = self._generation
+
+        def current() -> bool:
+            return generation == self._generation
+
+        def commit(name: str):
+            if not current() or name == self.names[self.rows[index][0]]:
+                return
+            if self.choose(index, name):
+                self._render()
+            else:
+                combo.set(self.names[self.rows[index][0]])
+
+        def filter_names(_event=None):
+            text = combo.get().strip().lower()
+            shown = [n for n in names if text in n.lower()] if text else names
+            combo.configure(values=shown[:self.MAX_SHOWN])
+
+        combo.configure(command=commit)
+        combo.bind("<KeyRelease>", filter_names, add="+")
+        combo.bind("<Return>", lambda _e: commit(combo.get()), add="+")
+        combo.bind("<FocusOut>", lambda _e: commit(combo.get()), add="+")
+        variable = tk.StringVar(value=str(quantity))
+        digits = (row.register(lambda text: text.isdigit() or text == ""), "%P")
+        entry = ctk.CTkEntry(row, textvariable=variable, width=40, height=26, justify="center",
+                             font=theme.font(weight="bold"), validate="key", validatecommand=digits)
+        entry.pack(side="left", padx=4)
+        variable.trace_add("write", lambda *_: current() and self.set_quantity(index, variable.get()))
+
+        def normalize(_event=None):
+            if current():
+                variable.set(str(self.rows[index][1]))
+
+        entry.bind("<FocusOut>", normalize, add="+")
+        entry.bind("<Return>", normalize, add="+")
+        self._controls += [combo, entry]
+        for text, tooltip, command in (("↑", S.ITEM_UP, lambda: self.move(index, -1)),
+                                       ("↓", S.ITEM_DOWN, lambda: self.move(index, 1)),
+                                       ("✕", S.ITEM_REMOVE, lambda: self.remove(index))):
+            button = ctk.CTkButton(row, text=text, width=26, height=26, fg_color=theme.NEUTRAL,
+                                   hover_color=theme.NEUTRAL_HOVER, text_color=theme.TEXT, command=command)
+            button.pack(side="left", padx=(2, 0))
+            tip(button, tooltip, self.language)
+            self._controls.append(button)
+
+    def set_enabled(self, enabled: bool) -> None:
+        self.enabled = enabled
+        state = "normal" if enabled else "disabled"
+        for control in self._controls:
+            control.configure(state=state)
+        self.add_button.configure(state=state if len(self.rows) < SLOTS else "disabled")
+        self.clear_button.configure(state=state)

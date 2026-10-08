@@ -22,6 +22,7 @@ Status legend: **Verified** = matched against Kiranico for many entries;
 | Model assigned to each piece | stats tables (model id field) | `exefs/code.ips` |
 | Stats | stats tables + sharpness table | `exefs/code.ips` |
 | Crafting materials | recipe tables | `exefs/code.ips` |
+| New game's items | starting items table | `exefs/code.ips` |
 | Names / descriptions | RomFS `eng/data/core_common.arc` (LMD) | `romfs/` |
 
 The game reads these tables both for gameplay and for the smithy/equipment
@@ -239,6 +240,35 @@ Armor record (16 bytes, head and body):
 | 0x0A | u32 | Price |
 | 0x0E | u16 | Model (`o_helmNNN` / `o_bodyNNN`) |
 | others | | Not decoded (set target behaviour, health bonus, ...) |
+
+## Starting items
+
+What a new character gets (option `starting_items`, `mh4u_rando/exefs/starting_items.py`).
+**Verified** with Ghidra on the update; the 0x180 bytes are identical in the base game.
+
+* Table at offset **0xED0798** (VA 0xFD0798, `.rodata`): 3 loadouts of 32
+  slots, each slot `u16 item, u16 quantity` (0x80 bytes per loadout). Item 0
+  and 0x790 are skipped.
+* Retail contents (slot: item x quantity):
+  * Loadout 0: slots 8-15 Potion x10, Energy Drink x5, Hot Drink x5, Cool
+    Drink x5, Whetstone x20, Paintball x5, Iron Pickaxe x5, Bug Net x5.
+  * Loadout 1: slot 0 Normal S Lv2 x99; slots 8-14 the same without the Whetstone.
+  * Loadout 2: slot 0 Power Coating x50; slots 8-14 the same without the Whetstone.
+  * Slots 16-31 are empty everywhere; no slot range is reserved for ammo.
+* Readers, both run once when a save is created (FUN_00b7961c calls
+  FUN_00c1f50c):
+  * **FUN_00c1f50c** walks the 3 loadouts × 32 slots and puts every item in
+    the **item box** (`save + 0x1BA`, `u16 item, u16 quantity` pairs; the size
+    is 1200/1300/1400 slots from FUN_00c1daf0, by two box-expansion flags)
+    through FUN_00c1df50 (fills stacks up to 99, then empty slots), skipping an
+    item the box already holds in that quantity. The box therefore gets the
+    union of the loadouts; the weapon class plays no part.
+  * **FUN_00c1d4c4** (VA 0xC1D608 reads the table) copies loadout *n* (0x80
+    bytes) into the first 0x80 bytes of **item set** *n* + 1 (24 sets of 0x9C
+    bytes, each with a name from a text table).
+* The option writes the user's list into loadout 0 from slot 0 and zeroes
+  loadouts 1-2 (otherwise their ammo would still be given). Quantities are
+  limited to the item's pouch limit (item sets fill the pouch) and 99.
 
 ## Not found / not decoded
 

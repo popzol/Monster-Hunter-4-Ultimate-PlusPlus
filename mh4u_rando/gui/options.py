@@ -585,12 +585,50 @@ INTERFACE_SECTIONS: tuple[Section, ...] = (
     )),
 )
 
+NEW_GAME_SECTIONS: tuple[Section, ...] = (
+    Section(T("Objetos iniciales", "Starting items"), (
+        Group(T("Inventario", "Inventory"), (
+            Option("expanded_starting_inventory", T("Inventario inicial expandido", "Expanded starting inventory"),
+                   T("Al crear una partida nueva recibes muchos más objetos de los habituales en la caja de "
+                     "objetos: pociones, megapociones, nutrientes, bebidas, antídotos, piedras de afilar, bombas "
+                     "de luz y de sonido, trampas, farol de regreso, munición (Normal, Perforante y Perdigón Nv2), "
+                     "revestimientos, pinturas y herramientas, hasta 30 tipos con la cantidad máxima que cabe en "
+                     "la bolsa. También forma el set de objetos 1 y deja vacíos los sets 2 y 3.",
+                     "When you create a new game you receive far more items than usual in the item box: potions, "
+                     "mega potions, nutrients, drinks, antidotes, whetstones, flash and sonic bombs, traps, a "
+                     "Farcaster, ammo (Normal, Pierce and Pellet S Lv2), coatings, paintballs and tools: 30 kinds "
+                     "in the largest quantity the pouch holds. It is also item set 1 and leaves sets 2 and 3 "
+                     "empty.")),
+        ), T("Solo afecta a las partidas que se creen con el mod puesto; las existentes no cambian. Si además "
+             "rellenas la lista de «Objetos» de abajo, tus cantidades mandan sobre las del kit y tus otros objetos "
+             "se añaden (hasta 32 en total). Modifica el ejecutable (exefs/code.ips) y necesita la ROM.",
+             "Only saves created with the mod installed are affected; existing ones do not change. If you also "
+             "fill in the \"Items\" list below, your quantities win over the kit's and your other items are added "
+             "(32 at most in total). It patches the executable (exefs/code.ips) and needs the ROM.")),
+        Group(T("Caja de objetos", "Item box"), (
+            Option("starting_items", T("Objetos", "Items"),
+                   T("Lo que encuentra en la caja de objetos un personaje nuevo, en este orden (también forma el "
+                     "set de objetos 1). La cantidad máxima de cada uno es la que cabe en la bolsa (99 como "
+                     "mucho). Vacía, se dejan los objetos originales.",
+                     "What a new character finds in the item box, in this order (it is also item set 1). Each "
+                     "item's maximum quantity is what fits in the pouch (99 at most). Empty, the original items "
+                     "are kept.")),
+        ), T("Solo afecta a las partidas que se creen con el mod puesto; las existentes no cambian. Sustituye a "
+             "los objetos originales (pociones, bebidas, piedra de afilar, munición Normal Nv2, revestimiento de "
+             "poder...) y deja vacíos los sets de objetos 2 y 3. Modifica el ejecutable (exefs/code.ips).",
+             "Only saves created with the mod installed are affected; existing ones do not change. It replaces "
+             "the original items (potions, drinks, whetstone, Normal S Lv2, Power Coating...) and leaves item sets "
+             "2 and 3 empty. It patches the executable (exefs/code.ips).")),
+    )),
+)
+
 AREAS: tuple[Area, ...] = (
     Area(T("Misiones", "Quests"), QUEST_SECTIONS),
     Area(T("Equipo", "Equipment"), EQUIPMENT_SECTIONS),
+    Area(T("Partida nueva", "New game"), NEW_GAME_SECTIONS),
     Area(T("Interfaz", "Interface"), INTERFACE_SECTIONS),
 )
-SECTIONS: tuple[Section, ...] = QUEST_SECTIONS + EQUIPMENT_SECTIONS + INTERFACE_SECTIONS
+SECTIONS: tuple[Section, ...] = QUEST_SECTIONS + EQUIPMENT_SECTIONS + NEW_GAME_SECTIONS + INTERFACE_SECTIONS
 
 
 def all_options() -> list[Option]:

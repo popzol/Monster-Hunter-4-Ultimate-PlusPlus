@@ -8,7 +8,7 @@ every mode on its least random value (also the first choice shown in the GUI).
 """
 
 import json
-from dataclasses import asdict, dataclass, fields
+from dataclasses import asdict, dataclass, field, fields
 from enum import Enum
 from pathlib import Path
 
@@ -192,6 +192,10 @@ class Settings:
     # item selector) and the target camera panel's monster face is also shown on the top screen
     touchless_target: bool = False
 
+    # New game (executable patch, not randomized)
+    starting_items: list[list[int]] = field(default_factory=list)  # [item id, quantity]; empty: the original ones
+    expanded_starting_inventory: bool = False  # a wider kit of items (exefs/starting_items.py EXPANDED_ITEMS)
+
     # Debug
     debug_weak_monsters: bool = False    # lowest health and attack index for every monster
 
@@ -222,7 +226,11 @@ class Settings:
                 continue
             value = values[f.name]
             default = getattr(cls(), f.name)
-            kwargs[f.name] = type(default)(value) if isinstance(default, Enum) else value
+            if isinstance(default, Enum):
+                value = type(default)(value)
+            elif isinstance(default, list):
+                value = [[int(item), int(quantity)] for item, quantity in value]
+            kwargs[f.name] = value
         # Old presets had target_switch and target_face_top as two separate options, merged into touchless_target.
         if values.get("target_switch") or values.get("target_face_top"):
             kwargs["touchless_target"] = True
