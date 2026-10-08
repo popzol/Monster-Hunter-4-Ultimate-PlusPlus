@@ -5,6 +5,15 @@ is done or discovered.
 
 ## Next
 
+* **Quest monster list in text**: every monster taking part in a quest
+  (except the invader) should be named in the quest description, as in the
+  original game. The title should do the same, but if there are more than 3
+  monsters it should use the original "Hunt them all" string instead of
+  listing them.
+* **Cutscene crash on randomized encounters**: some monsters crash the game
+  when first encountered because they try to start an encounter cutscene
+  that assumes a different map. Investigate removing the cutscene check/call
+  for randomized placements.
 * **Package the GUI** as an .exe with PyInstaller (the GUI itself is done:
   `python -m mh4u_rando.gui`).
 * **HUD / one-screen play** (docs/hud_layout.md, docs/hud_code.md):
@@ -68,6 +77,12 @@ is done or discovered.
 
 ## Ideas / smaller items
 
+* **Music research**: how the game's BGM loops, where tracks are stored, whether
+  they're replaceable/addable, and what priority rules pick which track plays.
+* **Toggle for the quest/equipment randomizers**: an easy option to disable the
+  quest randomizer and/or the equipment randomizer independently.
+* **Initial inventory for new saves**: the game already grants a starting
+  inventory; edit what it gives instead of adding a new mechanism.
 * Supplies: optional ammo and coatings for gunners.
 * Arena quests keep their map; decide later whether they may move.
 * Sub quest text is "Break <monster>: <part>"; a more natural sentence would
