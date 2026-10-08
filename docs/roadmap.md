@@ -36,6 +36,11 @@ is done or discovered.
 
 ## To verify in-game
 
+* **Starting items** (`starting_items`, docs/randomizer.md "New game"): create
+  a new save with the mod and a custom list (include ammo and an item above 10,
+  e.g. Paintball x30); check the item box contents and order, item set 1 (and
+  that sets 2-3 are empty) and that loading the set fills the pouch.
+
 * **Equipment stat limits** (docs/game_rules.md): `tools/bisect_mod.py caps`
   builds K1 (armor at 179 defense at max level, resistances 9: quests
   accepted), K2 (base defense 180: refused), K3 (fire resistance 10: refused)
@@ -81,8 +86,6 @@ is done or discovered.
   they're replaceable/addable, and what priority rules pick which track plays.
 * **Toggle for the quest/equipment randomizers**: an easy option to disable the
   quest randomizer and/or the equipment randomizer independently.
-* **Initial inventory for new saves**: the game already grants a starting
-  inventory; edit what it gives instead of adding a new mechanism.
 * Supplies: optional ammo and coatings for gunners.
 * Arena quests keep their map; decide later whether they may move.
 * Sub quest text is "Break <monster>: <part>"; a more natural sentence would

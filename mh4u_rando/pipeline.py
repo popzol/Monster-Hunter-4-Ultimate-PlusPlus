@@ -8,9 +8,9 @@ Output layout (copy its contents into load/mods/0004000000126100/):
 
     romfs/loc/data/quest01.arc     randomized quests
     romfs/<lang>/data/core_*.arc   smaller top-screen HUD (HUD size below 100 %) and the new monster icons
-    exefs/code.ips                 equipment changes and the interface's executable patches (HUD size,
-                                   L + D-pad up target switch, target face); built from the update's executable
-                                   when there are interface patches, from the ROM's otherwise
+    exefs/code.ips                 equipment changes, starting items and the interface's executable patches (HUD
+                                   size, L + D-pad up target switch, target face); built from the update's
+                                   executable when there is one for these options, from the ROM's otherwise
     spoiler_<seed>.txt/.json       quest log
     equipment_<seed>.txt/.json     equipment log
     settings_<seed>.json           preset used
@@ -25,6 +25,7 @@ from pathlib import Path
 from .arc import parse_arc, write_arc
 from .data import GameData, load_game_data
 from .exefs import ExtractError, RomFS, is_container, load_code, make_ips
+from .exefs.starting_items import check_starting_items, patch_starting_items
 from .hud import UPDATE_TITLE_ID, find_update, hud_files, remove_hud_files
 from .hud.build import hint_files
 from .hud.code_patch import patch_interface
@@ -182,10 +183,15 @@ def run(game: Path, output_dir: Path, settings: Settings,
     equipment tables are the same). Without the update the HUD size only changes data files (the minimap,
     the mount gauge and the prompts over the characters keep their size); the target options require it; the
     monster icons (on by default) are left out with a notice, only their quest picture fixes being kept.
+    The starting items patch the update's executable if there is one, else the ROM's (same table in both).
     `stage` is told when each of STAGES starts (for progress displays)."""
     announce = stage or (lambda _name: None)
     announce("rom")
     data = load_game_data()
+    starting_items = settings.starting_items
+    errors = check_starting_items(starting_items, data)
+    if errors:
+        raise ValueError("; ".join(errors))
     update = update_used = None
     want_icons = settings.new_monster_icons and is_container(game)
     if want_icons:
@@ -193,7 +199,7 @@ def run(game: Path, output_dir: Path, settings: Settings,
     if settings.patches_interface_code:
         if not is_container(game):
             raise ValueError("the interface options need the game ROM")
-    if settings.patches_interface_code or want_icons or settings.allow_op_equipment:
+    if settings.patches_interface_code or want_icons or settings.allow_op_equipment or starting_items:
         update, update_used = open_update(update_path)
         if update is None and settings.needs_update:
             raise ValueError("the target options need the update's 00000000.app (installed in "
@@ -205,12 +211,12 @@ def run(game: Path, output_dir: Path, settings: Settings,
                        "keep the \"?\" icon")
     patch_interface_code = update_used is not None and (settings.patches_interface_code or new_icons)
     code = None
-    if patch_interface_code or (settings.allow_op_equipment and update_used is not None):
+    if update_used is not None and (patch_interface_code or settings.allow_op_equipment or starting_items):
         # The update's executable is the one that runs; allow_op_equipment patches code that only it has.
         code = load_code(update_used)  # fail before any work if the executable is unsupported
-    elif settings.randomizes_equipment:
+    elif settings.randomizes_equipment or starting_items:
         if code_path is None and not is_container(game):
-            raise ValueError("equipment randomization needs the game ROM (or its code.bin)")
+            raise ValueError("equipment randomization and the starting items need the game ROM (or its code.bin)")
         code = load_code(code_path or game)
     arc, entries, quests = read_quests(game)
     input_check = check_input(quests, data)
@@ -247,6 +253,8 @@ def run(game: Path, output_dir: Path, settings: Settings,
         equipment = randomize_equipment(code, settings, data)
         patched = equipment.code
         result.notices.extend(equipment.notices)
+    if starting_items:
+        patched = patch_starting_items(patched, starting_items)
     if patch_interface_code:
         patched = patch_interface(patched, settings.hud_scale.factor, settings.touchless_target,
                                   settings.touchless_target)
