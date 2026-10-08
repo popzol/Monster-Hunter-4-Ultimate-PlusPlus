@@ -220,11 +220,14 @@ def test_default_settings_leave_quests_vanilla(originals, data):
         assert UNKNOWN_PICTURE not in quests[name].pictures, name
 
 
-def test_new_objective_text(originals, data):
+@pytest.mark.parametrize("mode", [TextMode.REGENERATE, TextMode.REPLACE_NAMES])
+def test_new_objective_text_and_pictures_name_every_monster(originals, data, mode):
     from mh4u_rando.data import LANGUAGES
+    from mh4u_rando.mib import ObjectiveType, QuestType
     from mh4u_rando.mib.model import TEXT_DESCRIPTION, TEXT_MAIN_OBJECTIVE
-    from mh4u_rando.randomizer.text import HUNT_ALL, main_objectives
-    quests, reports, _ = run(originals, data, seed="TXT", text=TextMode.REGENERATE, structure=StructureMode.RANDOM)
+    from mh4u_rando.randomizer.objectives import NO_PICTURE
+    from mh4u_rando.randomizer.text import lineup_groups, main_objectives
+    quests, reports, _ = run(originals, data, seed="TXT", text=mode, structure=StructureMode.RANDOM)
     seen = set()
     for report in reports:
         quest = next(q for q in quests.values() if q.quest_id == report.quest_id)
@@ -232,22 +235,20 @@ def test_new_objective_text(originals, data):
             continue
         if main_objectives(quest, data) is None:
             continue
-        species = list(dict.fromkeys(m for wave in report.new_waves for m in wave
-                                     if data.monsters[m].body_part_of is None))
         en = LANGUAGES.index("en")
         objective = quest.text[en][TEXT_MAIN_OBJECTIVE]
         assert not quest.text[en][TEXT_DESCRIPTION].startswith("Targets:")
-        if len(species) >= 3:
-            seen.add(3)
-            # Companions (escorts) count as species but have no objective: such quests list two objectives.
-            assert quest.quest_type in (8, 9, 10) or quest.objective_amount <= 2
-            if quest.objective_amount == 1 and quest.quest_type in (8, 9, 10):
-                for li, lang in enumerate(LANGUAGES):
-                    assert quest.text[li][TEXT_MAIN_OBJECTIVE] == HUNT_ALL[lang]
-        elif len(species) == 2:
-            seen.add(2)
-            assert objective.startswith(("Hunt ", "Slay "))  # two objectives or "Hunt all large monsters"
-        elif len(species) == 1:
-            seen.add(1)
-            assert data.monsters[species[0]].name_in("en") in objective
+        groups = lineup_groups(quest, data, "en")
+        # Every monster of the quest has its picture on the quest board (up to the 5 the board holds).
+        pictures = [p for p in quest.pictures if p not in (NO_PICTURE, UNKNOWN_PICTURE)]
+        assert len(pictures) >= min(len(groups), len(quest.pictures)), (quest.quest_id, groups, quest.pictures)
+        seen.add(min(len(groups), 3))
+        if len(groups) >= 3:
+            assert quest.quest_type == QuestType.HUNT_ALL
+            assert all(o.type is not ObjectiveType.CAPTURE for o in quest.objectives[:quest.objective_amount])
+            for li, lang in enumerate(LANGUAGES):
+                assert quest.text[li][TEXT_MAIN_OBJECTIVE] == data.text_templates[lang]["objective"]["all"]
+        else:
+            for monster_id, _ in groups:
+                assert data.monsters[monster_id].name_in("en") in objective.replace("\n", " "), (objective, groups)
     assert seen == {1, 2, 3}

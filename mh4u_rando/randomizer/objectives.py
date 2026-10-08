@@ -4,9 +4,11 @@ Follows the patterns of retail quests (docs/game_rules.md, "Objectives"):
 * one wave, one monster      -> one objective;
 * one wave, two species      -> two objectives, one per monster;
 * one wave, same species xN  -> one objective with qty N;
-* several waves              -> HUNT_ALL, objective on the last wave's monsters.
+* several waves              -> HUNT_ALL, objective on the last wave's monsters;
+* more than two species      -> HUNT_ALL, "hunt all large monsters".
 
-Capture objectives are turned into Hunt (kill or capture), because many
+A capture quest stays a capture only with one or two species in a single wave that can all be captured
+(every retail capture quest has one wave); otherwise it becomes Hunt (kill or capture), because many
 monsters (elder dragons, Dalamadur, ...) cannot be captured.
 """
 
@@ -47,19 +49,41 @@ def target_monsters(plan: LineupPlan) -> list[int]:
     return [s.monster_id for s in last if s.is_choosable]
 
 
-def apply_main_objectives(quest: Quest, plan: LineupPlan) -> None:
-    targets = Counter(target_monsters(plan))
-    multi_wave = sum(1 for wave in plan.waves if wave) > 1
-    slay = quest.quest_type in (QuestType.SLAY, QuestType.SLAY_ALL)
-    verb = ObjectiveType.SLAY if slay else ObjectiveType.HUNT
+def lineup_species(plan: LineupPlan) -> list[int]:
+    """Every species of the lineup, all waves in order, without companions and body parts."""
+    return list(dict.fromkeys(s.monster_id for s in plan.slots() if s.is_choosable))
 
-    # More species than the two objectives hold: "hunt them all", one objective (retail m10419).
-    too_many = len(targets) > MAX_MAIN_OBJECTIVES
-    quest.quest_type = _quest_type(quest.quest_type, multi_wave or too_many)
-    objectives = [Objective(verb, monster_id, qty) for monster_id, qty in targets.items()]
-    objectives = objectives[:1] if too_many else objectives
+
+def apply_main_objectives(quest: Quest, plan: LineupPlan, data: GameData) -> None:
+    targets = Counter(target_monsters(plan))
+    species = lineup_species(plan)
+    multi_wave = sum(1 for wave in plan.waves if wave) > 1
+    objectives = [Objective(ObjectiveType.HUNT, monster_id, qty) for monster_id, qty in targets.items()]
+
+    if len(species) > MAX_MAIN_OBJECTIVES:
+        # More species than the two objectives hold: "hunt all large monsters", one objective (retail m10419),
+        # never a capture or a slay, so that the text is literally true.
+        quest.quest_type = QuestType.HUNT_ALL
+        objectives = objectives[:1]
+    elif _keeps_capture(quest, species, multi_wave, data):
+        quest.quest_type = QuestType.CAPTURE
+        for objective in objectives:
+            objective.type = ObjectiveType.CAPTURE
+    else:
+        if quest.quest_type in (QuestType.SLAY, QuestType.SLAY_ALL):
+            for objective in objectives:
+                objective.type = ObjectiveType.SLAY
+        quest.quest_type = _quest_type(quest.quest_type, multi_wave)
     quest.objective_amount = len(objectives)
     quest.objectives = objectives + [Objective() for _ in range(MAX_MAIN_OBJECTIVES - len(objectives))]
+
+
+def _keeps_capture(quest: Quest, species: list[int], multi_wave: bool, data: GameData) -> bool:
+    """A capture quest stays one with at most two species, one wave, and only monsters that can be captured."""
+    capture = quest.quest_type in (QuestType.CAPTURE, QuestType.CAPTURE_ALL) or any(
+        o.type is ObjectiveType.CAPTURE for o in quest.objectives[:quest.objective_amount])
+    return (capture and not multi_wave and 0 < len(species) <= MAX_MAIN_OBJECTIVES
+            and all(data.monsters[m].can_be_captured for m in species))
 
 
 def _quest_type(original: int, multi_wave: bool) -> int:
@@ -89,13 +113,18 @@ def _fill(pictures: list[int], count: int) -> list[int]:
 
 
 def apply_pictures(quest: Quest, plan: LineupPlan, data: GameData, new_icons: bool = False) -> None:
-    """The lineup's pictures, a body part right after its owner when there is room."""
-    previews = []
-    for monster_id in dict.fromkeys(target_monsters(plan) or plan.monster_ids()):
+    """One picture per species of the lineup, every wave in order (the board has room for the five monsters a
+    quest can have), then the pictures of the body parts they spawn with (Dalamadur's tail) while there is room."""
+    own, parts = [], []
+    for monster_id in lineup_species(plan) or dict.fromkeys(plan.monster_ids()):
         monster = data.monsters[monster_id]
         pictures = monster_pictures(monster, data, new_icons)
-        previews += pictures or [p for p in [monster_picture(monster, new_icons)] if p is not None]
-    quest.pictures = _fill(previews, len(quest.pictures))
+        if pictures:
+            own.append(pictures[0])
+            parts += pictures[1:]
+        else:
+            own += [p for p in [monster_picture(monster, new_icons)] if p is not None]
+    quest.pictures = _fill(own + parts, len(quest.pictures))
 
 
 def replace_unknown_pictures(quest: Quest, data: GameData, new_icons: bool = False) -> None:
@@ -212,7 +241,7 @@ def repair_objectives(quest: Quest, plan: LineupPlan | None, data: GameData, rng
     if any(absent(o) for o in main):
         if plan is not None and large:
             old = [o.target_id for o in main if absent(o)]
-            apply_main_objectives(quest, plan)
+            apply_main_objectives(quest, plan, data)
             new_target = quest.objectives[0].target_id
             result.renamed.update({o: new_target for o in old})
         else:

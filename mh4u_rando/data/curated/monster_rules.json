@@ -17,6 +17,31 @@
         33,
         116
       ]
+    },
+    "uncapturable": {
+      "description": "Cannot be captured (elder dragons, Akantor, Ukanlos, Raging Brachydios), so a capture objective never targets them. Apex monsters (is_apex) are treated as uncapturable too. Unverified in game: a monster wrongly listed here only turns a capture quest into a hunt.",
+      "monsters": [
+        24,
+        83,
+        110,
+        111,
+        29,
+        31,
+        82,
+        32,
+        103,
+        34,
+        35,
+        33,
+        116,
+        46,
+        77,
+        78,
+        79,
+        117,
+        89,
+        98
+      ]
     }
   },
   "monsters": {

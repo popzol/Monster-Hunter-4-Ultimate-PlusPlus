@@ -19,7 +19,7 @@ import dataclasses
 from dataclasses import dataclass
 
 from ..data import GameData, QuestCategory, QuestInfo
-from ..mib import ObjectiveType, Quest
+from ..mib import Quest
 from . import objectives, rewards, stats, supplies, text
 from .maps import MapProfiles, candidate_maps, choose_map, place_monster
 from .other_monsters import (
@@ -172,18 +172,13 @@ def _randomize_large_monster_quest(quest: Quest, info: QuestInfo, ctx: Randomize
 
     stats.apply_stats(quest, plan, data, adjust=settings.adjust_stats and settings.randomize_monsters)
 
-    capture_before = any(o.type is ObjectiveType.CAPTURE for o in quest.objectives[:quest.objective_amount])
-    if rewrite_objectives and _wave_ids(quest) != original_lineup:
-        objectives.apply_main_objectives(quest, plan)
+    objectives_rewritten = rewrite_objectives and _wave_ids(quest) != original_lineup
+    if objectives_rewritten:
+        objectives.apply_main_objectives(quest, plan, data)
         objectives.apply_pictures(quest, plan, data, ctx.new_icons)
-    capture_became_hunt = capture_before and not any(
-        o.type is ObjectiveType.CAPTURE for o in quest.objectives[:quest.objective_amount])
 
     # Names first: the sub quest text written below must not be rewritten again.
-    text.apply_text(quest, plan, data, settings.text)
-    if capture_became_hunt and settings.text is TextMode.REPLACE_NAMES:
-        text.write_main_objective(quest, data)  # "Capture a X" would be a lie
-        text.fix_failure_text(quest)
+    text.apply_text(quest, plan, data, settings.text, objectives_rewritten)
 
     if objectives.has_sub_quest(quest) and settings.sub_quests is not SubQuestMode.KEEP:
         report.sub_quest_regenerated = True
@@ -228,11 +223,11 @@ def _repair_objectives(quest: Quest, plan: LineupPlan | None, ctx: RandomizerCon
         report.sub_quest_regenerated = True
         if result.sub_target is not None or not quest.get_flag("sub_quest"):
             text.set_sub_quest_text(quest, ctx.data, result.sub_target)
-    if result.renamed and ctx.settings.text in (TextMode.REPLACE_NAMES, TextMode.REGENERATE):
+    if result.renamed and ctx.settings.text is not TextMode.KEEP:
         text.replace_monster_names(quest, result.renamed, ctx.data,
                                    include_sub_objective=not report.sub_quest_regenerated)
-        if ctx.settings.text is TextMode.REGENERATE:
-            text.write_main_objective(quest, ctx.data)
+        text.write_main_objective(quest, ctx.data)  # the objectives changed: the old text would lie
+        text.fix_failure_text(quest, ctx.data)
     if result.renamed or result.sub_rewritten:
         report.notes.append("objectives re-pointed at monsters present in the quest")
 
@@ -243,9 +238,11 @@ def _randomize_intruders(quest: Quest, ctx: RandomizerContext, report: QuestRepo
     report.intruders = [new for _, new in replaced]
     mapping = {old: new for old, new in replaced if old != new}
     objectives.retarget_objectives(quest, mapping)
-    if ctx.settings.text is TextMode.REPLACE_NAMES:
+    if ctx.settings.text is not TextMode.KEEP:
+        # A main objective about the large monsters never names an intruder, even one of the same species.
         text.replace_monster_names(quest, mapping, ctx.data,
-                                   include_sub_objective=not report.sub_quest_regenerated)
+                                   include_sub_objective=not report.sub_quest_regenerated,
+                                   include_main_objective=text.main_objectives(quest, ctx.data) is None)
 
 
 def _choose_lineup_and_map(quest: Quest, info: QuestInfo, ctx: RandomizerContext,

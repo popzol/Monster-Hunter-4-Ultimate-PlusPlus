@@ -20,11 +20,11 @@ _DE_A = {"m": ("ein", "einen", "einem", "eines"), "f": ("eine", "eine", "einer",
 _DE_THE = {"m": ("der", "den", "dem", "des"), "f": ("die", "die", "der", "der")}
 
 
-def _starts_with_vowel(name: str) -> bool:
+def starts_with_vowel(name: str) -> bool:
     return name[:1].upper() in _VOWELS
 
 
-def _italian_lo(name: str) -> bool:
+def italian_lo(name: str) -> bool:
     """Masculine nouns that take lo / uno / dello (z, s + consonant, gn, ps, x, y, i + vowel)."""
     lower = name.lower()
     return (lower[:1] in "zxy" or lower[:2] in ("gn", "ps") or (lower[:1] == "s" and lower[1:2] not in "aeiou")
@@ -35,12 +35,12 @@ def article(lang: str, kind: str, name: str, gender: str, case: str = "nom") -> 
     """The article (or contraction) of `kind` in front of `name`; "" when the language has none."""
     f = gender == "f"
     if lang == "en":
-        return {"a": "an" if _starts_with_vowel(name) else "a", "the": "the"}.get(kind, "")
+        return {"a": "an" if starts_with_vowel(name) else "a", "the": "the"}.get(kind, "")
     if lang == "de":
         if kind not in ("a", "the"):
             return ""
         return (_DE_A if kind == "a" else _DE_THE)[gender][CASES.index(case)]
-    vowel = _starts_with_vowel(name)
+    vowel = starts_with_vowel(name)
     if lang == "fr":
         if kind == "a":
             return "une" if f else "un"
@@ -52,12 +52,12 @@ def article(lang: str, kind: str, name: str, gender: str, case: str = "nom") -> 
         return {"a": ("un", "una"), "the": ("el", "la"), "of": ("del", "de la"), "to": ("al", "a la")}[kind][f]
     if lang == "it":
         if kind == "a":
-            return ("un'" if vowel else "una") if f else ("uno" if _italian_lo(name) else "un")
+            return ("un'" if vowel else "una") if f else ("uno" if italian_lo(name) else "un")
         if vowel:
             return {"the": "l'", "of": "dell'", "to": "all'"}[kind]
         if f:
             return {"the": "la", "of": "della", "to": "alla"}[kind]
-        if _italian_lo(name):
+        if italian_lo(name):
             return {"the": "lo", "of": "dello", "to": "allo"}[kind]
         return {"the": "il", "of": "del", "to": "al"}[kind]
     raise ValueError(f"unknown language {lang!r}")

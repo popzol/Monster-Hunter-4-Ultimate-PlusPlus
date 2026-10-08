@@ -110,6 +110,7 @@ class MonsterInfo:
     has_own_music: bool = False          # plays its own theme on maps without field music
     is_finale_monster: bool = False      # corpse despawn crashes the game: last wave only
     is_apex: bool = False                # must spawn with an Apex infection state
+    can_be_captured: bool = True         # a capture objective may target it (curated group "uncapturable", not Apex)
     can_swarm: bool = False              # appears with quantity > 1 in retail quests (escort / hunt-a-thon)
     can_be_frenzied: bool = False        # seen with a Frenzy infection state in retail quests
     intro_cutscene_map: int | None = None  # spawning in wave 1 off this map crashes the game
@@ -201,6 +202,7 @@ class GameData:
     unbreakable_parts: frozenset[str]                 # listed as parts but not real breaks
     monster_grammar: dict[int, MonsterGrammar] = field(default_factory=dict)
     part_grammar: dict[str, PartGrammar] = field(default_factory=dict)  # English part name -> grammar
+    text_templates: dict[str, dict] = field(default_factory=dict)  # language -> curated/text_templates.json entry
 
     def part_name(self, part: str, language: str) -> str:
         return part if language == "en" else self.part_names.get(part, {}).get(language, part)
@@ -293,6 +295,7 @@ def _build_maps(generated: dict, curated: dict) -> dict[int, MapInfo]:
 def _build_monsters(generated: dict, curated: dict, maps: dict[int, MapInfo],
                     materials: dict, names: dict, icons: dict, health: dict) -> dict[int, MonsterInfo]:
     finale = set(curated["groups"]["finale_monsters"]["monsters"])
+    uncapturable = set(curated["groups"]["uncapturable"]["monsters"])
     monsters = {}
     for key, gen in generated.items():
         monster_id = int(key)
@@ -311,6 +314,7 @@ def _build_monsters(generated: dict, curated: dict, maps: dict[int, MapInfo],
             has_own_music=rules.get("own_music", False),
             is_finale_monster=monster_id in finale,
             is_apex=rules.get("is_apex", False),
+            can_be_captured=monster_id not in uncapturable and not rules.get("is_apex", False),
             can_swarm=rules.get("can_swarm", False),
             can_be_frenzied=rules.get("can_be_frenzied", False),
             intro_cutscene_map=gen["intro_cutscene_map"],
@@ -385,7 +389,47 @@ def load_game_data(data_dir: Path = DATA_DIR) -> GameData:
         unbreakable_parts=frozenset(part_names["not_breakable"]),
         monster_grammar=_build_monster_grammar(_read(curated / "monster_grammar.json")["monsters"]),
         part_grammar=_build_part_grammar(part_names["grammar"]),
+        text_templates=_check_text_templates(_read(curated / "text_templates.json")["languages"]),
     )
+
+
+# Keys every language of curated/text_templates.json must have (a nested dict lists its own keys).
+_TEMPLATE_KEYS = {
+    "classes": None, "monster": {"indefinite": None, "definite": None, "none": None, "count": None},
+    "objective": {"hunt": {"one": None, "two": None}, "slay": {"one": None, "two": None},
+                  "capture": {"one": None, "two": None}, "all": None},
+    "failure": {"normal": None, "capture": None}, "sub": {"verbs": {"break": None, "wound": None}, "forms": None},
+    "no_sub": None, "max_line": {"title": None, "objective": None, "sub": None},
+}
+
+
+def _check_text_templates(raw: dict) -> dict[str, dict]:
+    """Every language has every template, and every table keyed by class lists all of its classes."""
+    def missing(entry: dict, keys: dict, path: str) -> list[str]:
+        result = []
+        for key, sub in keys.items():
+            if key not in entry:
+                result.append(path + key)
+            elif sub is not None:
+                result += missing(entry[key], sub, f"{path}{key}.")
+        return result
+
+    for lang in LANGUAGES:
+        entry = raw.get(lang, {})
+        problems = missing(entry, _TEMPLATE_KEYS, "")
+        if not problems:
+            classes, sub = set(entry["classes"]), entry["sub"]
+            tables = {"monster.indefinite": (entry["monster"]["indefinite"], classes),
+                      "monster.definite": (entry["monster"]["definite"], classes)}
+            if "owner" in sub:
+                tables["sub.owner"] = (sub["owner"], classes)
+            if "part" in sub:
+                tables["sub.part"] = (sub["part"], classes | {c + "_pl" for c in classes})
+            problems = [f"{name} (must list {sorted(expected)})" for name, (table, expected) in tables.items()
+                        if set(table) != expected]
+        if problems:
+            raise GameDataError(f"curated/text_templates.json, {lang}: " + ", ".join(problems))
+    return raw
 
 
 def _build_monster_grammar(raw: dict) -> dict[int, MonsterGrammar]:

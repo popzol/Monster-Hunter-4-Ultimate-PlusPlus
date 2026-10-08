@@ -453,6 +453,8 @@ its public classes and functions with their signatures.
 - `randomize_armor_stats(catalog: Catalog, settings: Settings, rng: random.Random) -> None`
 
 ### `mh4u_rando/randomizer/grammar.py` - Articles and contractions of the five quest languages (pure functions, no quest involved).
+- `starts_with_vowel(name: str) -> bool`
+- `italian_lo(name: str) -> bool` - Masculine nouns that take lo / uno / dello (z, s + consonant, gn, ps, x, y, i + vowel).
 - `article(lang: str, kind: str, name: str, gender: str, case: str='nom') -> str` - The article (or contraction) of `kind` in front of `name`; "" when the language has none.
 - `with_article(lang: str, kind: str, name: str, gender: str, case: str='nom') -> str` - `name` preceded by its article: "una Rathian", "l'Akantor", "dello Zamtrios".
 - `de_decline(name: str, gender: str, kind: str, case: str) -> str` - The adjective of "Roter Khezu" after an article: "ein Roter", "einen Roten", "der Rote", "den Rot...
@@ -477,10 +479,11 @@ its public classes and functions with their signatures.
 ### `mh4u_rando/randomizer/objectives.py` - Quest type, objectives and quest board pictures for a new lineup.
 - `main_objectives_target_large_monsters(quest: Quest) -> bool` - True when every main objective is about the quest's large monsters.
 - `target_monsters(plan: LineupPlan) -> list[int]` - Monsters the main objective points at: the last wave, without companions and body parts.
-- `apply_main_objectives(quest: Quest, plan: LineupPlan) -> None`
+- `lineup_species(plan: LineupPlan) -> list[int]` - Every species of the lineup, all waves in order, without companions and body parts.
+- `apply_main_objectives(quest: Quest, plan: LineupPlan, data: GameData) -> None`
 - `monster_picture(monster: MonsterInfo, new_icons: bool=False) -> int | None` - Quest board picture of a monster; `new_icons`: the new monster icons are in the mod.
 - `monster_pictures(monster: MonsterInfo, data: GameData, new_icons: bool=False) -> list[int]` - Pictures of a monster and of the body part it spawns with (Dalamadur's tail), never "?".
-- `apply_pictures(quest: Quest, plan: LineupPlan, data: GameData, new_icons: bool=False) -> None` - The lineup's pictures, a body part right after its owner when there is room.
+- `apply_pictures(quest: Quest, plan: LineupPlan, data: GameData, new_icons: bool=False) -> None` - One picture per species of the lineup, every wave in order (the board has room for the five monst...
 - `replace_unknown_pictures(quest: Quest, data: GameData, new_icons: bool=False) -> None` - The first "?" picture of a quest becomes the pictures of its large monsters and the other "?" go ...
 - `retarget_objectives(quest: Quest, mapping: dict[int, int]) -> None` - Point monster objectives (main and sub) at replacement monsters.
 - `has_sub_quest(quest: Quest) -> bool`
@@ -580,14 +583,27 @@ its public classes and functions with their signatures.
 - `randomize_supplies(quest: Quest, data: GameData, rng: random.Random) -> list[int]` - Replace every consumable slot. Returns the item ids handed out.
 - `ensure_map(quest: Quest, map_info: MapInfo) -> None` - Make sure the initial supply box holds a Map on maps with several areas.
 
+### `mh4u_rando/randomizer/templates.py` - Quest text templates: the retail sentences of the five languages (curated/text_templates.json).
+- `noun_class(lang: str, name: str, gender: str) -> str` - Key of `name` in the tables of `lang`: "a" / "an" (en), the gender (es, de), the gender + "_vowel...
+- `gender(data: GameData, monster_id: int, lang: str) -> str`
+- `max_line(data: GameData, lang: str, slot: str) -> int` - Longest line of the retail texts of `slot` ("title", "objective", "sub"): the in-game box is that...
+- `monster_phrase(data: GameData, lang: str, monster_id: int, count: int=1) -> str` - A monster in a main objective: "a Rathian", "1 Rathian" (fr), "2 Khezu", "al Dalamadur", "einen R...
+- `objective_text(data: GameData, lang: str, verb: str, groups: list[tuple[int, int]]) -> str` - The main objective naming `groups` ((monster id, count), at least one): one monster, two monsters...
+- `wrap(text: str, limit: int) -> str` - Break a single long line at its last space that leaves the first line within `limit`.
+- `failure_text(data: GameData, lang: str, kind: str) -> str` - Retail failure conditions: "normal" or "capture" ("...or capture target slain.").
+- `no_sub_text(data: GameData, lang: str) -> str` - Sub objective text of a quest without a sub quest ("None").
+- `sub_text(data: GameData, lang: str, monster_id: int, part: str) -> str` - "Break the Seltas's horn" / "Rompe el cuerno del Seltas" / "Seltas-Horn brechen", shortened as th...
+
 ### `mh4u_rando/randomizer/text.py` - Quest text (5 languages) for a randomized quest.
-- `apply_text(quest: Quest, plan: LineupPlan, data: GameData, mode: TextMode) -> None`
-- `main_objectives(quest: Quest, data: GameData) -> list | None` - The monster objectives the main objective text describes, or None when it cannot be generated
-- `write_main_objective(quest: Quest, data: GameData) -> bool` - Write the main objective from the real objectives, like the retail quests do. False when it canno...
-- `fix_failure_text(quest: Quest) -> None` - A quest that is no longer won by capturing must not say that the capture target dying fails it.
-- `replace_monster_names(quest: Quest, replacement: dict[int, int], data: GameData, include_sub_objective: bool=True) -> None` - Replace the names of monsters `old id -> new id` in titles, objectives and descriptions.
+- `apply_text(quest: Quest, plan: LineupPlan, data: GameData, mode: TextMode, objectives_rewritten: bool=False) -> None` - Names in every text; the main objective and the failure text from the templates when the objectiv...
+- `main_objectives(quest: Quest, data: GameData) -> list | None` - The monster objectives of the quest when its main objective text can be generated, else None
+- `lineup_groups(quest: Quest, data: GameData, lang: str) -> list[tuple[int, int]]` - (monster id, count) of the large monsters the main objective names, in wave order and, within a w...
+- `write_main_objective(quest: Quest, data: GameData) -> bool` - Write the main objective from the quest's monsters with the retail templates. False when it canno...
+- `is_capture_quest(quest: Quest) -> bool`
+- `fix_failure_text(quest: Quest, data: GameData) -> None` - A quest that is no longer won by capturing must not say that the capture target dying fails it.
+- `replace_monster_names(quest: Quest, replacement: dict[int, int], data: GameData, include_sub_objective: bool=True, include_main_objective: bool=True) -> None` - Replace the names of monsters `old id -> new id` in titles, objectives and descriptions.
 - `set_sub_quest_text(quest: Quest, data: GameData, target: tuple[int, int] | None) -> None`
-- `sub_quest_text(data: GameData, monster_id: int, part: str, lang: str) -> str` - "Break the Seltas's horn" / "Rompe el cuerno del Seltas" / "Seltas-Horn brechen", shortened as the
+- `sub_quest_text(data: GameData, monster_id: int, part: str, lang: str) -> str` - "Break the Seltas's horn" / "Rompe el cuerno del Seltas" / "Seltas-Horn brechen" (`templates.sub_...
 
 ### `mh4u_rando/randomizer/validation.py` - Check a randomized quest against every known engine rule.
 - `validate_quest(quest: Quest, data: GameData, settings: Settings) -> list[str]`

@@ -1,0 +1,122 @@
+{
+  "description": "Templates of the quest texts the randomizer writes, copied from the retail quests of each language (docs/game_rules.md, 'Quest text'; schema in docs/data.md). classes: the grammatical classes of a noun in that language (gender, and the sound it starts with where the article depends on it); every table keyed by class lists all of them, plural classes end in '_pl'. Placeholders: {0} and {1} are the monster phrases of an objective, {name} a monster name, {n} a count, {part} a part name, {part_phrase} the part with its article, {owner} the monster as the owner of the part, {compound} the German compound form of the name, {verb} the verb of the sub objective. \\n is a line break, as in the retail texts.",
+  "languages": {
+    "en": {
+      "classes": ["a", "an"],
+      "monster": {
+        "indefinite": {"a": "a {name}", "an": "an {name}"},
+        "definite": {"a": "the {name}", "an": "the {name}"},
+        "none": "{name}",
+        "count": "{n} {name}"
+      },
+      "objective": {
+        "hunt": {"one": "Hunt {0}", "two": "Hunt {0}\nand {1}"},
+        "slay": {"one": "Slay {0}", "two": "Slay {0}\nand {1}"},
+        "capture": {"one": "Capture {0}", "two": "Capture {0}\nand {1}"},
+        "all": "Hunt all large monsters"
+      },
+      "failure": {"normal": "Reward hits 0, or time\nexpires.", "capture": "Reward hits 0, time expires,\nor capture target slain."},
+      "sub": {
+        "verbs": {"break": "Break", "wound": "Wound"},
+        "forms": ["{verb} the {name}'s {part}", "{verb} {name}'s {part}"]
+      },
+      "no_sub": "None",
+      "max_line": {"title": 31, "objective": 30, "sub": 32}
+    },
+    "fr": {
+      "classes": ["m", "f", "m_vowel", "f_vowel"],
+      "monster": {
+        "indefinite": {"m": "1 {name}", "f": "1 {name}", "m_vowel": "1 {name}", "f_vowel": "1 {name}"},
+        "definite": {"m": "le {name}", "f": "la {name}", "m_vowel": "l'{name}", "f_vowel": "l'{name}"},
+        "none": "{name}",
+        "count": "{n} {name}"
+      },
+      "objective": {
+        "hunt": {"one": "Chasser {0}", "two": "Chasser {0}\nChasser {1}"},
+        "slay": {"one": "Tuer {0}", "two": "Tuer {0}\nTuer {1}"},
+        "capture": {"one": "Capturer {0}", "two": "Capturer {0}\nCapturer {1}"},
+        "all": "Chasser tous les grands\nmonstres"
+      },
+      "failure": {"normal": "Prime à 0\nTemps expiré", "capture": "Prime à 0, temps expiré\nCible tuée"},
+      "sub": {
+        "verbs": {"break": "Briser", "wound": "Blesser"},
+        "part": {"m": "le {part}", "f": "la {part}", "m_vowel": "l'{part}", "f_vowel": "l'{part}",
+                 "m_pl": "les {part}", "f_pl": "les {part}", "m_vowel_pl": "les {part}", "f_vowel_pl": "les {part}"},
+        "forms": ["{verb} {part_phrase} {name}", "{verb} {part} {name}"]
+      },
+      "no_sub": "Aucun",
+      "max_line": {"title": 30, "objective": 32, "sub": 33}
+    },
+    "es": {
+      "classes": ["m", "f"],
+      "monster": {
+        "indefinite": {"m": "un {name}", "f": "una {name}"},
+        "definite": {"m": "al {name}", "f": "a la {name}"},
+        "none": "{name}",
+        "count": "{n} {name}"
+      },
+      "objective": {
+        "hunt": {"one": "Caza {0}", "two": "Caza {0}\ny {1}"},
+        "slay": {"one": "Abate {0}", "two": "Abate {0}\ny {1}"},
+        "capture": {"one": "Captura {0}", "two": "Captura {0}\ny {1}"},
+        "all": "Caza a todos los monstruos\ngrandes"
+      },
+      "failure": {"normal": "La recompensa cae a 0\no se acaba el tiempo.", "capture": "La recompensa cae a 0, agotas\nel tiempo o el objetivo muere."},
+      "sub": {
+        "verbs": {"break": "Rompe", "wound": "Hiere"},
+        "part": {"m": "el {part}", "f": "la {part}", "m_pl": "los {part}", "f_pl": "las {part}"},
+        "owner": {"m": "del {name}", "f": "de la {name}"},
+        "forms": ["{verb} {part_phrase} {owner}", "{verb} {part} {owner}", "{verb} {part} {name}"]
+      },
+      "no_sub": "Ninguno",
+      "max_line": {"title": 27, "objective": 31, "sub": 32}
+    },
+    "de": {
+      "classes": ["m", "f", "n"],
+      "monster": {
+        "indefinite": {"m": "einen {name}", "f": "eine {name}", "n": "ein {name}"},
+        "definite": {"m": "den {name}", "f": "die {name}", "n": "das {name}"},
+        "none": "{name}",
+        "count": "{n} {name}"
+      },
+      "objective": {
+        "hunt": {"one": "Erjage {0}.", "two": "Erjage {0}\nund {1}."},
+        "slay": {"one": "Erlege {0}.", "two": "Erlege {0}\nund {1}."},
+        "capture": {"one": "Fange {0}.", "two": "Fange {0}\nund {1}."},
+        "all": "Erjage alle großen Monster."
+      },
+      "failure": {"normal": "Belohnung auf 0 oder Zeit\nläuft ab.", "capture": "Belohnung auf 0, Zeit läuft ab\noder Fangziel erlegt."},
+      "sub": {
+        "verbs": {"break": "brechen", "wound": "verletzen"},
+        "forms": ["{compound}-{part} {verb}"]
+      },
+      "no_sub": "-",
+      "max_line": {"title": 31, "objective": 34, "sub": 31}
+    },
+    "it": {
+      "classes": ["m", "m_lo", "m_vowel", "f", "f_vowel"],
+      "monster": {
+        "indefinite": {"m": "un {name}", "m_lo": "uno {name}", "m_vowel": "un {name}", "f": "una {name}", "f_vowel": "un'{name}"},
+        "definite": {"m": "il {name}", "m_lo": "lo {name}", "m_vowel": "l'{name}", "f": "la {name}", "f_vowel": "l'{name}"},
+        "none": "{name}",
+        "count": "{n} {name}"
+      },
+      "objective": {
+        "hunt": {"one": "Caccia {0}", "two": "Caccia {0}\ne {1}"},
+        "slay": {"one": "Uccidi {0}", "two": "Uccidi {0}\ne {1}"},
+        "capture": {"one": "Cattura {0}", "two": "Cattura {0}\ne {1}"},
+        "all": "Caccia tutti i mostri grandi"
+      },
+      "failure": {"normal": "Premio a zero o tempo\nscaduto", "capture": "Premio a zero, tempo scaduto\no mostro da catturare ucciso"},
+      "sub": {
+        "verbs": {"break": "Spezza", "wound": "Ferisci"},
+        "part": {"m": "il {part}", "m_lo": "lo {part}", "m_vowel": "l'{part}", "f": "la {part}", "f_vowel": "l'{part}",
+                 "m_pl": "i {part}", "m_lo_pl": "gli {part}", "m_vowel_pl": "gli {part}", "f_pl": "le {part}", "f_vowel_pl": "le {part}"},
+        "owner": {"m": "del {name}", "m_lo": "dello {name}", "m_vowel": "dell'{name}", "f": "della {name}", "f_vowel": "dell'{name}"},
+        "forms": ["{verb} {part_phrase} {owner}", "{verb} {part} {owner}", "{verb} {part} {name}"]
+      },
+      "no_sub": "Nessuno",
+      "max_line": {"title": 29, "objective": 31, "sub": 33}
+    }
+  }
+}

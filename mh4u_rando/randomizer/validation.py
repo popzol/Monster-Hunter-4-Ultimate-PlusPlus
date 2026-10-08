@@ -6,7 +6,7 @@ original state instead of risking a crash in-game.
 """
 
 from ..data import GameData
-from ..mib import MONSTER_OBJECTIVES, Quest
+from ..mib import MONSTER_OBJECTIVES, ObjectiveType, Quest
 from .selection import can_respawn
 from .settings import Settings
 from .structure import MAX_LARGE_MONSTERS
@@ -57,6 +57,15 @@ def validate_quest(quest: Quest, data: GameData, settings: Settings) -> list[str
     for objective in quest.objectives[:quest.objective_amount]:
         if objective.type in MONSTER_OBJECTIVES and objective.target_id and objective.target_id not in present_ids:
             errors.append(f"main objective targets absent monster {data.monster_name(objective.target_id)}")
+    captures = [o for o in quest.objectives[:quest.objective_amount] if o.type is ObjectiveType.CAPTURE]
+    if captures:
+        species = {m.monster_id for m in quest.all_large_monsters()
+                   if m.monster_id in data.monsters and data.monsters[m.monster_id].body_part_of is None}
+        if len(species) > 2 or last > 0:
+            errors.append(f"capture objective with {len(species)} species in {last + 1} waves (max 2 species, 1 wave)")
+        for objective in captures:
+            if objective.target_id in data.monsters and not data.monsters[objective.target_id].can_be_captured:
+                errors.append(f"capture objective on {data.monster_name(objective.target_id)}, which cannot be captured")
     if quest.get_flag("sub_quest") and quest.objective_sub.type in MONSTER_OBJECTIVES \
             and quest.objective_sub.target_id and quest.objective_sub.target_id not in present_ids:
         errors.append(f"sub objective targets absent monster {data.monster_name(quest.objective_sub.target_id)}")

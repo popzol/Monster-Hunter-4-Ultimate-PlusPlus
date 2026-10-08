@@ -7,21 +7,21 @@ import pytest
 from mh4u_rando.data import LANGUAGES, load_game_data
 from mh4u_rando.mib import Objective, ObjectiveType, Quest, QuestType, load_mib
 from mh4u_rando.mib.model import TEXT_FAILURE, TEXT_MAIN_OBJECTIVE, TEXT_SUB_OBJECTIVE
-from mh4u_rando.randomizer import grammar, objectives, text
+from mh4u_rando.randomizer import grammar, objectives, templates, text
 
 from conftest import original_quest_files
 
 needs_quests = pytest.mark.skipif(not original_quest_files(), reason="original quests not available")
 
-# Retail objectives the generator does not reproduce: the translators wrote an alias or a plural
-# ("2 Tetsucabras"), abbreviated a name, broke the line elsewhere, used another verb, or wrote
-# "Hunt all large monsters" for a quest with two objectives (docs/game_rules.md, "Quest text").
+# Retail objectives the templates do not reproduce: the translators wrote an alias ("Rajang" for Furious Rajang)
+# or a plural ("2 Tetsucabras"), abbreviated a name, broke the line elsewhere, used another verb or article, or
+# named a monster that is not in the quest (m10928) (docs/game_rules.md, "Quest text").
 RETAIL_DIFFERENT = {
     "m10216", "m10301", "m10312", "m10318", "m10319", "m10320", "m10408", "m10410", "m10415", "m10418", "m10420",
-    "m10516", "m10607", "m10608", "m10610", "m10611", "m10612", "m10613", "m10702", "m10709", "m10710", "m10713",
+    "m10516", "m10608", "m10610", "m10611", "m10612", "m10613", "m10702", "m10709", "m10710", "m10713",
     "m10718", "m10721", "m10803", "m10804", "m10813", "m10819", "m10820", "m10823", "m10829", "m10833", "m10837",
-    "m10914", "m10919", "m10924", "m10926", "m10928", "m11001", "m11009", "m11010", "m11015", "m11016", "m11029",
-    "m11033", "m11037", "m21005", "m21006", "m22001", "m22004", "m22006",
+    "m10914", "m10924", "m10926", "m10928", "m11001", "m11009", "m11010", "m11015", "m11029",
+    "m11033", "m11037", "m21005", "m21006", "m22001", "m22004",
 }
 
 
@@ -107,7 +107,7 @@ def test_grammar_covers_every_large_monster_and_part(data):
         for part in info.break_parts.values():
             assert part in data.part_grammar, (info.name, part)
     for part, entry in data.part_grammar.items():
-        assert entry.verb in text.SUB_VERBS and set(entry.gender) == {"fr", "es", "it"}, part
+        assert entry.verb in ("break", "wound") and set(entry.gender) == {"fr", "es", "it"}, part
 
 
 @needs_quests
@@ -152,22 +152,25 @@ def test_objective_text_forms(data):
     quest.quest_type = QuestType.HUNT_ALL
     quest.large_monsters = [[Monster(monster_id=tigrex)], [Monster(monster_id=rathian)], [Monster(monster_id=gravios)]]
     text.write_main_objective(quest, data)
-    assert [quest.text[i][TEXT_MAIN_OBJECTIVE] for i in range(5)] == [text.HUNT_ALL[lang] for lang in LANGUAGES]
+    assert [quest.text[i][TEXT_MAIN_OBJECTIVE] for i in range(5)] == [
+        data.text_templates[lang]["objective"]["all"] for lang in LANGUAGES]
 
 
-def test_failure_text_of_a_capture_quest_that_became_a_hunt():
+def test_failure_text_of_a_capture_quest_that_became_a_hunt(data):
     quest = Quest()
     quest.objective_amount = 1
     quest.objectives = [Objective(ObjectiveType.CAPTURE, 1, 1), Objective()]
     for i, lang in enumerate(LANGUAGES):
-        quest.text[i][TEXT_FAILURE] = text.CAPTURE_FAILURE[lang]
-    text.fix_failure_text(quest)
-    assert all(quest.text[i][TEXT_FAILURE] == text.CAPTURE_FAILURE[lang] for i, lang in enumerate(LANGUAGES))
+        quest.text[i][TEXT_FAILURE] = templates.failure_text(data, lang, "capture")
+    text.fix_failure_text(quest, data)
+    assert all(quest.text[i][TEXT_FAILURE] == templates.failure_text(data, lang, "capture")
+               for i, lang in enumerate(LANGUAGES))
     quest.objectives = [Objective(ObjectiveType.HUNT, 1, 1), Objective()]
     quest.text[0][TEXT_FAILURE] = "something else"
-    text.fix_failure_text(quest)
+    text.fix_failure_text(quest, data)
     assert quest.text[0][TEXT_FAILURE] == "something else"
-    assert [quest.text[i][TEXT_FAILURE] for i in range(1, 5)] == [text.FAILURE[lang] for lang in LANGUAGES[1:]]
+    assert [quest.text[i][TEXT_FAILURE] for i in range(1, 5)] == [
+        templates.failure_text(data, lang, "normal") for lang in LANGUAGES[1:]]
 
 
 def test_more_than_two_target_species_become_hunt_them_all(data):
@@ -176,7 +179,7 @@ def test_more_than_two_target_species_become_hunt_them_all(data):
     quest.quest_type = QuestType.HUNT
     ids = [monster(data, n) for n in ("Rathian", "Rathalos", "Tigrex")]
     plan = LineupPlan(waves=[[Slot(monster_id=m) for m in ids]])
-    objectives.apply_main_objectives(quest, plan)
+    objectives.apply_main_objectives(quest, plan, data)
     assert quest.quest_type == QuestType.HUNT_ALL and quest.objective_amount == 1
     assert quest.objectives[0].target_id == ids[0]
 
@@ -204,7 +207,7 @@ def test_every_sub_quest_text_fits_its_line(data):
             for lang in LANGUAGES:
                 line = text.sub_quest_text(data, info.monster_id, part, lang)
                 assert "\n" not in line and part_translated(data, part, lang) in line
-                if len(line) > text.MAX_LINE["sub"][lang]:
+                if len(line) > templates.max_line(data, lang, "sub"):
                     too_long.append((info.name, part, lang, line))
     # Names are abbreviated, as in the retail texts, until the line fits.
     assert len(too_long) <= 5, too_long
@@ -237,3 +240,140 @@ def test_add_sub_quest_pays_like_the_retail_ones(data):
     text.set_sub_quest_text(quest, data, target)
     assert all(quest.text[i][TEXT_SUB_OBJECTIVE] not in ("None", "") for i in range(5))
     assert not objectives.can_add_sub_quest(quest)
+
+
+def lineup_quest(data, waves: list[list[str]], quest_type=QuestType.HUNT) -> Quest:
+    from mh4u_rando.mib import Monster
+    quest = Quest()
+    quest.quest_type = quest_type
+    quest.large_monsters = [[Monster(monster_id=monster(data, n)) for n in wave] for wave in waves]
+    quest.objective_amount = 1
+    quest.objectives = [Objective(ObjectiveType.HUNT, quest.large_monsters[-1][0].monster_id, 1), Objective()]
+    return quest
+
+
+def objective_texts(data, waves, quest_type=QuestType.HUNT) -> list[str]:
+    quest = lineup_quest(data, waves, quest_type)
+    assert text.write_main_objective(quest, data)
+    return [quest.text[i][TEXT_MAIN_OBJECTIVE] for i in range(len(LANGUAGES))]
+
+
+# Every gender combination of two monsters, in every language (Rathian f, Tigrex m, Akantor m + vowel and,
+# as in retail French, a definite article; Zamtrios m + "lo" in Italian, Seltas Queen f).
+@pytest.mark.parametrize("names, quest_type, expected", [
+    (["Tigrex", "Rathalos"], QuestType.HUNT, [
+        "Hunt a Tigrex\nand a Rathalos", "Chasser 1 Tigrex\nChasser 1 Rathalos", "Caza un Tigrex\ny un Rathalos",
+        "Erjage einen Tigrex\nund einen Rathalos.", "Caccia un Tigrex\ne un Rathalos"]),
+    (["Tigrex", "Rathian"], QuestType.HUNT, [
+        "Hunt a Tigrex\nand a Rathian", "Chasser 1 Tigrex\nChasser 1 Rathian", "Caza un Tigrex\ny una Rathian",
+        "Erjage einen Tigrex\nund eine Rathian.", "Caccia un Tigrex\ne una Rathian"]),
+    (["Rathian", "Akantor"], QuestType.SLAY, [
+        "Slay a Rathian\nand an Akantor", "Tuer 1 Rathian\nTuer l'Akantor", "Abate una Rathian\ny un Akantor",
+        "Erlege eine Rathian\nund einen Akantor.", "Uccidi una Rathian\ne un Akantor"]),
+    (["Rathian", "Seltas Queen"], QuestType.CAPTURE, [
+        "Capture a Rathian\nand a Seltas Queen", "Capturer 1 Rathian\nCapturer 1 Reine Seltas",
+        "Captura una Rathian\ny una Seltas reina", "Fange eine Rathian\nund eine Seltas-Königin.",
+        "Cattura una Rathian\ne una Seltas regina"]),
+    (["Zamtrios"], QuestType.HUNT, [
+        "Hunt a Zamtrios", "Chasser 1 Zamtrios", "Caza un Zamtrios", "Erjage einen Zamtrios.", "Caccia uno Zamtrios"]),
+    (["Akantor"], QuestType.CAPTURE, [
+        "Capture an Akantor", "Capturer l'Akantor", "Captura un Akantor", "Fange einen Akantor.",
+        "Cattura un Akantor"]),
+])
+def test_objective_templates_cover_every_gender_combination(data, names, quest_type, expected):
+    assert objective_texts(data, [names], quest_type) == expected
+
+
+def test_objective_names_every_wave_and_counts_one_name_once(data):
+    # Two species on two waves are both named (retail m10312), the same species on several waves is counted.
+    assert objective_texts(data, [["Rathian"], ["Gravios"]], QuestType.HUNT_ALL)[2] == "Caza una Rathian\ny un Gravios"
+    assert objective_texts(data, [["Tigrex"], ["Tigrex"], ["Tigrex (Apex)"]], QuestType.SLAY)[2] == "Abate 3 Tigrex"
+    # More than two: always "hunt all large monsters", whatever the verb.
+    assert objective_texts(data, [["Rathian"], ["Gravios"], ["Tigrex"]], QuestType.SLAY_ALL) == [
+        data.text_templates[lang]["objective"]["all"] for lang in LANGUAGES]
+
+
+def test_every_template_combination_is_filled_and_fits(data):
+    """Two monsters of every class of every language fill the templates without leftovers."""
+    by_class = {}
+    for info in data.large_monsters():
+        if info.body_part_of is None:
+            for lang in LANGUAGES:
+                key = templates.noun_class(lang, info.name_in(lang), templates.gender(data, info.monster_id, lang))
+                by_class.setdefault((lang, key), info.monster_id)
+    too_long = []
+    for lang in LANGUAGES:
+        found = [m for (lg, _), m in by_class.items() if lg == lang]
+        for verb in templates.VERBS:
+            for first, second in [(a, b) for a in found for b in found] + [(a, None) for a in found]:
+                groups = [(first, 1)] + ([(second, 1)] if second is not None else [])
+                line = templates.objective_text(data, lang, verb, groups)
+                assert "{" not in line and "}" not in line, line
+                if any(len(part) > templates.max_line(data, lang, "objective") for part in line.split("\n")):
+                    too_long.append(line)
+    # Long names on a two-monster line overflow as some retail lines do; they stay few.
+    assert len(too_long) <= 20, too_long
+
+
+def test_capture_survives_only_with_two_capturable_species_in_one_wave(data):
+    from mh4u_rando.randomizer.plan import LineupPlan, Slot
+
+    def capture_quest(waves: list[list[str]]) -> Quest:
+        quest = Quest()
+        quest.quest_type = QuestType.CAPTURE
+        quest.objective_amount = 1
+        quest.objectives = [Objective(ObjectiveType.CAPTURE, 1, 1), Objective()]
+        plan = LineupPlan(waves=[[Slot(monster_id=monster(data, n)) for n in wave] for wave in waves])
+        objectives.apply_main_objectives(quest, plan, data)
+        return quest
+
+    quest = capture_quest([["Rathian", "Tigrex"]])
+    assert quest.quest_type == QuestType.CAPTURE and quest.objective_amount == 2
+    assert all(o.type is ObjectiveType.CAPTURE for o in quest.objectives)
+    quest = capture_quest([["Rathian", "Kushala Daora"]])  # elder dragons cannot be captured
+    assert quest.quest_type == QuestType.HUNT and quest.objectives[0].type is ObjectiveType.HUNT
+    quest = capture_quest([["Rathian"], ["Tigrex"]])  # no retail capture quest has several waves
+    assert quest.quest_type == QuestType.HUNT_ALL and quest.objectives[0].type is ObjectiveType.HUNT
+    quest = capture_quest([["Rathian", "Tigrex", "Gravios"]])
+    assert quest.quest_type == QuestType.HUNT_ALL and quest.objective_amount == 1
+    assert quest.objectives[0].type is ObjectiveType.HUNT
+
+
+def test_pictures_show_every_monster_of_every_wave(data):
+    from mh4u_rando.randomizer.plan import LineupPlan, Slot
+    names = ["Rathian", "Tigrex", "Gravios", "Zinogre", "Seregios"]
+    plan = LineupPlan(waves=[[Slot(monster_id=monster(data, n))] for n in names[:3]]
+                      + [[Slot(monster_id=monster(data, n)) for n in names[3:]]])
+    quest = Quest()
+    objectives.apply_pictures(quest, plan, data)
+    assert quest.pictures == [data.monsters[monster(data, n)].preview_id for n in names]
+    # Dalamadur's tail picture only gets in when there is room.
+    head = next(m for m in data.large_monsters() if m.spawns_with is not None)
+    tail = data.monsters[head.spawns_with]
+    tail_picture = objectives.monster_picture(tail, new_icons=True)
+    plan.waves[-1] = [Slot(monster_id=head.monster_id), Slot(monster_id=tail.monster_id, is_body_part=True)]
+    objectives.apply_pictures(quest, plan, data, new_icons=True)  # 4 species and the tail
+    assert tail_picture in quest.pictures and objectives.NO_PICTURE not in quest.pictures
+    plan.waves.insert(0, [Slot(monster_id=monster(data, "Khezu"))])
+    objectives.apply_pictures(quest, plan, data, new_icons=True)  # 5 species: no room for the tail
+    assert tail_picture not in quest.pictures and objectives.UNKNOWN_PICTURE not in quest.pictures
+
+
+def test_text_templates_are_checked_when_loaded():
+    import json
+    from mh4u_rando.data.gamedata import DATA_DIR, GameDataError, _check_text_templates
+
+    def templates_without(lang: str, *path: str) -> dict:
+        raw = json.loads((DATA_DIR / "curated" / "text_templates.json").read_text(encoding="utf-8"))["languages"]
+        entry = raw[lang]
+        for key in path[:-1]:
+            entry = entry[key]
+        entry.pop(path[-1])
+        return raw
+
+    with pytest.raises(GameDataError, match="monster.indefinite"):
+        _check_text_templates(templates_without("es", "monster", "indefinite", "f"))
+    with pytest.raises(GameDataError, match="objective.capture"):
+        _check_text_templates(templates_without("it", "objective", "capture"))
+    with pytest.raises(GameDataError, match="sub.part"):
+        _check_text_templates(templates_without("fr", "sub", "part", "f_vowel_pl"))
