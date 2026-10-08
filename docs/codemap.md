@@ -728,6 +728,7 @@ its public classes and functions with their signatures.
 ### `tools/gen_codemap.py` - Write docs/codemap.md: every module of mh4u_rando/ and tools/ with its public API.
 - `modules() -> list[Path]`
 - `build() -> str`
+- `build_index(codemap: str) -> str` - The index of a codemap text: each module section with its starting line.
 - `main() -> int`
 
 ### `tools/hud_probe.py` - Build a HUD test mod for Citra (see docs/hud_layout.md).

@@ -15,3 +15,11 @@ def test_codemap_is_current():
     generator = _generator()
     current = generator.OUTPUT.read_text(encoding="utf-8") if generator.OUTPUT.exists() else ""
     assert current == generator.build(), "docs/codemap.md is out of date: run python tools/gen_codemap.py"
+
+
+def test_codemap_index_is_current():
+    generator = _generator()
+    path = generator.INDEX_OUTPUT
+    current = path.read_text(encoding="utf-8") if path.exists() else ""
+    expected = generator.build_index(generator.build())
+    assert current == expected, "docs/codemap_index.md is out of date: run python tools/gen_codemap.py"

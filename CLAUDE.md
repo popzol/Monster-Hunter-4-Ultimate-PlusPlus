@@ -10,13 +10,17 @@ reads a decrypted `.3ds` and writes a Citra/Azahar mod folder (`romfs/`,
 
 **## Find things fast (read these instead of exploring)**
 
-* ****`docs/codemap_index.md`**** - index of the codemap. Check it first to find the
+* ****`docs/codemap_index.md`**** - ALWAYS read this first, before searching or
 
-relevant module and section in `docs/codemap.md`; do not read the whole codemap.
+opening source files. One line per module: `L<n>: path - summary`, where `<n>` is
 
-* ****`docs/codemap.md`**** - detailed public classes/functions and signatures.
+the line where that module's section starts in `docs/codemap.md`.
 
-Read only the relevant section identified by `docs/codemap_index.md`.
+* ****`docs/codemap.md`**** - public classes/functions and signatures. Never read it
+
+whole: Read it with `offset=<n>` and a small `limit` (up to the next `###`) for
+
+the modules the index points to.
 
 * ****`python -m mh4u_rando.data.query monster|item|map|quest|equipment <id or name>`****
 
@@ -76,7 +80,7 @@ Only `Documentation/{constants.js,mib.js,credits.txt}` are project files.
 
 python -m pytest                        # tests needing game dumps are skipped without them
 
-python tools/gen_codemap.py             # regenerate docs/codemap.md after changing a public API
+python tools/gen_codemap.py             # regenerate docs/codemap.md and codemap_index.md after changing a public API
 
 python tools/build_gamedata.py          # regenerate data/generated (see docs/data.md)
 
@@ -88,7 +92,7 @@ python -m mh4u_rando.gui
 
 ```
 
-`tests/test_codemap.py` fails when `docs/codemap.md` is stale.
+`tests/test_codemap.py` fails when `docs/codemap.md` or `docs/codemap_index.md` is stale.
 
 **## Conventions**
 
