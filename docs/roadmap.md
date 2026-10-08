@@ -5,11 +5,11 @@ is done or discovered.
 
 ## Next
 
-* **Quest monster list in text**: the main objective is done (`text = list_monsters`,
-  "Regenerate"). Still pending: every monster taking part in a quest (except
-  the invader) should be named in the quest title and description, as in the
-  original game; with more than 3 monsters the title should use the original
-  "Hunt them all" string instead of listing them.
+* **Quest monster list in text**: the main objective names every monster of the
+  quest from the retail templates (`curated/text_templates.json`) and the quest
+  board shows all their pictures. Still pending: titles and descriptions are
+  retail text where only the names change, so they still name only the
+  replaced monsters.
 * **Cutscene crash on randomized encounters**: some monsters crash the game
   when first encountered because they try to start an encounter cutscene
   that assumes a different map. Investigate removing the cutscene check/call
@@ -69,9 +69,16 @@ is done or discovered.
 * Sub quests added to quests that had none (`sub_quests = randomize`): the
   quest can be completed and the sub reward is paid (only the `sub_quest` flag
   is set).
-* Regenerated quest texts (`text = list_monsters`) in ES/EN/DE: objectives,
-  failure text, articles after a replaced name, sub objectives that fit the
-  quest board; German adjective names ("einen Roten Khezu").
+* Quest texts from the templates in ES/EN/DE: objectives naming two monsters
+  of different genders, "Hunt all large monsters" with 3-5 monsters, failure
+  text, articles after a replaced name, sub objectives that fit the quest
+  board; German adjective names ("einen Roten Khezu").
+* Quest board with 4-5 pictures (a random-structure quest of 4-5 species).
+* Capture quests kept as captures: one that got two species ("Capture a A and
+  a B", two capture objectives; no retail quest has two) can be completed by
+  capturing both, and fails if one dies; the `uncapturable` list
+  (`monster_rules.json`) is right (Apex monsters, Chaotic Gore Magala, Golden
+  Rajang).
 * Dual-element Dual Blades: only the element stored in the weapon record is
   changed; the other one lives in an unknown table.
 * Random structure (`structure = random`).

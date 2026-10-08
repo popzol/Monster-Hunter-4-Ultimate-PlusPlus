@@ -104,12 +104,19 @@ Dalamadur and Shah Dalamadur (head and tail) always spawn in area 1 at
 * Several sub quests (e.g. Harvest Tours) ask to hunt the **intruder**. When
   the intruder changes, the objective and its text are re-pointed to the new
   intruder. — *Retail*
-* Capture objectives become Hunt (kill or capture): elder dragons and other
-  monsters cannot be captured. — *Design decision*
+* Capture: the 13 retail capture quests all have one wave and one objective. A randomized capture quest stays
+  a capture (quest type `CAPTURE`, one `CAPTURE` objective per species) only with one or two species, all in
+  one wave, that can all be captured (`uncapturable` group of `monster_rules.json`: elder dragons, Akantor,
+  Ukanlos, Raging Brachydios; Apex monsters too). Otherwise it becomes Hunt (kill or capture), and
+  `validation.py` rejects any other capture. — *Design decision; a two-species capture is unverified in game*
 * Break-part sub objectives use type `BREAK_PART`, the monster as target and
   the part id as quantity (part ids in `generated/monsters.json`). — *Retail*
-* A quest with more than two target species becomes a `*_ALL` quest with one objective (like retail m10419),
-  because the quest only has two objective slots. — *Design decision*
+* A quest with more than two species (all waves counted) becomes `HUNT_ALL` with one objective on the last
+  wave (like retail m10419), because the quest only has two objective slots; never Slay or Capture, so that
+  "Hunt all large monsters" is literally true. — *Design decision*
+* Quest board pictures (`pictures`, 5 slots): retail quests show at least one picture per large species. A
+  randomized quest shows one per species of every wave, in wave order (a quest has at most 5 large monsters),
+  then the picture of a body part (Dalamadur's tail) if there is room; never "?". — *Retail*
 * A quest that had no sub quest can get one (`sub_quests = randomize`): only the `sub_quest` flag is set,
   never `three_objectives` (none of the 223 retail quests with a sub quest sets it), and `reward_sub` /
   `hrp_sub` are the median retail share of the main reward / HRP of the quest's rank (`tuning.json`). Only
@@ -118,14 +125,20 @@ Dalamadur and Shah Dalamadur (head and tail) always spawn in area 1 at
 
 ## Quest text
 
-Texts are generated like the retail ones (measured on the 301 original quests):
+Texts are written from the retail sentences of each language, kept as templates in
+`curated/text_templates.json` (docs/data.md; measured on the 301 original quests):
 
-* Main objective: `<verb> <monster>`; the verb follows the **quest type** (Slay/Hunt/Capture), not the objective
-  type. fr uses "1" instead of an article ("Chasser 1 Rathian") and repeats the verb on the second line; de uses
+* Main objective: it names the **monsters of the quest**, not only the targets of the objectives (retail m10919
+  targets only the last wave but names both monsters): every wave, in wave order and, within a wave, in the
+  order of the objectives; swarms (Seltas x99) and body parts are left out, and the same name counts once with
+  its number ("Slay 3 Tigrex" for two Tigrex and an Apex Tigrex, m22006). One name: `<verb> <monster>`; two:
+  two lines joined with and/et/y/und/e; more than two: the fixed "Hunt all large monsters". The verb follows
+  the **quest type** (Slay/Hunt/Capture), not the objective type; a `*_ALL` quest takes it from its objective.
+  fr uses "1" instead of an article ("Chasser 1 Rathian") and repeats the verb on the second line; de uses
   the accusative ("Erjage einen Tigrex.") with a final period; some monsters, such as Dalamadur, take a
   definite article ("Abate al Dalamadur", "Tuer le Dalamadur"). More than one of a species: "Hunt 2 Khezu".
-  Two species: two lines joined with and/et/y/und/e. A "hunt them all" quest with one objective and several
-  species: the fixed text "Hunt all large monsters" (`text.HUNT_ALL`).
+  It is rewritten whenever the randomizer rewrites the objectives (both text modes), so it never names
+  monsters that are gone; an intruder's new name never goes into it.
 * Failure text: a retail capture quest says "...or capture target slain."; when the quest is not a capture
   quest any more it gets the normal text of the language.
 * Replacing a name also converts the article before it by the gender of the new monster (es un/una, el/la,
@@ -138,10 +151,12 @@ Texts are generated like the retail ones (measured on the 301 original quests):
   `Rompe/Hiere <la parte> del <monster>` (es), `<Monster>-<Part> brechen/verletzen` (de) and
   `Spezza/Ferisci <la parte> del <monster>` (it). The retail texts shorten the line when it does not fit (no
   article, "K. Wacha", cut names) and the generator tries the same steps. The longest lines of the retail texts
-  (title / objective / sub objective) are in `text.MAX_LINE`. The retail verb varies from quest to quest, so
-  the generator uses a fixed verb per part (`part_names.json`).
-* Retail texts the generator does not reproduce (`RETAIL_DIFFERENT` in `tests/test_text.py`): plurals
-  ("Hunt 2 Tetsucabras"), aliases ("Furious Rajang" is just "Rajang"), abbreviations, other verbs or line breaks.
+  (title / objective / sub objective) are in `max_line` of the templates. The retail verb varies from quest to
+  quest, so the generator uses a fixed verb per part (`part_names.json`).
+* Retail texts the templates do not reproduce (`RETAIL_DIFFERENT` in `tests/test_text.py`, 47 of 207): plurals
+  ("Hunt 2 Tetsucabras"), aliases ("Furious Rajang" is just "Rajang"), abbreviations, other verbs or articles,
+  other line breaks (fr "et 1 B" in 7 quests, de "A und\nB" in 9), and m10928, which names a monster that is
+  not in the quest.
 
 ## Stats
 

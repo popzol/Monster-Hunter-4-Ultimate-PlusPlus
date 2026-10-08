@@ -14,7 +14,7 @@ data/
     maps.json           id -> name, areas (bounds + retail spawn positions)
     quest_enums.json    display names for quest/objective types, ranks, ...
   curated/              hand-maintained rules
-    monster_rules.json  tiers, own music, groups (finale_monsters), body parts,
+    monster_rules.json  tiers, own music, groups (finale_monsters, uncapturable), body parts,
                         allowed maps, fixed areas
     map_rules.json      category (field/arena/everwood/unused), field music,
                         areas valid for large monsters
@@ -24,6 +24,7 @@ data/
     monster_names.json  monster names in the 5 quest languages
     part_names.json     breakable part names in the 5 quest languages + verb and gender of each part
     monster_grammar.json  gender and objective article of every large monster, per language
+    text_templates.json the sentences the randomizer writes in quest texts, per language
     small_monster_rules.json  interchangeable small monster groups
     supply_pool.json    consumables for supply boxes, with max capacity
     monster_icons.json  new icon cell of the monsters shown with "?" (new_monster_icons)
@@ -100,12 +101,40 @@ The quest texts need the grammatical gender of every monster and part:
   `python tools/build_monster_grammar.py` (the word before each name in titles, objectives, descriptions and
   sub objectives); `verified: false` ones are defaults (masculine, indefinite; Rathian and Queen feminine) for
   monsters that never appear in a retail text. English a/an and French/Italian elisions (l', dell', uno) are
-  computed from the name (`randomizer/grammar.py`). To correct an entry by hand, edit it and delete its
+  computed from the name (`randomizer/templates.py` for written texts, `randomizer/grammar.py` for replaced
+  names). To correct an entry by hand, edit it and delete its
   `generated` key so the tool keeps it (`--force` ignores existing entries). `--ratios` prints the retail
   median sub quest reward and HRP shares per rank used in `tuning.json`.
 * `part_names.json` `grammar`: per part the `verb` of the sub objective ("break" or "wound"; the retail
   texts mix them, this is a fixed choice) and the gender in fr, es, it; a trailing `pl` marks a plural part.
   Written by hand.
+
+## Quest text templates (`curated/text_templates.json`)
+
+Every sentence the randomizer writes in a quest text, copied from the retail quests, one entry per language
+under `languages` (used by `randomizer/templates.py`; titles and descriptions are retail text where only the
+names change, see `randomizer/text.py`):
+
+* `classes`: the grammatical classes of a noun in the language: en `a`/`an`; es and de the gender (`m`, `f`,
+  de also `n`); fr the gender with or without `_vowel` (elision); it `m`, `m_lo` (uno / lo / dello: z, s +
+  consonant, gn, ps, x, y, i + vowel), `m_vowel`, `f`, `f_vowel`. The class of a name is computed from its
+  gender (`monster_grammar.json`, `part_names.json`) and its first letters (`templates.noun_class`).
+* `monster`: a monster in the main objective, with the article its `objective` field asks for:
+  `indefinite` and `definite` have one form per class ("un {name}" / "una {name}"), `none` and `count`
+  ("{n} {name}", more than one of the species) one form.
+* `objective`: per verb (`hunt`, `slay`, `capture`, after the quest type) the sentence for `one` and `two`
+  monsters, `{0}` and `{1}` being their `monster` phrases, so two monsters of any classes combine; `all` is
+  the fixed "hunt all large monsters" of more than two species.
+* `failure`: the `normal` and the `capture` failure conditions.
+* `sub`: the sub objective: `verbs` (`break`, `wound`), `part` (the part with its article, per class and its
+  plural `_pl`), `owner` (the monster as the part's owner: "del {name}"), and `forms`, the sentences from
+  the longest to the shortest; the first that fits `max_line.sub` is used, with the monster's name and
+  then its abbreviations.
+* `no_sub`: the text of a quest without a sub quest; `max_line`: the longest line of the retail titles,
+  objectives and sub objectives (the width of the in-game boxes).
+
+`load_game_data()` checks that every language has every template and that every table keyed by class
+lists exactly the language's classes (`tests/test_text.py` fills every combination).
 
 ## Editing `curated/`
 

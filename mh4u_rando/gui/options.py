@@ -211,17 +211,19 @@ QUEST_SECTIONS: tuple[Section, ...] = (
                 Choice(TextMode.KEEP, T("Sin cambios", "Don't change"),
                        T("El tablón muestra los textos originales.", "The quest board shows the original text.")),
                 Choice(TextMode.REPLACE_NAMES, T("Sustituir nombres", "Replace names"),
-                       T("Actualiza los nombres de los monstruos en título, objetivo y descripción, en los cinco idiomas.",
-                         "Updates monster names in title, objective and description, in all five languages.")),
+                       T("Actualiza los nombres de los monstruos en título y descripción. Cuando cambian los "
+                         "monstruos, el objetivo principal se escribe con las frases del juego original y nombra "
+                         "a todos: «Caza una A», «Captura una A y un B» o, con tres o más, «Caza a todos los "
+                         "monstruos grandes». En los cinco idiomas.",
+                         "Updates monster names in title and description. When the monsters change, the main "
+                         "objective is written with the game's own sentences and names all of them: “Hunt a A”, "
+                         "“Capture a A and a B” or, with three or more, “Hunt all large monsters”. In all five "
+                         "languages.")),
                 Choice(TextMode.REGENERATE, T("Regenerar", "Regenerate"),
-                       T("Como «Sustituir nombres», y además reescribe el objetivo principal y la condición de "
-                         "fallo como los textos originales del juego a partir de los objetivos reales: «Caza una A», "
-                         "«Caza una A y un B» o «Caza a todos los monstruos grandes». Una captura que pasa a caza "
-                         "ya no dice «Captura». En los cinco idiomas.",
+                       T("Como «Sustituir nombres», y además reescribe con esas frases el objetivo principal y la "
+                         "condición de fallo aunque los monstruos de la misión no cambien.",
                          "Like “Replace names”, and also rewrites the main objective and the failure condition "
-                         "the way the game's own texts do, from the real objectives: “Hunt a A”, “Hunt a A and a "
-                         "B” or “Hunt all large monsters”. A capture turned into a hunt no longer says "
-                         "“Capture”. In all five languages.")),
+                         "with those sentences even when the quest's monsters stay the same.")),
             )),
         )),
     )),
