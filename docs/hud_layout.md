@@ -24,9 +24,9 @@ game (says which); **Guess** = plausible from names or values, unverified.
 | Option in the randomizer (settings, pipeline, GUI, CLI) | **Done**: data files and executable patches (`code.ips` from the update's executable) |
 | Minimap: data + icon patch | **Verified** (icon positions probe 3, size probe 5) |
 | Mount gauge: data + face patch | **Verified** (probe 6) |
-| L + D-pad up switches the target; the D-pad does not move the camera while L is held | **Built, not seen in the game yet** (D-pad measured in probe 18; see hud_code.md, "Target switch"). Replaces L + X (probe 11), which the gunners use for ammo |
-| Hint of the switch in the item selector | **Built, not seen in the game yet**: glyph + sprite inserted into `ui205` (below, "Target switch hint") |
-| Target face (monster icon) on the top screen | **Works** (probes 16–17: hidden during area loads, clear of the open item selector); its height now follows the item's icon (not seen yet) |
+| L + D-pad up switches the target; the D-pad does not move the camera while L is held | **Rebuilt, waiting for probe 20**: probe 19's filter was in the wrong place (hud_code.md, "Target switch"). Replaces L + X (probe 11), which the gunners use for ammo |
+| Hint of the switch in the item selector | **Rebuilt, waiting for probe 20**: not shown in probe 19; now the glyph is in every copy of `qst00_ID` and the sprite is animated (below, "Target switch hint") |
+| Target face (monster icon) on the top screen | **Works** (probes 16–17: hidden during area loads, clear of the open item selector; probe 19: at the item icon's height) |
 | Minimap without the Map item | **Works** (probes 16–17) |
 
 ## Code and tools
@@ -241,9 +241,27 @@ The sprite is a copy of `ui205_y_button01` at layout (−13.6, −87): the heigh
 of the item's icon (`ui205_icon00`, y −87) and the target face, 2 px to the
 left of the face's lock mark (`hint.hint_position`). The group shrinks with the
 HUD size, so the hint is inserted before scaling (`hud_files(target_hint=True)`;
-with the HUD at 100 % only `core_quest.arc` is written, `hint_files`). The
+with the HUD at 100 % only the hint's files are written, `hint_files`). The
 texture index (+0x58) is `qst00_ID`'s in the layout and the UV (+0x28) are
 normalized (u, v, w, h) of the texture's size.
+
+**Not shown in probe 19.** Two causes found in the files, fixed for probe 20:
+
+* `<lang>\lyt\quest\texture\qst00_ID` exists, identical, in three ARCs of each
+  language: `core_quest`, `core_result` and `v05a00_map` (a scan of every
+  ARC of the ROM). The game reuses a resource already loaded under the same
+  path, so with another copy in memory it drew the empty corner. The glyph now
+  goes into all three (`hint.GLYPH_ARCS`, `build.glyph_files`), like the
+  monster icon atlas goes into every copy of its texture.
+* The sprite had no animation, so it would have been shown all the time.
+  `ui205_select` animates the colour (alpha) of `ui205_y_button01`: animation
+  6 opens the bar (0 → 255 between frames 5 and 10), 7 closes it, 8 is the
+  closed state (0). `Animations.copy_pane` gives `ui205_dpad_up` copies of
+  those tracks and a target in each of the three animations.
+
+`tools/hud_probe.py --hint-controls` adds two always-shown sprites above the
+item bar (`hint.CONTROLS`): a plain copy of the Y glyph (does the layout take
+new panes?) and a copy of the D-pad glyph (is the texture used?).
 
 ### Coordinates
 
@@ -285,7 +303,8 @@ animations, 5897 tracks; property meanings are a Guess):
 | Part | Layout |
 |---|---|
 | Header | `lanl`, u32 version 5, u32 animation count, u32 offset ×count (**0 = empty slot**) |
-| Animation (0x20) | u32 tracks offset, u32 0, u32 targets offset, u32 track count, u32 ?, u32 frame count, u32 ×2 (−1 in about half) |
+| Animation (0x20) | u32 tracks offset, u32 0, u32 targets offset, u32 track count, u32 target count, u32 frame count, u32 ×2 (−1 in about half) |
+| Target (0x0C) | u32 group hash, u32 pane hash, u16 first and u16 last index of its tracks (contiguous) |
 | Track (0x10) | u8 value format, u8 property, u16 key count, u32 keys offset, u32 group hash, u32 pane hash |
 | Key (0x10) | f32 frame, value (f32 or RGBA), f32 tangent ×2 |
 

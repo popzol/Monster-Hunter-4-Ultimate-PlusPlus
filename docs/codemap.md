@@ -201,13 +201,14 @@ its public classes and functions with their signatures.
   - `walk() -> Iterator[str]`
 - `short_name(entry_name: str) -> str`
 - `scale_arc(raw: bytes, layouts: Mapping[str, AnchorSpec | Mapping[str, AnchorSpec]], factor: float) -> bytes` - The ARC with the given layouts scaled, together with every animation of the ARC that moves them.
-- `hint_files(rom: GameFiles) -> Iterator[tuple[str, bytes]]` - (RomFS path, new ARC) of the quest HUD of each language with only the target switch hint (hint.py).
-- `hud_files(rom: GameFiles, update: GameFiles | None, factor: float, with_code_patch: bool=False, target_hint: bool=False) -> Iterator[tuple[str, bytes]]` - (RomFS path, new ARC) of every file of the HUD size mod, for the 5 languages. `with_code_patch` a...
+- `glyph_files(rom: GameFiles) -> Iterator[tuple[str, bytes]]` - (RomFS path, new ARC) of the other copies of the hint's texture (hint.GLYPH_ARCS but core_quest).
+- `hint_files(rom: GameFiles) -> Iterator[tuple[str, bytes]]` - (RomFS path, new ARC) of the quest HUD of each language with only the target switch hint (hint.py...
+- `hud_files(rom: GameFiles, update: GameFiles | None, factor: float, with_code_patch: bool=False, target_hint: bool=False, hint_controls: bool=False) -> Iterator[tuple[str, bytes]]` - (RomFS path, new ARC) of every file of the HUD size mod, for the 5 languages. `with_code_patch` a...
 - `emulator_folders() -> list[Path]` - User folders where Citra and its forks keep their data (Windows, Linux, macOS).
 - `find_update() -> Path | None` - The update's 00000000.app installed in an emulator, if any.
-- `hud_paths(mod_dir: Path) -> list[Path]` - Every file the HUD size mod can leave in a mod folder (core ARCs and the map ARCs).
+- `hud_paths(mod_dir: Path) -> list[Path]` - Every file the HUD size mod can leave in a mod folder (core ARCs, the hint's texture copies and t...
 - `remove_hud_files(mod_dir: Path) -> None`
-- `write_hud_files(mod_dir: Path, rom: GameFiles, update: GameFiles | None, factor: float, with_code_patch: bool=False, target_hint: bool=False) -> list[Path]` - Write the HUD size mod into a mod folder (romfs/<lang>/data/...). Files of an earlier run are rep...
+- `write_hud_files(mod_dir: Path, rom: GameFiles, update: GameFiles | None, factor: float, with_code_patch: bool=False, target_hint: bool=False, hint_controls: bool=False) -> list[Path]` - Write the HUD size mod into a mod folder (romfs/<lang>/data/...). Files of an earlier run are rep...
 
 ### `mh4u_rando/hud/code_patch.py` - Executable patches of the HUD size option (exefs/code.ips), for the update's code.bin.
 - class `CodePatchError(ValueError)`
@@ -224,8 +225,8 @@ its public classes and functions with their signatures.
 
 ### `mh4u_rando/hud/hint.py` - The hint of the target switch (option target_switch, L + D-pad up): a D-pad glyph with only its u...
 - `hint_position() -> tuple[float, float]` - Layout coordinates of the glyph at 100 %: at the height of the item's icon and the face, left of the
-- `add_hint(raw_arc: bytes) -> bytes` - A core_quest.arc with the glyph in its texture qst00_ID and the hint sprite in ui205.
-- `add_hints(files: Mapping[str, bytes]) -> dict[str, bytes]` - `files` (RomFS path -> ARC), every core_quest.arc of them with the hint.
+- `add_glyph(raw_arc: bytes) -> bytes` - The ARC with the glyph drawn into its qst00_ID.
+- `add_hint(raw_arc: bytes, controls: bool=False) -> bytes` - A core_quest.arc with the glyph in its texture qst00_ID and the hint sprite in ui205, animated like
 
 ### `mh4u_rando/hud/icons.py` - New monster icons (option new_monster_icons) for the monsters the game draws with the "?" icon.
 - class `IconError(ValueError)`
@@ -249,6 +250,7 @@ its public classes and functions with their signatures.
   - `values() -> list[float]`
   - `transform(scale: float, offset: float=0.0) -> None` - value -> value * scale + offset for every key; tangents (slopes) are only scaled.
 - class `Animations`
+  - `copy_pane(source_hash: int, new_hash: int) -> int` - Animate the pane `new_hash` like `source_hash` in every animation that has it as a target: copies of
   - `to_bytes() -> bytes`
 - `parse_lanl(data: bytes) -> Animations`
 
@@ -629,6 +631,7 @@ its public classes and functions with their signatures.
 - `tint_files(rom: RomFS, update: RomFS | None, factor: float)` - First probe: ui202 scaled towards the top-left corner, other candidates tinted.
 - `tint_readme(scale: int, with_common: bool) -> list[str]`
 - `scale_readme(scale: int, with_common: bool, minimap: bool, code_patch: bool) -> list[str]`
+- `target_readme(controls: bool) -> list[str]`
 - `without_hud_patch(code: bytes, original: bytes) -> bytes` - `code` with the original bytes back wherever code_patch.patch_hud writes.
 - `main() -> None`
 

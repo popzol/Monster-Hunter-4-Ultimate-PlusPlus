@@ -6,7 +6,7 @@
 @ FUN_00b8d074 switch the target exactly like a tap on the panel. The test at
 @ 0xB948AC is replaced by `bl` to this function and a branch on r0:
 @     r0 != 0 if asm/dpad_filter.s saw L held + D-pad up pressed, or the original test.
-@ dpad_filter.s runs in the player's per-frame action copy and leaves the
+@ dpad_filter.s runs in the player's per-frame input update and leaves the
 @ request in FLAG (a free word at the end of .bss); it is consumed here, so a
 @ press switches once. Only r0, r1 and r12 are used (the caller reloads r0).
 @

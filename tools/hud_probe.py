@@ -31,7 +31,7 @@ from mh4u_rando.exefs import RomFS, apply_ips, load_code, make_ips  # noqa: E402
 from mh4u_rando.hud import LANGUAGES, LYT_TYPE_HASH, Anchor, hud_files, parse_lyt, scale_arc  # noqa: E402
 from mh4u_rando.hud.build import MAP_ARC, short_name  # noqa: E402
 from mh4u_rando.hud.code_patch import (  # noqa: E402
-    ACTIONS_COPY, BASE_ADDRESS, CAVE, CAVE_END, FACE_HOOK, FACE_ROUTINE, FREE_HOOK, ICON_CALLS, LOADER_HOOK, MINIMAP_CIRCLE_OFFSET, MOUNT_FACE_FLOATS, SHOW_HOOK,
+    ACTIONS_COPY, BASE_ADDRESS, CAVE, CAVE_END, DPAD_HOOK, FACE_HOOK, FACE_ROUTINE, FREE_HOOK, ICON_CALLS, LOADER_HOOK, MINIMAP_CIRCLE_OFFSET, MOUNT_FACE_FLOATS, SHOW_HOOK,
     TARGET_BUTTON, TARGET_ROUTINE, TARGET_TEST, patch_hud, patch_target_button, patch_target_face,
 )
 from build_hud_asm import ASM, DEFAULT_DEVKITARM, assemble  # noqa: E402
@@ -135,12 +135,26 @@ def scale_readme(scale: int, with_common: bool, minimap: bool, code_patch: bool)
     ]
 
 
+def target_readme(controls: bool) -> list[str]:
+    return [
+        "",
+        "Cambio de objetivo (L + cruceta arriba):",
+        "- Con L pulsado, cruceta arriba cambia el objetivo (arma cuerpo a cuerpo y ballesta / arco).",
+        "- Con L pulsado la cruceta no mueve la cámara; el C-stick sí. Sin L, la cruceta la mueve como siempre.",
+        "- L + X con ballesta solo cambia la munición.",
+        "- Al abrir la barra de L sale el icono de la cruceta (brazo de arriba iluminado) a la izquierda de la",
+        "  cara del objetivo, y desaparece al cerrarla.",
+        *(["- Prueba: encima de la barra de objetos hay dos iconos de control, siempre visibles:",
+           "  a la izquierda una Y, a la derecha la cruceta. ¿Cuáles se ven?"] if controls else []),
+    ]
+
+
 def without_hud_patch(code: bytes, original: bytes) -> bytes:
     """`code` with the original bytes back wherever code_patch.patch_hud writes."""
     out = bytearray(code)
     spans = [(CAVE, CAVE_END)] + [(site, site + 4) for site in ICON_CALLS] + \
         [(address, address + 4) for address in MOUNT_FACE_FLOATS] + [(MINIMAP_CIRCLE_OFFSET[0], MINIMAP_CIRCLE_OFFSET[0] + 4), (TARGET_TEST, TARGET_TEST + 16), (ACTIONS_COPY, ACTIONS_COPY + 4)] + \
-        [(hook, hook + 4) for hook in (LOADER_HOOK, FREE_HOOK, SHOW_HOOK, FACE_HOOK)]
+        [(hook, hook + 4) for hook in (LOADER_HOOK, FREE_HOOK, SHOW_HOOK, FACE_HOOK, DPAD_HOOK)]
     for start, end in spans:
         out[start - BASE_ADDRESS:end - BASE_ADDRESS] = original[start - BASE_ADDRESS:end - BASE_ADDRESS]
     return bytes(out)
@@ -161,12 +175,15 @@ def main() -> None:
     parser.add_argument("--target-face", action="store_true", help="also the target's face on the top screen")
     parser.add_argument("--face-debug", action="store_true",
                         help="the target face's diagnostic build (snapshot for citra_state.py --face-dump)")
+    parser.add_argument("--hint-controls", action="store_true",
+                        help="with --target-button: two always-shown sprites above the item bar (hint.CONTROLS)")
     args = parser.parse_args()
     factor = args.scale / 100
     rom = RomFS(args.rom)
     update = RomFS(args.update) if args.update else None
     files = tint_files(rom, update, factor) if args.tint else \
-        hud_files(rom, update, factor, with_code_patch=args.minimap, target_hint=args.target_button)
+        hud_files(rom, update, factor, with_code_patch=args.minimap, target_hint=args.target_button,
+                  hint_controls=args.hint_controls)
     count = 0
     for path, data in files:
         target = args.out / "romfs" / path
@@ -195,6 +212,8 @@ def main() -> None:
         print(f"HUD executable patch written to {ips}")
     readme = tint_readme(args.scale, update is not None) if args.tint else \
         scale_readme(args.scale, update is not None, args.minimap, code_patch)
+    if args.target_button and not args.tint:
+        readme += target_readme(args.hint_controls)
     (args.out / "LEEME.txt").write_text("\n".join(readme) + "\n", encoding="utf-8")
     print(f"{count} files written to {args.out / 'romfs'}")
 

@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Protocol
 
 from ..arc import parse_arc, write_arc
-from .hint import add_hint
+from .hint import GLYPH_ARCS, add_glyph, add_hint
 from .lanl import LANL_TYPE_HASH, parse_lanl
 from .lyt import LYT_TYPE_HASH, parse_lyt
 from .scale import Anchor, AnchorSpec, anchor_all, scale_hud
@@ -88,22 +88,37 @@ def scale_arc(raw: bytes, layouts: Mapping[str, AnchorSpec | Mapping[str, Anchor
     return write_arc(arc)
 
 
+def glyph_files(rom: GameFiles) -> Iterator[tuple[str, bytes]]:
+    """(RomFS path, new ARC) of the other copies of the hint's texture (hint.GLYPH_ARCS but core_quest)."""
+    for lang in LANGUAGES:
+        for arc_name in GLYPH_ARCS:
+            if arc_name != QUEST_ARC:
+                path = f"{lang}/data/{arc_name}"
+                yield path, add_glyph(rom.read(path))
+
+
 def hint_files(rom: GameFiles) -> Iterator[tuple[str, bytes]]:
-    """(RomFS path, new ARC) of the quest HUD of each language with only the target switch hint (hint.py)."""
+    """(RomFS path, new ARC) of the quest HUD of each language with only the target switch hint (hint.py), and
+    the other copies of its texture."""
     for lang in LANGUAGES:
         path = f"{lang}/data/{QUEST_ARC}"
         yield path, add_hint(rom.read(path))
+    yield from glyph_files(rom)
 
 
 def hud_files(rom: GameFiles, update: GameFiles | None, factor: float,
-              with_code_patch: bool = False, target_hint: bool = False) -> Iterator[tuple[str, bytes]]:
+              with_code_patch: bool = False, target_hint: bool = False,
+              hint_controls: bool = False) -> Iterator[tuple[str, bytes]]:
     """(RomFS path, new ARC) of every file of the HUD size mod, for the 5 languages. `with_code_patch` adds the
     minimap and the mount gauge: only together with code_patch.patch_hud in exefs/code.ips. `target_hint` adds
-    the target switch hint to the item selector, which then shrinks with it.
+    the target switch hint to the item selector, which then shrinks with it, and the other copies of its
+    texture; `hint_controls` its diagnostic sprites (tools/hud_probe.py).
 
     Without `update`, the ARCs it replaces are left out (writing the base game's copy would undo the update)."""
     map_paths = [p for p in rom.walk() if p.split("/")[0] in LANGUAGES
                  and MAP_ARC.fullmatch(p.split("/")[-1])] if with_code_patch else []
+    if target_hint:
+        yield from glyph_files(rom)
     for lang in LANGUAGES:
         for arc_name in HUD_LAYOUTS:
             source = update if arc_name in UPDATE_ARCS else rom
@@ -111,7 +126,7 @@ def hud_files(rom: GameFiles, update: GameFiles | None, factor: float,
                 path = f"{lang}/data/{arc_name}"
                 raw = source.read(path)
                 if target_hint and arc_name == QUEST_ARC:
-                    raw = add_hint(raw)
+                    raw = add_hint(raw, hint_controls)
                 yield path, scale_arc(raw, layouts_of(arc_name, with_code_patch), factor)
         for path in map_paths:
             if path.startswith(lang + "/"):
@@ -139,11 +154,12 @@ def find_update() -> Path | None:
 
 
 def hud_paths(mod_dir: Path) -> list[Path]:
-    """Every file the HUD size mod can leave in a mod folder (core ARCs and the map ARCs)."""
+    """Every file the HUD size mod can leave in a mod folder (core ARCs, the hint's texture copies and the map
+    ARCs)."""
     paths = []
     for lang in LANGUAGES:
         folder = Path(mod_dir) / "romfs" / lang / "data"
-        paths += [folder / name for name in HUD_LAYOUTS]
+        paths += [folder / name for name in dict.fromkeys([*HUD_LAYOUTS, *GLYPH_ARCS])]
         if folder.is_dir():
             paths += [p for p in folder.iterdir() if MAP_ARC.fullmatch(p.name)]
     return paths
@@ -155,12 +171,12 @@ def remove_hud_files(mod_dir: Path) -> None:
 
 
 def write_hud_files(mod_dir: Path, rom: GameFiles, update: GameFiles | None, factor: float,
-                    with_code_patch: bool = False, target_hint: bool = False) -> list[Path]:
+                    with_code_patch: bool = False, target_hint: bool = False, hint_controls: bool = False) -> list[Path]:
     """Write the HUD size mod into a mod folder (romfs/<lang>/data/...). Files of an earlier run are replaced.
-    See hud_files() for `with_code_patch` and `target_hint`."""
+    See hud_files() for `with_code_patch`, `target_hint` and `hint_controls`."""
     remove_hud_files(mod_dir)
     written = []
-    for path, data in hud_files(rom, update, factor, with_code_patch, target_hint):
+    for path, data in hud_files(rom, update, factor, with_code_patch, target_hint, hint_controls):
         target = Path(mod_dir) / "romfs" / path
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(data)

@@ -8,9 +8,13 @@ from conftest import rom_path
 from test_hud import TREE, UPDATE_APP, build_layout
 from mh4u_rando.arc import parse_arc
 from mh4u_rando.exefs import RomFS
-from mh4u_rando.hud.build import hud_files, hint_files
+from mh4u_rando.hud.build import LANGUAGES, hud_files, hint_files
 from mh4u_rando.hud.code_patch import FACE_RIGHT_GAP, FACE_SCALE, ITEM_ICON_Y, face_params
-from mh4u_rando.hud.hint import GAP, GLYPH_AT, GLYPH_ROWS, GLYPH_SIZE, NAME, PARENT, TEXTURE, add_hint, hint_position
+from mh4u_rando.hud.hint import (
+    ANIMATION, CONTROLS, GAP, GLYPH_ARCS, GLYPH_AT, GLYPH_ROWS, GLYPH_SIZE, NAME, PARENT, TEMPLATE, TEXTURE, add_hint,
+    hint_position,
+)
+from mh4u_rando.hud.lanl import parse_lanl
 from mh4u_rando.hud.lyt import (
     CONTAINERS, LYT_TYPE_HASH, RECORD_SIZES, LytFormatError, PaneKind, name_hash, parse_lyt,
 )
@@ -161,7 +165,14 @@ def test_add_the_hint_to_the_game():
     patched = parse_arc(add_hint(raw))
     assert [e.name for e in patched.entries] == [e.name for e in original.entries]
     changed = [e.name.split("\\")[-1] for e, o in zip(patched.entries, original.entries) if e.data != o.data]
-    assert sorted(changed) == [TEXTURE, "ui205"]
+    assert sorted(changed) == [TEXTURE, "ui205", ANIMATION]
+    # The hint is animated like the Y glyph of the open bar: same tracks, same keys.
+    tracks = parse_lanl(entry(patched, ANIMATION).data).tracks
+    def keys(pane):
+        found = [t for t in tracks if t.pane_hash == name_hash(pane)]
+        return [(t.animation, t.prop, t.value_format,
+                 bytes(t.animations.data[t.keys_offset:t.keys_offset + 0x10 * t.key_count])) for t in found]
+    assert keys(NAME) == keys(TEMPLATE) and {a for a, *_ in keys(NAME)} == {6, 7, 8}
     layout = parse_lyt(entry(patched, "ui205").data)
     sprite = layout.find(NAME)
     assert sprite.parent.name == PARENT and sprite.size == (16, 16) and sprite.position == pytest.approx(hint_position())
@@ -191,4 +202,22 @@ def test_the_hint_shrinks_with_the_hud():
     assert sprite.size == pytest.approx((16 * 0.7, 16 * 0.7))
     plain = dict(hud_files(rom, update, 0.7))
     assert not any(NAME in e.name for e in parse_arc(plain["eng/data/core_quest.arc"]).entries)
-    assert "eng/data/core_quest.arc" in dict(hint_files(rom)) and len(dict(hint_files(rom))) == 5
+    hints = dict(hint_files(rom))
+    assert set(hints) == {f"{lang}/data/{name}" for lang in LANGUAGES for name in GLYPH_ARCS}
+    assert {p for p in files if not p.endswith(("core_quest.arc", "core_common.arc"))} == \
+        {f"{lang}/data/{name}" for lang in LANGUAGES for name in GLYPH_ARCS if name != "core_quest.arc"}
+    for lang in ("eng", "spa"):  # every copy of the texture has the glyph
+        for name in GLYPH_ARCS:
+            for arc in (parse_arc(hints[f"{lang}/data/{name}"]), parse_arc(files[f"{lang}/data/{name}"])):
+                assert picture(parse_tex(entry(arc, TEXTURE).data), *GLYPH_AT, GLYPH_SIZE, GLYPH_SIZE) == GLYPH_ROWS
+
+
+def test_hint_controls():
+    rom, _ = game_files()
+    layout = parse_lyt(entry(parse_arc(add_hint(rom.read("spa/data/core_quest.arc"), controls=True)), "ui205").data)
+    (y_name, _), (dpad_name, _) = CONTROLS
+    y, dpad, template = layout.find(y_name), layout.find(dpad_name), layout.find(TEMPLATE)
+    assert y.position[0] > dpad.position[0]  # Y on the left of the screen
+    assert layout.data[y.offset + 0x28:y.offset + 0x5C] == layout.data[template.offset + 0x28:template.offset + 0x5C]
+    hint = layout.find(NAME)
+    assert layout.data[dpad.offset + 0x28:dpad.offset + 0x5C] == layout.data[hint.offset + 0x28:hint.offset + 0x5C]

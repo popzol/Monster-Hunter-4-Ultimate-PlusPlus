@@ -62,21 +62,34 @@ def build_layout(tree=TREE, counts: dict | None = None) -> bytes:
     return bytes(data)
 
 
-def build_animations(tracks) -> bytes:
-    """One animation with the given tracks: (value format, property, group, pane, [(value, tangent_in, tangent_out)])."""
+def build_animations(tracks, with_targets: bool = False) -> bytes:
+    """One animation with the given tracks: (value format, property, group, pane, [(value, tangent_in, tangent_out)]).
+    `with_targets` adds the target list (one per run of tracks of the same pane) after the keys."""
     count = 2  # slot 0 is empty, like in some game files
     animation_at = 0x0C + 4 * count
     tracks_at = animation_at + 0x20
     keys_at = tracks_at + 0x10 * len(tracks)
+    targets = []  # [group, pane, first, last]
+    for i, (_, _, group, pane, _) in enumerate(tracks):
+        if targets and targets[-1][:2] == [group, pane]:
+            targets[-1][3] = i
+        else:
+            targets.append([group, pane, i, i])
     data = bytearray(b"lanl" + struct.pack("<II", 5, count) + struct.pack("<II", 0, animation_at))
-    data += struct.pack("<8I", tracks_at, 0, 0, len(tracks), 1, 30, 0xFFFFFFFF, 0xFFFFFFFF)
+    data += struct.pack("<8I", tracks_at, 0, 0, len(tracks), len(targets) if with_targets else 1, 30,
+                        0xFFFFFFFF, 0xFFFFFFFF)
     keys = bytearray()
     for fmt, prop, group, pane, values in tracks:
         data += struct.pack("<BBHIII", fmt, prop, len(values), keys_at + len(keys), name_hash(group), name_hash(pane))
         for frame, (value, t_in, t_out) in enumerate(values):
             raw = struct.pack("<I", value) if fmt & 0x0F else struct.pack("<f", value)
             keys += struct.pack("<f", frame * 10) + raw + struct.pack("<2f", t_in, t_out)
-    return bytes(data + keys)
+    data += keys
+    if with_targets:
+        struct.pack_into("<I", data, animation_at + 8, len(data))
+        for group, pane, first, last in targets:
+            data += struct.pack("<IIHH", name_hash(group), name_hash(pane), first, last)
+    return bytes(data)
 
 
 # ----- pure ----------------------------------------------------------------------------------------------
@@ -207,6 +220,30 @@ def test_track_transform():
     width.transform(2)
     assert width.values() == [60]
     assert struct.unpack_from("<2f", animations.data, width.keys_offset + 8) == (123, 456)
+
+
+def test_copy_pane_animation():
+    animations = parse_lanl(build_animations(TRACKS, with_targets=True))
+    assert animations.copy_pane(name_hash("s"), name_hash("copy")) == 1
+    assert animations.copy_pane(name_hash("absent"), name_hash("other")) == 0
+    with pytest.raises(LanlFormatError, match="already"):
+        animations.copy_pane(name_hash("s"), name_hash("copy"))
+    data = animations.to_bytes()
+    tracks = parse_lanl(data).tracks
+    assert len(data) % 4 == 0 and len(tracks) == len(TRACKS) + 4
+    source = [t for t in tracks if t.pane_hash == name_hash("s")]
+    copies = tracks[len(TRACKS):]
+    assert all(t.pane_hash == name_hash("copy") and t.group_hash == name_hash("g") for t in copies)
+    for old, new in zip(source, copies):
+        assert (new.value_format, new.prop, new.key_count) == (old.value_format, old.prop, old.key_count)
+        assert new.keys_offset != old.keys_offset  # own keys: scaling one does not move the other
+        size = 0x10 * old.key_count
+        assert data[new.keys_offset:new.keys_offset + size] == data[old.keys_offset:old.keys_offset + size]
+    _, _, targets_at, track_count, target_count, *_ = struct.unpack_from("<8I", data, 0x14)
+    targets = [struct.unpack_from("<IIHH", data, targets_at + 12 * i) for i in range(target_count)]
+    assert track_count == len(TRACKS) + 4 and targets[-1] == (name_hash("g"), name_hash("copy"), 7, 10)
+    assert targets[:-1] == [(name_hash("g"), name_hash("n"), 0, 0), (name_hash("g"), name_hash("s"), 1, 4),
+                            (name_hash("g2"), name_hash("g2"), 5, 5), (name_hash("g"), name_hash("missing"), 6, 6)]
 
 
 def test_rejects_malformed_animations():
@@ -619,25 +656,26 @@ def test_layouts_with_the_code_patch():
 
 def test_patch_target_button():
     from mh4u_rando.hud.code_patch import (
-        ACTIONS_COPY, ACTIONS_COPY_ORIGINAL, BASE_ADDRESS, CAVE_END, DPAD_FILTER, DPAD_FILTER_CODE, FACE_LOADER,
+        ACTIONS_COPY, BASE_ADDRESS, CAVE_END, DPAD_ACTIONS, DPAD_FILTER, DPAD_FILTER_CODE, DPAD_HOOK, FACE_LOADER,
         FACE_ROUTINE, TARGET_BUTTON, TARGET_FACE, TARGET_ROUTINE, TARGET_SET, TARGET_SKIP, TARGET_TEST,
-        TARGET_TEST_ORIGINAL, CodePatchError, bl_target, patch_hud, patch_target_button,
+        TARGET_TEST_ORIGINAL, CodePatchError, bl_target, encode_bl, patch_hud, patch_target_button,
     )
     code = bytearray(synthetic_update_code())
     with pytest.raises(CodePatchError):
         patch_target_button(bytes(code))  # the original test is missing
     code[TARGET_TEST - BASE_ADDRESS:TARGET_TEST - BASE_ADDRESS + 16] = TARGET_TEST_ORIGINAL
     with pytest.raises(CodePatchError):
-        patch_target_button(bytes(code))  # the action copy is missing
-    code[ACTIONS_COPY - BASE_ADDRESS:ACTIONS_COPY - BASE_ADDRESS + 4] = ACTIONS_COPY_ORIGINAL
+        patch_target_button(bytes(code))  # the call of the D-pad actions is missing
+    code[DPAD_HOOK - BASE_ADDRESS:DPAD_HOOK - BASE_ADDRESS + 4] = encode_bl(DPAD_HOOK, DPAD_ACTIONS)
     patched = patch_target_button(bytes(code))
     assert patched[TARGET_ROUTINE - BASE_ADDRESS:TARGET_ROUTINE - BASE_ADDRESS + len(TARGET_BUTTON)] == TARGET_BUTTON
     assert TARGET_ROUTINE + len(TARGET_BUTTON) <= FACE_LOADER
     assert bl_target(patched, TARGET_TEST) == TARGET_ROUTINE
-    # The action copy goes through the D-pad filter, which starts with the instruction it replaces.
-    assert bl_target(patched, ACTIONS_COPY) == DPAD_FILTER
+    # The D-pad actions go through the filter, which calls or jumps to the original function.
+    assert bl_target(patched, DPAD_HOOK) == DPAD_FILTER
     assert patched[DPAD_FILTER - BASE_ADDRESS:DPAD_FILTER - BASE_ADDRESS + len(DPAD_FILTER_CODE)] == DPAD_FILTER_CODE
-    assert DPAD_FILTER_CODE[:4] == ACTIONS_COPY_ORIGINAL and DPAD_FILTER + len(DPAD_FILTER_CODE) <= CAVE_END
+    assert DPAD_FILTER + len(DPAD_FILTER_CODE) <= CAVE_END
+    assert bl_target(patched, ACTIONS_COPY) is None  # probe 19's hook is gone
     assert FACE_ROUTINE + len(TARGET_FACE) <= DPAD_FILTER
     flag = struct.pack("<I", 0x111D128)  # the request, in both routines
     assert TARGET_BUTTON.endswith(flag + struct.pack("<2I", 0x10572E0, 0xFB6B7C)) and DPAD_FILTER_CODE.endswith(flag)
@@ -651,7 +689,7 @@ def test_patch_target_button():
     patched = patch_target_button(bytes(code), diagnostic)
     assert patched[TARGET_ROUTINE - BASE_ADDRESS:TARGET_ROUTINE - BASE_ADDRESS + len(diagnostic)] == diagnostic
     assert bl_target(patched, TARGET_TEST) == TARGET_ROUTINE
-    assert patched[ACTIONS_COPY - BASE_ADDRESS:ACTIONS_COPY - BASE_ADDRESS + 4] == ACTIONS_COPY_ORIGINAL  # no filter
+    assert bl_target(patched, DPAD_HOOK) == DPAD_ACTIONS  # no filter
     assert not any(patched[DPAD_FILTER - BASE_ADDRESS:CAVE_END - BASE_ADDRESS])
 
 
@@ -782,7 +820,7 @@ def test_pipeline_with_every_interface_option(tmp_path):
     from conftest import rom_path
     from mh4u_rando.exefs import apply_ips, load_code
     from mh4u_rando.hud.code_patch import (
-        ACTIONS_COPY, CAVE, DPAD_FILTER, FACE_HOOK, FACE_ROUTINE, ICON_CALLS, TARGET_ROUTINE, TARGET_TEST, bl_target,
+        CAVE, DPAD_FILTER, DPAD_HOOK, FACE_HOOK, FACE_ROUTINE, ICON_CALLS, TARGET_ROUTINE, TARGET_TEST, bl_target,
     )
     from mh4u_rando.pipeline import run
     from mh4u_rando.randomizer import HudScale, Settings
@@ -797,7 +835,7 @@ def test_pipeline_with_every_interface_option(tmp_path):
     patched = apply_ips(original, result.ips_path.read_bytes())
     assert all(bl_target(patched, site) == CAVE for site in ICON_CALLS)
     assert bl_target(patched, TARGET_TEST) == TARGET_ROUTINE and bl_target(patched, FACE_HOOK) == FACE_ROUTINE
-    assert bl_target(patched, ACTIONS_COPY) == DPAD_FILTER
+    assert bl_target(patched, DPAD_HOOK) == DPAD_FILTER
     assert patched != original
     from mh4u_rando.hud.hint import NAME
     for lang in ("eng", "spa"):  # the L + D-pad up hint, shrunk with the rest of the item selector

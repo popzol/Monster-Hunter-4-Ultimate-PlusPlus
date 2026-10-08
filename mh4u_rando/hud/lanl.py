@@ -9,7 +9,10 @@ ui202_anim_list for ui202) and find their panes by name hash.
     0x0C  u32 offset of each animation (0 = empty slot)
 
 Animation (0x20 bytes): u32 tracks offset, u32 0, u32 targets offset,
-u32 track count, u32 unknown, u32 frame count, u32 x2 unknown.
+u32 track count, u32 target count, u32 frame count, u32 x2 unknown.
+
+Target (0x0C bytes): u32 name_hash(root group), u32 name_hash(pane), u16
+first and u16 last index of its tracks (each target's tracks are contiguous).
 
 Track (0x10 bytes): u8 value format, u8 property, u16 key count, u32 keys
 offset, u32 name_hash(root group), u32 name_hash(animated pane). Value format:
@@ -31,6 +34,7 @@ MAGIC = b"lanl"
 VERSION = 5
 ANIMATION = struct.Struct("<IIIIIIII")
 TRACK = struct.Struct("<BBHIII")
+TARGET = struct.Struct("<IIHH")
 KEY_SIZE = 0x10
 TANGENT_FORMATS = (0x20, 0x30)
 
@@ -120,6 +124,50 @@ class Animations:
     def _check(self, offset: int, size: int, what: str) -> None:
         if offset + size > len(self.data):
             raise LanlFormatError(f"{what} at {offset:#x} runs past the end of the file")
+
+    def copy_pane(self, source_hash: int, new_hash: int) -> int:
+        """Animate the pane `new_hash` like `source_hash` in every animation that has it as a target: copies of
+        its tracks and keys, and a target, are added. The grown track and target lists are appended at the end
+        of the file (the old ones stay, unused). Returns how many animations changed. Tracks read earlier
+        are stale afterwards: parse the bytes again."""
+        changed = 0
+        for index in range(struct.unpack_from("<I", self.data, 8)[0]):
+            at = struct.unpack_from("<I", self.data, 0x0C + 4 * index)[0]
+            if at == 0:
+                continue
+            fields = list(ANIMATION.unpack_from(self.data, at))
+            tracks_at, _, targets_at, track_count, target_count = fields[:5]
+            self._check(targets_at, TARGET.size * target_count, "target list")
+            targets = [TARGET.unpack_from(self.data, targets_at + TARGET.size * i) for i in range(target_count)]
+            source = next((t for t in targets if t[1] == source_hash), None)
+            if source is None:
+                continue
+            if any(t[1] == new_hash for t in targets):
+                raise LanlFormatError(f"pane {new_hash:#x} is already animated")
+            group, _, first, last = source
+            if not first <= last < track_count:
+                raise LanlFormatError(f"target {source_hash:#x} points past the track list")
+            tracks = bytearray(self.data[tracks_at:tracks_at + TRACK.size * track_count])
+            for k in range(first, last + 1):
+                fmt, prop, key_count, keys_at, track_group, _ = TRACK.unpack_from(self.data, tracks_at + TRACK.size * k)
+                self._align()
+                new_keys = len(self.data)
+                self.data += self.data[keys_at:keys_at + KEY_SIZE * key_count]
+                tracks += TRACK.pack(fmt, prop, key_count, new_keys, track_group, new_hash)
+            new_targets = b"".join(TARGET.pack(*t) for t in targets)
+            new_targets += TARGET.pack(group, new_hash, track_count, track_count + last - first)
+            self._align()
+            fields[0], fields[3] = len(self.data), len(tracks) // TRACK.size
+            self.data += tracks
+            fields[2], fields[4] = len(self.data), target_count + 1
+            self.data += new_targets
+            ANIMATION.pack_into(self.data, at, *fields)
+            changed += 1
+        self._align()
+        return changed
+
+    def _align(self) -> None:
+        self.data += b"\x00" * (-len(self.data) % 4)
 
     def to_bytes(self) -> bytes:
         return bytes(self.data)

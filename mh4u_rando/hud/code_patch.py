@@ -15,8 +15,8 @@ the data.
 Target switch (not part of the HUD size): FUN_00b94854 runs the touch-screen
 target camera panel and has a button shortcut test; it is redirected to
 asm/target_button.s, which also accepts L held + D-pad up. That request comes from
-asm/dpad_filter.s, called from the player's per-frame action copy, which also
-keeps the D-pad from moving the camera while L is held (the C-stick still does).
+asm/dpad_filter.s, a wrapper of the player's D-pad / C-stick action mapping, which
+also keeps the D-pad from moving the camera while L is held (the C-stick still does).
 See docs/hud_code.md, "Target switch".
 
 Target face: a second instance of the target camera panel's layout (ui601) is
@@ -68,14 +68,18 @@ TARGET_BUTTON = bytes.fromhex(
     "3cc09fe500009ce5000050e30010a01300108c151eff2f1128c09fe500c09ce548039ce5020910e21eff2f0118c09fe5"
     "00c09ce52b00dce5010050e30000a0131eff2fe128d11101e07205017c6bfb00")
 # asm/dpad_filter.s at the end of the free space (the normal target face ends before it; its diagnostic
-# build does not leave room for it), called from FUN_002c5470 instead of `ldr r1, [r0, #0x3d0]`.
-DPAD_FILTER = 0xDECF80
+# build does not leave room for it), called from FUN_00b1cdf0 instead of FUN_00b3cc64 (D-pad / C-stick
+# actions).
+DPAD_FILTER = 0xDECF40
 DPAD_FILTER_CODE = bytes.fromhex(
-    "d01390e55c209fe5002092e5df22d2e13330d0e5030052e11eff2f110030a0e3020b11e30b00000a34209fe5002092e5"
-    "8c2092e5100012e3023001120610c113400012e31810c113800012e36010c113200012e3061dc1130c209fe5003082e5"
-    "1eff2fe1e07205017c6bfb0028d11101")
+    "f0412de90040a0e1305e90e56c109fe5001091e5df12d1e13320d5e5020051e11300001a58c09fe5cc1395e5a06395e5"
+    "a47395e5020b11e3080016030000a00300008c050a00000a020a07e200008ce50f0bc6e3a00385e50f0bc7e3a40385e5"
+    "0400a0e12e3ff5eba06385e5a47385e5f081bde80400a0e1f041bde8283ff5ea7c6bfb0028d11101")
+DPAD_HOOK = 0xB1D0B0
+DPAD_ACTIONS = 0xB3CC64
+# Probe 19's hook, in the action copy of FUN_002c5470, which the D-pad actions never pass through;
+# tools/hud_probe.py still undoes it in old patches.
 ACTIONS_COPY = 0x2C5484
-ACTIONS_COPY_ORIGINAL = bytes.fromhex("d01390e5")
 # Target face on the top screen: asm/face_loader.s, asm/face_free.s, asm/face_show.s, the placement
 # and asm/target_face.c, after the target switch routine.
 FACE_LOADER = 0xDEC850
@@ -245,13 +249,12 @@ def patch_target_button(code: bytes, routine_code: bytes | None = None) -> bytes
         raise CodePatchError(f"unexpected instructions at {TARGET_TEST:#x}: not the update's executable")
     if with_filter:
         dpad = slice(_offset(DPAD_FILTER), _offset(DPAD_FILTER) + len(DPAD_FILTER_CODE))
-        copy = slice(_offset(ACTIONS_COPY), _offset(ACTIONS_COPY) + 4)
         if len(out) < _offset(CAVE_END) or dpad.stop > _offset(CAVE_END) or any(out[dpad]):
             raise CodePatchError("no free space for the D-pad filter")
-        if bytes(out[copy]) != ACTIONS_COPY_ORIGINAL:
-            raise CodePatchError(f"unexpected instruction at {ACTIONS_COPY:#x}: not the update's executable")
+        if bl_target(out, DPAD_HOOK) != DPAD_ACTIONS:
+            raise CodePatchError(f"unexpected instruction at {DPAD_HOOK:#x}: not the update's executable")
         out[dpad] = DPAD_FILTER_CODE
-        out[copy] = encode_bl(ACTIONS_COPY, DPAD_FILTER)
+        out[_offset(DPAD_HOOK):_offset(DPAD_HOOK) + 4] = encode_bl(DPAD_HOOK, DPAD_FILTER)
     out[routine] = routine_code
     out[test] = (encode_branch(TARGET_TEST, TARGET_ROUTINE, link=True)
                  + struct.pack("<I", 0xE3500000)  # cmp r0, #0

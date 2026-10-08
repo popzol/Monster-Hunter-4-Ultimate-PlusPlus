@@ -8,16 +8,18 @@ is done or discovered.
 * **Package the GUI** as an .exe with PyInstaller (the GUI itself is done:
   `python -m mh4u_rando.gui`).
 * **HUD / one-screen play** (docs/hud_layout.md, docs/hud_code.md):
-  * **C-stick check** (with the probe 18 mod): the D-pad filter assumes that the
-    C-stick does not set the D-pad's "raw" bits (+0x8C). If it does, the filter
-    must read another layer.
-  * **Probe 19** (the full mod, HUD 70 %), all built but not seen in the game:
+  * **Probe 20** (`tools/hud_probe.py ... --minimap --target-button
+    --target-face --hint-controls`, HUD 70 %). Probe 19 showed the face at the
+    right height, but L + up moved the camera without switching, and no hint;
+    both rebuilt (docs/hud_code.md, "Target switch"; docs/hud_layout.md,
+    "Target switch hint"). To check:
     * L + D-pad up switches the target, with a melee weapon and with a bowgun;
-    * with L held the D-pad does not move the camera, but the C-stick does;
+    * with L held the D-pad does not move the camera, but the C-stick does (if
+      the C-stick also stops, it sets the game-layout D-pad bits);
     * L + X with a bowgun only changes the ammo;
-    * the face sits at the item icon's height (`face_params`);
-    * the D-pad hint sprite (`hint.py`, glyph drawn into `qst00_ID`) shows only
-      in the L bar and is legible;
+    * the D-pad hint shows only in the open L bar and is legible; which of the
+      two control sprites show (if only the Y one does, the texture is still not
+      used: give the glyph a texture path of its own);
   * base game (no update) support for the executable patches (signatures).
 * **Species base health**: done for the data (`generated/monster_health.json`,
   Kiranico) and used by `stats.py` for the health index; still to measure in the

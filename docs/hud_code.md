@@ -252,11 +252,24 @@ ZR, the Circle Pad (0xF0000000) and bits 0xF0000 in +0x8C during a quest.
   The touch screen sets the same actions (0xB88F4C → 0xB1C63C(player, n), which
   ORs bit n into p + 0x3D0), so the actions do not tell where the input came
   from.
-* **Action copy**: actions are collected in p + 0x3D0. Once per frame
-  0x2C5470 (the player's input copy) copies them into p + 0x3CC (`0x2C5484 ldr
-  r1, [r0, #0x3D0]; str r1, [r0, #0x3CC]`), for every hunter, before checking
-  the local one (`*(settings) + 0x2F == p + 0x33`). Its callers are 0x2C15DC
-  and 0xAF92D0.
+* **Input update in a quest** (Ghidra, after probe 19): 0xB1CDF0(hunter, 0)
+  (called from 0xAF926C, once per frame) copies p + 0x3D0 into the actions
+  p + 0x3CC, fills the player copy from the pad, and then **ORs actions
+  straight into p + 0x3CC**, after the copy:
+  * 0xB28F54 (call at 0xB1D08C): item mode 0xA00 (actions 9 + 11) while
+    p + 0x3A0 has 0x8 (L) and its hold counter (p + 0x428) passes a threshold;
+  * 0xB3D160 (0xB1D0A4): with action 11, pressed A 0x20 → 15, Y 0x200 → 14,
+    0x40 → 13, X 0x100 → 12;
+  * **0xB3CC64** (0xB1D0B0): always 9; the D-pad from the game layout, pressed
+    p + 0x3A4 (↑ 0x2000 → 1, ↓ 0x1000 → 3, ← 0x800 → 5 (+ 9), → 0x400 → 7)
+    and held p + 0x3A0 (↑ → 2, ↓ → 4, ← → 6, → → 8); then the C-stick from its
+    analog state (vtable + 0x98, 0xB25260 / 0xB25200) sets the same actions.
+  So the D-pad actions never go through p + 0x3D0.
+* **Action copy**: 0x2C5470, another input copy (callers 0x2C15DC and
+  0xAF92D0), copies p + 0x3D0 into p + 0x3CC too (`0x2C5484 ldr r1, [r0,
+  #0x3D0]; str r1, [r0, #0x3CC]`), for every hunter, before checking the local
+  one (`*(settings) + 0x2F == p + 0x33`). Probe 19 filtered the actions there,
+  which had no effect: see the history below.
 
 ## Target switch (L + D-pad up)
 
@@ -283,15 +296,17 @@ ZR, the Circle Pad (0xF0000000) and bits 0xF0000 in +0x8C during a quest.
     (`asm/target_button.s`) returns non-zero when the word **FLAG**
     (0x111D128, in the free tail of `.bss`) is set, and clears it. Otherwise it
     runs the original test.
-  * **D-pad filter.** The action copy's load at 0x2C5484 becomes
-    `bl 0xDECF80`, which calls `asm/dpad_filter.s`. That routine returns the
-    actions. For the local hunter, while action 11 (L held) is set, it clears
-    the two actions of each direction whose **D-pad bit is held in the "raw"
-    buttons** (+0x8C). FLAG = action 1 when the D-pad up removed it (else 0).
-  * Result: with L held the D-pad does not move the camera, but the C-stick and
-    the touch screen, which do not set those raw bits, still do. L + D-pad up
-    switches the target once per press, so L + X is free again for the
-    gunners' ammo (action 12).
+  * **D-pad filter.** The call of the D-pad / C-stick actions at 0xB1D0B0
+    (`bl 0xB3CC64`) becomes `bl 0xDECF40`, `asm/dpad_filter.s`, a wrapper.
+    For the local hunter in item mode (action 11, or L held: p + 0x3A0 has
+    0x8), it sets FLAG = p + 0x3A4 & 0x2000 (D-pad up pressed this frame),
+    hides the D-pad bits (0x3C00) of p + 0x3A0 / p + 0x3A4 while 0xB3CC64 runs
+    and puts them back. For the local hunter without L, FLAG = 0. Other hunters
+    go straight to 0xB3CC64.
+  * Expected result (probe 20): with L held the D-pad sets no actions, so it
+    does not move the camera, but the C-stick and the touch screen still do.
+    L + D-pad up switches the target once per press, so L + X is free again
+    for the gunners' ammo (action 12).
   * The filter sits at the end of the free space, after the target face.
     `--face-debug` builds have no room for it and leave it out.
 * History: L + X (action 12, probe 11) worked, but gunners use action 12 for
@@ -300,7 +315,7 @@ ZR, the Circle Pad (0xF0000000) and bits 0xF0000 in +0x8C during a quest.
   [hud_layout.md](hud_layout.md), "Target switch hint". The target's face on
   the top screen: next section.
 
-### History (probes 5–19)
+### History (probes 5–20)
 
 | Probe | Routine tested | Result |
 |---|---|---|
@@ -312,7 +327,8 @@ ZR, the Circle Pad (0xF0000000) and bits 0xF0000 in +0x8C during a quest.
 | 10 | Event log (`tools/asm/input_event_log.s`), one button at a time | The table in "Pad" above |
 | 11 | Action 12 | **Works**: L + X locks / switches the target |
 | 18 | Event log, also on changes of +0x8C / +0x30C | The D-pad rows in "Pad"; with and without L the D-pad sets the camera actions |
-| 19 | L + D-pad up (filter + FLAG), full randomizer mod | Pending |
+| 19 | L + D-pad up: filter in the action copy of 0x2C5470 (raw D-pad bits) + FLAG | **Fails**: L + up moves the camera and does not switch; L + X no longer switches (expected). The D-pad actions are ORed into p + 0x3CC after that copy (0xB3CC64), so the filter never saw them |
+| 20 | Filter as a wrapper of 0xB3CC64 (game-layout D-pad bits hidden while L) + FLAG | Pending |
 
 ## Debugging in Citra
 
