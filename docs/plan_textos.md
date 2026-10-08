@@ -337,9 +337,12 @@ lista de excepciones es explícita y documentada.
 
 ---
 
-## Estado de la implementación (rama `quest-text-grammar`)
+## Estado de la implementación
 
-Hecho: pasos 1–7 del plan, con estas diferencias respecto a lo previsto (medidas en las misiones retail):
+Hecho y mergeado en `main` (commit `1b78c36`, 2026-10-08): pasos 1–7 del plan, con estas diferencias respecto a
+lo previsto (medidas en las misiones retail). Las reglas que quedan están en inglés en `docs/game_rules.md`
+("Objectives", "Quest text"), `docs/data.md` ("Grammar of the quest texts") y `docs/randomizer.md` (`text`,
+`sub_quests`); lo pendiente, en `docs/roadmap.md`.
 
 * **Verbo del objetivo:** sigue el `quest_type` (Slay/Hunt/Capture), no el tipo del objetivo.
 * **fr:** la segunda línea repite el verbo ("Chasser 1 A\nChasser 1 B"; 30 de 36 misiones retail).
@@ -349,6 +352,7 @@ Hecho: pasos 1–7 del plan, con estas diferencias respecto a lo previsto (medid
 * **Alemán:** nombres que empiezan con adjetivo ("Roter Khezu") se declinan tras el artículo; también se
   reconocen sus formas declinadas al reemplazar nombres.
 * **Nombres partidos por salto de línea** ("Kushala\nDaora") ahora también se reemplazan.
-* Los volcados (`Scripts`, `Documentation`, `Input`) del worktree son *junctions* al repo principal (ignorados
-  por git). No usar `Remove-Item -Recurse` sobre ellos; quitar con `rmdir` sin `/s`.
+* Para pasar los tests en un worktree de `RAMAS`, `Scripts` e `Input` se enlazan como *junctions* al repo
+  principal (`Documentation` tiene ficheros versionados y no se enlaza). Antes de borrar el worktree se quitan
+  con `[System.IO.Directory]::Delete(path, $false)` (no recursivo); nunca `Remove-Item -Recurse`.
 * No se activa `three_objectives` (ninguna misión retail lo usa).
