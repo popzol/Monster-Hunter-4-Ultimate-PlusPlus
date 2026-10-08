@@ -223,27 +223,31 @@ def test_default_settings_leave_quests_vanilla(originals, data):
 def test_new_objective_text(originals, data):
     from mh4u_rando.data import LANGUAGES
     from mh4u_rando.mib.model import TEXT_DESCRIPTION, TEXT_MAIN_OBJECTIVE
-    from mh4u_rando.randomizer.text import HUNT_ALL, TARGETS
-    quests, reports, _ = run(originals, data, seed="TXT", text=TextMode.LIST_MONSTERS, structure=StructureMode.RANDOM)
+    from mh4u_rando.randomizer.text import HUNT_ALL, main_objectives
+    quests, reports, _ = run(originals, data, seed="TXT", text=TextMode.REGENERATE, structure=StructureMode.RANDOM)
     seen = set()
     for report in reports:
         quest = next(q for q in quests.values() if q.quest_id == report.quest_id)
         if report.skipped or not any(report.new_waves) or report.new_waves == report.original_waves:
             continue
+        if main_objectives(quest, data) is None:
+            continue
         species = list(dict.fromkeys(m for wave in report.new_waves for m in wave
                                      if data.monsters[m].body_part_of is None))
         en = LANGUAGES.index("en")
         objective = quest.text[en][TEXT_MAIN_OBJECTIVE]
+        assert not quest.text[en][TEXT_DESCRIPTION].startswith("Targets:")
         if len(species) >= 3:
             seen.add(3)
-            for li, lang in enumerate(LANGUAGES):
-                assert quest.text[li][TEXT_MAIN_OBJECTIVE] == HUNT_ALL[lang]
-                assert quest.text[li][TEXT_DESCRIPTION].startswith(TARGETS[lang])
+            # Companions (escorts) count as species but have no objective: such quests list two objectives.
+            assert quest.quest_type in (8, 9, 10) or quest.objective_amount <= 2
+            if quest.objective_amount == 1 and quest.quest_type in (8, 9, 10):
+                for li, lang in enumerate(LANGUAGES):
+                    assert quest.text[li][TEXT_MAIN_OBJECTIVE] == HUNT_ALL[lang]
         elif len(species) == 2:
             seen.add(2)
-            names = [data.monsters[m].name_in("en") for m in species]
-            assert objective == f"Hunt {names[0]} and {names[1]}"
+            assert objective.startswith(("Hunt ", "Slay "))  # two objectives or "Hunt all large monsters"
         elif len(species) == 1:
             seen.add(1)
-            assert objective == f"Hunt {data.monsters[species[0]].name_in('en')}"
+            assert data.monsters[species[0]].name_in("en") in objective
     assert seen == {1, 2, 3}

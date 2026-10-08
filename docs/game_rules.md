@@ -108,6 +108,40 @@ Dalamadur and Shah Dalamadur (head and tail) always spawn in area 1 at
   monsters cannot be captured. — *Design decision*
 * Break-part sub objectives use type `BREAK_PART`, the monster as target and
   the part id as quantity (part ids in `generated/monsters.json`). — *Retail*
+* A quest with more than two target species becomes a `*_ALL` quest with one objective (like retail m10419),
+  because the quest only has two objective slots. — *Design decision*
+* A quest that had no sub quest can get one (`sub_quests = randomize`): only the `sub_quest` flag is set,
+  never `three_objectives` (none of the 223 retail quests with a sub quest sets it), and `reward_sub` /
+  `hrp_sub` are the median retail share of the main reward / HRP of the quest's rank (`tuning.json`). Only
+  quests whose sub objective text slot is not empty get it (26 retail quests have all texts empty).
+  *Unverified in game.*
+
+## Quest text
+
+Texts are generated like the retail ones (measured on the 301 original quests):
+
+* Main objective: `<verb> <monster>`; the verb follows the **quest type** (Slay/Hunt/Capture), not the objective
+  type. fr uses "1" instead of an article ("Chasser 1 Rathian") and repeats the verb on the second line; de uses
+  the accusative ("Erjage einen Tigrex.") with a final period; some monsters, such as Dalamadur, take a
+  definite article ("Abate al Dalamadur", "Tuer le Dalamadur"). More than one of a species: "Hunt 2 Khezu".
+  Two species: two lines joined with and/et/y/und/e. A "hunt them all" quest with one objective and several
+  species: the fixed text "Hunt all large monsters" (`text.HUNT_ALL`).
+* Failure text: a retail capture quest says "...or capture target slain."; when the quest is not a capture
+  quest any more it gets the normal text of the language.
+* Replacing a name also converts the article before it by the gender of the new monster (es un/una, el/la,
+  del/de la, al/a la; fr le/la/l', du/de la, au/à la; it il/lo/la/l', uno, del/dello/della/dell'; de ein/eine,
+  der/die by case; en a/an). German masculine names that start with an adjective ("Roter Khezu") are declined
+  after the article ("einen Roten Khezu"). Limits: German "der"/"die" are ambiguous between cases (nominative
+  is assumed in titles and descriptions, accusative in objectives, "der" before a feminine name is taken as
+  dative); adjectives between the article and the name are not handled.
+* Sub objective: `Break/Wound the <monster>'s <part>` (en), `Briser/Blesser <la part> <monster>` (fr),
+  `Rompe/Hiere <la parte> del <monster>` (es), `<Monster>-<Part> brechen/verletzen` (de) and
+  `Spezza/Ferisci <la parte> del <monster>` (it). The retail texts shorten the line when it does not fit (no
+  article, "K. Wacha", cut names) and the generator tries the same steps. The longest lines of the retail texts
+  (title / objective / sub objective) are in `text.MAX_LINE`. The retail verb varies from quest to quest, so
+  the generator uses a fixed verb per part (`part_names.json`).
+* Retail texts the generator does not reproduce (`RETAIL_DIFFERENT` in `tests/test_text.py`): plurals
+  ("Hunt 2 Tetsucabras"), aliases ("Furious Rajang" is just "Rajang"), abbreviations, other verbs or line breaks.
 
 ## Stats
 

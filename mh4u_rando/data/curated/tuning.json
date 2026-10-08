@@ -24,6 +24,14 @@
     "attack_ratio_per_tier": {
       "value": 0.93,
       "description": "Adjust attack: like health_ratio_per_tier, for the attack index."
+    },
+    "sub_reward_ratio": {
+      "value": {"1": 0.167, "2": 0.167, "3": 0.148, "4": 0.201, "5": 0.16, "6": 0.132, "7": 0.117, "8": 0.274, "9": 0.199, "10": 0.139},
+      "description": "Sub quest added to a quest that had none: its reward is this share of the main reward, per quest rank (median of the retail quests, tools/build_monster_grammar.py --ratios)."
+    },
+    "sub_hrp_ratio": {
+      "value": {"1": 0.083, "2": 0.078, "3": 0.073, "4": 0.078, "5": 0.086, "6": 0.079, "7": 0.069, "8": 0.103, "9": 0.1, "10": 0.099},
+      "description": "Sub quest added to a quest that had none: its HRP is this share of the main HRP, per quest rank (median of the retail quests)."
     }
   },
   "equipment": {

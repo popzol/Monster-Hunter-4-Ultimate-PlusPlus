@@ -170,6 +170,22 @@ class QuestInfo:
 
 
 @dataclass(frozen=True)
+class MonsterGrammar:
+    """What the quest texts need to name a monster correctly (curated/monster_grammar.json)."""
+    gender: dict[str, str]     # language -> "m" / "f" (fr, es, de, it)
+    objective: dict[str, str]  # language -> article of the retail main objective: indefinite / definite / none
+    verified: bool = True
+
+
+@dataclass(frozen=True)
+class PartGrammar:
+    """Grammar of a breakable part (curated/part_names.json, "grammar")."""
+    verb: str                  # "break" or "wound"
+    gender: dict[str, str]     # language -> "m" / "f" (fr, es, it)
+    plural: bool = False
+
+
+@dataclass(frozen=True)
 class GameData:
     monsters: dict[int, MonsterInfo]
     maps: dict[int, MapInfo]
@@ -183,6 +199,8 @@ class GameData:
     supply_pool: tuple[tuple[int, int], ...]          # (item id, max capacity) for supply boxes
     part_names: dict[str, dict[str, str]]             # English part name -> language -> name
     unbreakable_parts: frozenset[str]                 # listed as parts but not real breaks
+    monster_grammar: dict[int, MonsterGrammar] = field(default_factory=dict)
+    part_grammar: dict[str, PartGrammar] = field(default_factory=dict)  # English part name -> grammar
 
     def part_name(self, part: str, language: str) -> str:
         return part if language == "en" else self.part_names.get(part, {}).get(language, part)
@@ -365,4 +383,20 @@ def load_game_data(data_dir: Path = DATA_DIR) -> GameData:
         supply_pool=tuple((i["item_id"], i["capacity"]) for i in _read(curated / "supply_pool.json")["items"]),
         part_names=part_names["names"],
         unbreakable_parts=frozenset(part_names["not_breakable"]),
+        monster_grammar=_build_monster_grammar(_read(curated / "monster_grammar.json")["monsters"]),
+        part_grammar=_build_part_grammar(part_names["grammar"]),
     )
+
+
+def _build_monster_grammar(raw: dict) -> dict[int, MonsterGrammar]:
+    return {int(monster_id): MonsterGrammar(entry["gender"], entry["objective"], entry.get("verified", True))
+            for monster_id, entry in raw.items()}
+
+
+def _build_part_grammar(raw: dict) -> dict[str, PartGrammar]:
+    result = {}
+    for part, entry in raw.items():
+        genders = {lang: value.removesuffix("pl") for lang, value in entry.items() if lang != "verb"}
+        plural = any(value.endswith("pl") for lang, value in entry.items() if lang != "verb")
+        result[part] = PartGrammar(entry["verb"], genders, plural)
+    return result

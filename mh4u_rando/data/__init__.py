@@ -2,10 +2,11 @@
 
 from .gamedata import (
     GEAR_CRAFTING_CATEGORIES, LANGUAGES, AreaInfo, GameData, GameDataError, ItemCategory, ItemInfo,
-    MapCategory, MapInfo, MonsterInfo, QuestCategory, QuestInfo, load_game_data,
+    MapCategory, MapInfo, MonsterGrammar, MonsterInfo, PartGrammar, QuestCategory, QuestInfo, load_game_data,
 )
 
 __all__ = [
     "GEAR_CRAFTING_CATEGORIES", "LANGUAGES", "AreaInfo", "GameData", "GameDataError", "ItemCategory",
-    "ItemInfo", "MapCategory", "MapInfo", "MonsterInfo", "QuestCategory", "QuestInfo", "load_game_data",
+    "ItemInfo", "MapCategory", "MapInfo", "MonsterGrammar", "MonsterInfo", "PartGrammar", "QuestCategory",
+    "QuestInfo", "load_game_data",
 ]

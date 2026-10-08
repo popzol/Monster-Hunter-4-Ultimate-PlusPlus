@@ -213,13 +213,15 @@ QUEST_SECTIONS: tuple[Section, ...] = (
                 Choice(TextMode.REPLACE_NAMES, T("Sustituir nombres", "Replace names"),
                        T("Actualiza los nombres de los monstruos en título, objetivo y descripción, en los cinco idiomas.",
                          "Updates monster names in title, objective and description, in all five languages.")),
-                Choice(TextMode.LIST_MONSTERS, T("Nuevo objetivo", "New objective"),
-                       T("El objetivo principal pasa a «Caza a A» o «Caza a A y B». Con 3 o más monstruos dice "
-                         "«Caza a todos los monstruos grandes» y la lista de monstruos aparece al principio de la "
-                         "descripción. En los cinco idiomas.",
-                         "The main objective becomes “Hunt A” or “Hunt A and B”. With 3 or more monsters it says "
-                         "“Hunt all large monsters” and the list of monsters appears at the start of the "
-                         "description. In all five languages.")),
+                Choice(TextMode.REGENERATE, T("Regenerar", "Regenerate"),
+                       T("Como «Sustituir nombres», y además reescribe el objetivo principal y la condición de "
+                         "fallo como los textos originales del juego a partir de los objetivos reales: «Caza una A», "
+                         "«Caza una A y un B» o «Caza a todos los monstruos grandes». Una captura que pasa a caza "
+                         "ya no dice «Captura». En los cinco idiomas.",
+                         "Like “Replace names”, and also rewrites the main objective and the failure condition "
+                         "the way the game's own texts do, from the real objectives: “Hunt a A”, “Hunt a A and a "
+                         "B” or “Hunt all large monsters”. A capture turned into a hunt no longer says "
+                         "“Capture”. In all five languages.")),
             )),
         )),
     )),

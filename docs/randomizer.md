@@ -25,8 +25,8 @@ With the defaults, quests only get the safety repairs listed below.
 | `arena_maps`, `everwood` | normal / rare / never | How often those map categories are used |
 | `always_music` | bool | Avoid silent maps unless every monster has its own theme |
 | `one_monster_per_wave_on_arenas` | bool | No simultaneous monsters when moving a quest to an arena |
-| `sub_quests` | keep / disable / randomize | Keep the original sub quest (re-pointed if its monster left), remove sub quests, or break a part of one of the quest's monsters |
-| `text` | keep / replace_names / list_monsters | Quest text in the 5 languages. `list_monsters` writes "Hunt A" / "Hunt A and B"; with 3+ species "Hunt all large monsters" and a "Targets: A, B, C" line atop the description |
+| `sub_quests` | keep / disable / randomize | Keep the original sub quest (re-pointed if its monster left), remove sub quests, or break a part of one of the quest's monsters. `randomize` also gives a sub quest to large-monster quests that had none (paid with the retail share of the main reward per rank, `tuning.json`) |
+| `text` | keep / replace_names / list_monsters ("Regenerate") | Quest text in the 5 languages. Both modes swap monster names and fix the article before them (un/una, el/la, del/de la, le/la/l', der/die...) by the gender of the new monster. `list_monsters` also writes the main objective from the real objectives with the retail wording ("Hunt a A", "Hunt a A and a B", "Hunt all large monsters" with more than 2 species) and gives a quest that is no longer won by capturing the normal failure text |
 | `randomize_rewards` | bool | Reward boxes become full stacks of monster materials |
 | `reward_source` | quest_monsters_and_rank / rank | Materials partly from the quest's monsters, or any of the rank |
 | `reward_item_count` | int | Different materials per reward box |

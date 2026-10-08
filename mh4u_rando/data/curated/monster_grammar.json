@@ -1,0 +1,1503 @@
+{
+ "description": "Grammar of the large monsters for the quest texts. gender: grammatical gender (m/f) in fr, es, de, it. objective: article of the retail main objective per language (indefinite: 'un Rathian', definite: 'al Dalamadur', none: 'Slay Dalamadur'). verified=true: read from the retail quests; false: default, please confirm. English a/an and the French/Italian elisions are computed from the name. Written by tools/build_monster_grammar.py; delete the 'generated' key of an entry you edit by hand to keep it.",
+ "monsters": {
+  "1": {
+   "name": "Rathian",
+   "gender": {
+    "fr": "f",
+    "es": "f",
+    "de": "f",
+    "it": "f"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "2": {
+   "name": "Rathalos",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "3": {
+   "name": "Pink Rathian",
+   "gender": {
+    "fr": "f",
+    "es": "f",
+    "de": "f",
+    "it": "f"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "4": {
+   "name": "Azure Rathalos",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "5": {
+   "name": "Gold Rathian",
+   "gender": {
+    "fr": "f",
+    "es": "f",
+    "de": "f",
+    "it": "f"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "6": {
+   "name": "Silver Rathalos",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "7": {
+   "name": "Yian Kut-Ku",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "8": {
+   "name": "Blue Yian Kut-Ku",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "9": {
+   "name": "Gypceros",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "10": {
+   "name": "Purple Gypceros",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "11": {
+   "name": "Tigrex",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "12": {
+   "name": "Brute Tigrex",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "13": {
+   "name": "Gendrome",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "14": {
+   "name": "Iodrome",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "15": {
+   "name": "Great Jaggi",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "16": {
+   "name": "Velocidrome",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "17": {
+   "name": "Congalala",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "18": {
+   "name": "Emerald Congalala",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "19": {
+   "name": "Rajang",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "20": {
+   "name": "Kecha Wacha",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "21": {
+   "name": "Tetsucabra",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "22": {
+   "name": "Zamtrios",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "23": {
+   "name": "Najarala",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "24": {
+   "name": "Dalamadur (Head)",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "none",
+    "fr": "definite",
+    "es": "definite",
+    "de": "definite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "25": {
+   "name": "Seltas",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "26": {
+   "name": "Seltas Queen",
+   "gender": {
+    "fr": "f",
+    "es": "f",
+    "de": "f",
+    "it": "f"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "27": {
+   "name": "Nerscylla",
+   "gender": {
+    "fr": "f",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "28": {
+   "name": "Gore Magala",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "none",
+    "fr": "indefinite",
+    "es": "definite",
+    "de": "none",
+    "it": "definite"
+   },
+   "verified": true
+  },
+  "29": {
+   "name": "Shagaru Magala",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "none",
+    "fr": "definite",
+    "es": "indefinite",
+    "de": "none",
+    "it": "definite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "30": {
+   "name": "Yian Garuga",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "31": {
+   "name": "Kushala Daora",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "definite",
+    "es": "definite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "32": {
+   "name": "Teostra",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "definite",
+    "es": "definite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "33": {
+   "name": "Akantor",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "definite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "34": {
+   "name": "Kirin",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "35": {
+   "name": "Oroshi Kirin",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "36": {
+   "name": "Khezu",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "37": {
+   "name": "Red Khezu",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "38": {
+   "name": "Basarios",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "39": {
+   "name": "Ruby Basarios",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "40": {
+   "name": "Gravios",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "41": {
+   "name": "Black Gravios",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "42": {
+   "name": "Deviljho",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "43": {
+   "name": "Savage Deviljho",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "44": {
+   "name": "Brachydios",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "45": {
+   "name": "Golden Rajang",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "46": {
+   "name": "Dah'ren Mohran",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "none",
+    "fr": "definite",
+    "es": "definite",
+    "de": "none",
+    "it": "definite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "47": {
+   "name": "Lagombi",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "48": {
+   "name": "Zinogre",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "49": {
+   "name": "Stygian Zinogre",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "77": {
+   "name": "Black Fatalis",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "definite",
+    "es": "definite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "78": {
+   "name": "Crimson Fatalis",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "79": {
+   "name": "White Fatalis",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "80": {
+   "name": "Molten Tigrex",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "82": {
+   "name": "Rusted Kushala Daora",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "83": {
+   "name": "Dalamadur (Tail)",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "none",
+    "fr": "definite",
+    "es": "definite",
+    "de": "definite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "88": {
+   "name": "Seregios",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "89": {
+   "name": "Gogmazios",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "none",
+    "fr": "definite",
+    "es": "indefinite",
+    "de": "none",
+    "it": "definite"
+   },
+   "verified": true
+  },
+  "90": {
+   "name": "Ash Kecha Wacha",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "91": {
+   "name": "Berserk Tetsucabra",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "92": {
+   "name": "Tigerstripe Zamtrios",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "93": {
+   "name": "Tidal Najarala",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "94": {
+   "name": "Desert Seltas",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "95": {
+   "name": "Desert Seltas Queen",
+   "gender": {
+    "fr": "f",
+    "es": "f",
+    "de": "f",
+    "it": "f"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "96": {
+   "name": "Shrouded Nerscylla",
+   "gender": {
+    "fr": "f",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "97": {
+   "name": "Chaotic Gore Magala",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "none",
+    "fr": "indefinite",
+    "es": "definite",
+    "de": "none",
+    "it": "definite"
+   },
+   "verified": true
+  },
+  "98": {
+   "name": "Raging Brachydios",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "99": {
+   "name": "Diablos",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "100": {
+   "name": "Black Diablos",
+   "gender": {
+    "fr": "f",
+    "es": "m",
+    "de": "f",
+    "it": "f"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "101": {
+   "name": "Monoblos",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "102": {
+   "name": "White Monoblos",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "103": {
+   "name": "Chameleos",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "definite",
+    "es": "definite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "105": {
+   "name": "Cephadrome",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "107": {
+   "name": "Daimyo Hermitaur",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "108": {
+   "name": "Plum Daimyo Hermitaur",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "110": {
+   "name": "Shah Dalamadur (Head)",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "none",
+    "fr": "definite",
+    "es": "definite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "111": {
+   "name": "Shah Dalamadur (Tail)",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "none",
+    "fr": "definite",
+    "es": "definite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "112": {
+   "name": "Rajang (Apex)",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "113": {
+   "name": "Deviljho (Apex)",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "114": {
+   "name": "Zinogre (Apex)",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "115": {
+   "name": "Gravios (Apex)",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "116": {
+   "name": "Ukanlos",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "definite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "117": {
+   "name": "Crimson Fatalis (Super)",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "119": {
+   "name": "Diablos (Apex)",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "120": {
+   "name": "Tidal Najarala (Apex)",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "generated": true,
+   "verified": false
+  },
+  "121": {
+   "name": "Tigrex (Apex)",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  },
+  "122": {
+   "name": "Seregios (Apex)",
+   "gender": {
+    "fr": "m",
+    "es": "m",
+    "de": "m",
+    "it": "m"
+   },
+   "objective": {
+    "en": "indefinite",
+    "fr": "indefinite",
+    "es": "indefinite",
+    "de": "indefinite",
+    "it": "indefinite"
+   },
+   "verified": true
+  }
+ }
+}

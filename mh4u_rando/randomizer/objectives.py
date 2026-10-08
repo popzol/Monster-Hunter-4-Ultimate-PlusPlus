@@ -15,7 +15,9 @@ from collections import Counter
 from dataclasses import dataclass, field
 
 from ..data import GameData, MonsterInfo
+from ..data.tuning import weights
 from ..mib import MONSTER_OBJECTIVES, ObjectiveType, Objective, Quest, QuestType
+from ..mib.model import TEXT_SUB_OBJECTIVE
 from .plan import LineupPlan
 
 NO_PICTURE = 98
@@ -51,9 +53,11 @@ def apply_main_objectives(quest: Quest, plan: LineupPlan) -> None:
     slay = quest.quest_type in (QuestType.SLAY, QuestType.SLAY_ALL)
     verb = ObjectiveType.SLAY if slay else ObjectiveType.HUNT
 
-    quest.quest_type = _quest_type(quest.quest_type, multi_wave)
+    # More species than the two objectives hold: "hunt them all", one objective (retail m10419).
+    too_many = len(targets) > MAX_MAIN_OBJECTIVES
+    quest.quest_type = _quest_type(quest.quest_type, multi_wave or too_many)
     objectives = [Objective(verb, monster_id, qty) for monster_id, qty in targets.items()]
-    objectives = objectives[:MAX_MAIN_OBJECTIVES]
+    objectives = objectives[:1] if too_many else objectives
     quest.objective_amount = len(objectives)
     quest.objectives = objectives + [Objective() for _ in range(MAX_MAIN_OBJECTIVES - len(objectives))]
 
@@ -129,14 +133,49 @@ def randomize_sub_quest(quest: Quest, plan: LineupPlan, data: GameData, rng: ran
     Returns (monster_id, part_id), or None when no monster has breakable parts
     (the sub quest is then disabled).
     """
-    candidates = [(m, part) for m in dict.fromkeys(s.monster_id for s in plan.slots() if s.is_choosable)
-                  for part, name in data.monsters[m].break_parts.items() if name not in data.unbreakable_parts]
+    candidates = _break_candidates(plan, data)
     if not candidates:
         disable_sub_quest(quest)
         return None
     monster_id, part = rng.choice(candidates)
     quest.objective_sub = Objective(ObjectiveType.BREAK_PART, monster_id, part)
     return monster_id, part
+
+
+def _break_candidates(plan: LineupPlan, data: GameData) -> list[tuple[int, int]]:
+    return [(m, part) for m in dict.fromkeys(s.monster_id for s in plan.slots() if s.is_choosable)
+            for part, name in data.monsters[m].break_parts.items() if name not in data.unbreakable_parts]
+
+
+def can_add_sub_quest(quest: Quest) -> bool:
+    """A quest without a sub quest that has a (placeholder) sub objective text, and large monsters to break."""
+    return (not has_sub_quest(quest) and not quest.get_flag("sub_quest")
+            and main_objectives_target_large_monsters(quest)
+            and any(texts[TEXT_SUB_OBJECTIVE] for texts in quest.text))
+
+
+def add_sub_quest(quest: Quest, plan: LineupPlan, data: GameData, rng: random.Random) -> tuple[int, int] | None:
+    """Give a quest that had no sub quest a "break a part" one, paid like the retail ones.
+
+    Retail quests with a sub quest only set the `sub_quest` flag (never `three_objectives`) and pay
+    a share of the main reward that depends on the rank (curated/tuning.json). Returns
+    (monster_id, part_id), or None when no monster has breakable parts (the quest stays as it was).
+    """
+    candidates = _break_candidates(plan, data)
+    if not candidates:
+        return None
+    monster_id, part = rng.choice(candidates)
+    quest.objective_sub = Objective(ObjectiveType.BREAK_PART, monster_id, part)
+    quest.set_flag("sub_quest", True)
+    quest.reward_sub = _share(quest.reward_main, "sub_reward_ratio", quest.quest_rank, 10)
+    quest.hrp_sub = _share(quest.hrp, "sub_hrp_ratio", quest.quest_rank, 1)
+    return monster_id, part
+
+
+def _share(amount: int, name: str, rank: int, step: int) -> int:
+    ratios = weights("quests", name)
+    ratio = ratios.get(rank) or ratios[min(ratios, key=lambda r: abs(r - rank))]
+    return round(amount * ratio / step) * step
 
 
 @dataclass

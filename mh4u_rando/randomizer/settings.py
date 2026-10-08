@@ -55,7 +55,8 @@ class SubQuestMode(str, Enum):
 class TextMode(str, Enum):
     KEEP = "keep"                    # leave texts untouched
     REPLACE_NAMES = "replace_names"  # swap monster names inside the original texts
-    LIST_MONSTERS = "list_monsters"  # "Hunt A and B"; 3+: "Hunt all large monsters" + list in the description
+    REGENERATE = "list_monsters"     # names with the right articles + objective and failure text written like the retail ones
+    LIST_MONSTERS = REGENERATE       # old name (the value stays "list_monsters" so presets keep working)
 
 
 class StatMode(str, Enum):

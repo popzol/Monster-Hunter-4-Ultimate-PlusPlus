@@ -5,11 +5,11 @@ is done or discovered.
 
 ## Next
 
-* **Quest monster list in text**: every monster taking part in a quest
-  (except the invader) should be named in the quest description, as in the
-  original game. The title should do the same, but if there are more than 3
-  monsters it should use the original "Hunt them all" string instead of
-  listing them.
+* **Quest monster list in text**: the main objective is done (`text = list_monsters`,
+  "Regenerate"). Still pending: every monster taking part in a quest (except
+  the invader) should be named in the quest title and description, as in the
+  original game; with more than 3 monsters the title should use the original
+  "Hunt them all" string instead of listing them.
 * **Cutscene crash on randomized encounters**: some monsters crash the game
   when first encountered because they try to start an encounter cutscene
   that assumes a different map. Investigate removing the cutscene check/call
@@ -61,6 +61,12 @@ is done or discovered.
   against wiki data only).
 * Armor skills: pieces with 4-5 skills, high points (up to 10) and skill trees
   that the original armor of that part never had (all decode to valid trees).
+* Sub quests added to quests that had none (`sub_quests = randomize`): the
+  quest can be completed and the sub reward is paid (only the `sub_quest` flag
+  is set).
+* Regenerated quest texts (`text = list_monsters`) in ES/EN/DE: objectives,
+  failure text, articles after a replaced name, sub objectives that fit the
+  quest board; German adjective names ("einen Roten Khezu").
 * Dual-element Dual Blades: only the element stored in the weapon record is
   changed; the other one lives in an unknown table.
 * Random structure (`structure = random`).
@@ -85,12 +91,6 @@ is done or discovered.
   inventory; edit what it gives instead of adding a new mechanism.
 * Supplies: optional ammo and coatings for gunners.
 * Arena quests keep their map; decide later whether they may move.
-* Sub quest text is "Break <monster>: <part>"; a more natural sentence would
-  need grammatical gender per language.
-* Replacing names keeps the original articles: "Caza una Rathian" becomes
-  "Caza una Tigrex". Fixing it means regenerating objective texts per language.
-* Capture quests become Hunt, but their text still says "Captura un X"
-  (capturing still works, killing also completes the quest).
 * Encrypted DLC quests (`Documentation/mib.js` has the Blowfish keys).
 * Equipment: class-specific weapon data (phials, shells, notes, kinsect, ammo,
   bow charges), Felyne set target/health bonus (docs/equipment_data.md lists what

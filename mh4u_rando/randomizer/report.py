@@ -19,6 +19,7 @@ class QuestReport:
     new_waves: list[list[int]] = field(default_factory=list)
     sub_quest: tuple[int, int] | None = None   # (monster id, part id)
     sub_quest_regenerated: bool = False        # sub quest rewritten (or disabled) by the randomizer
+    sub_quest_added: bool = False              # the quest had no sub quest and got one
     rewards: list[int] = field(default_factory=list)
     supplies: list[int] = field(default_factory=list)
     original_intruders: list[int] = field(default_factory=list)
@@ -64,7 +65,7 @@ def write_spoiler_text(reports: list[QuestReport], data: GameData, seed: str, se
             if r.sub_quest:
                 monster, part = r.sub_quest
                 lines.append(f"    sub quest: break {data.monster_name(monster)} "
-                             f"{data.monsters[monster].break_parts.get(part, part)}")
+                             f"{data.monsters[monster].break_parts.get(part, part)}" + (" (added)" if r.sub_quest_added else ""))
             if r.intruders:
                 lines.append(f"    intruders: {names(r.intruders)}")
             if r.rewards:

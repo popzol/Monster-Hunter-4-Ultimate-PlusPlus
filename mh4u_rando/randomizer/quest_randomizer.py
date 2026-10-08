@@ -19,7 +19,7 @@ import dataclasses
 from dataclasses import dataclass
 
 from ..data import GameData, QuestCategory, QuestInfo
-from ..mib import Quest
+from ..mib import ObjectiveType, Quest
 from . import objectives, rewards, stats, supplies, text
 from .maps import MapProfiles, candidate_maps, choose_map, place_monster
 from .other_monsters import (
@@ -172,12 +172,18 @@ def _randomize_large_monster_quest(quest: Quest, info: QuestInfo, ctx: Randomize
 
     stats.apply_stats(quest, plan, data, adjust=settings.adjust_stats and settings.randomize_monsters)
 
+    capture_before = any(o.type is ObjectiveType.CAPTURE for o in quest.objectives[:quest.objective_amount])
     if rewrite_objectives and _wave_ids(quest) != original_lineup:
         objectives.apply_main_objectives(quest, plan)
         objectives.apply_pictures(quest, plan, data, ctx.new_icons)
+    capture_became_hunt = capture_before and not any(
+        o.type is ObjectiveType.CAPTURE for o in quest.objectives[:quest.objective_amount])
 
     # Names first: the sub quest text written below must not be rewritten again.
     text.apply_text(quest, plan, data, settings.text)
+    if capture_became_hunt and settings.text is TextMode.REPLACE_NAMES:
+        text.write_main_objective(quest, data)  # "Capture a X" would be a lie
+        text.fix_failure_text(quest)
 
     if objectives.has_sub_quest(quest) and settings.sub_quests is not SubQuestMode.KEEP:
         report.sub_quest_regenerated = True
@@ -187,6 +193,11 @@ def _randomize_large_monster_quest(quest: Quest, info: QuestInfo, ctx: Randomize
             text.set_sub_quest_text(quest, data, None)
         else:
             report.sub_quest = objectives.randomize_sub_quest(quest, plan, data, _rng(ctx, quest, "sub_quest"))
+            text.set_sub_quest_text(quest, data, report.sub_quest)
+    elif settings.sub_quests is SubQuestMode.RANDOMIZE and objectives.can_add_sub_quest(quest):
+        report.sub_quest = objectives.add_sub_quest(quest, plan, data, _rng(ctx, quest, "sub_quest"))
+        if report.sub_quest is not None:
+            report.sub_quest_regenerated = report.sub_quest_added = True
             text.set_sub_quest_text(quest, data, report.sub_quest)
 
     if settings.randomize_rewards:
@@ -217,9 +228,11 @@ def _repair_objectives(quest: Quest, plan: LineupPlan | None, ctx: RandomizerCon
         report.sub_quest_regenerated = True
         if result.sub_target is not None or not quest.get_flag("sub_quest"):
             text.set_sub_quest_text(quest, ctx.data, result.sub_target)
-    if result.renamed and ctx.settings.text is TextMode.REPLACE_NAMES:
+    if result.renamed and ctx.settings.text in (TextMode.REPLACE_NAMES, TextMode.REGENERATE):
         text.replace_monster_names(quest, result.renamed, ctx.data,
                                    include_sub_objective=not report.sub_quest_regenerated)
+        if ctx.settings.text is TextMode.REGENERATE:
+            text.write_main_objective(quest, ctx.data)
     if result.renamed or result.sub_rewritten:
         report.notes.append("objectives re-pointed at monsters present in the quest")
 

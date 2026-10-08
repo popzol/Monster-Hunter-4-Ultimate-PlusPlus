@@ -41,6 +41,8 @@ its public classes and functions with their signatures.
 - class `QuestCategory(str, Enum)`
 - class `QuestInfo`
   - `is_progression_quest() -> bool` - Key or urgent: needed to advance through the ranks.
+- class `MonsterGrammar` - What the quest texts need to name a monster correctly (curated/monster_grammar.json).
+- class `PartGrammar` - Grammar of a breakable part (curated/part_names.json, "grammar").
 - class `GameData`
   - `part_name(part: str, language: str) -> str`
   - `small_monster_group_of(monster_id: int) -> tuple[int, ...] | None`
@@ -433,6 +435,18 @@ its public classes and functions with their signatures.
 - `randomize_weapon_stats(catalog: Catalog, settings: Settings, rng: random.Random) -> None`
 - `randomize_armor_stats(catalog: Catalog, settings: Settings, rng: random.Random) -> None`
 
+### `mh4u_rando/randomizer/grammar.py` - Articles and contractions of the five quest languages (pure functions, no quest involved).
+- `article(lang: str, kind: str, name: str, gender: str, case: str='nom') -> str` - The article (or contraction) of `kind` in front of `name`; "" when the language has none.
+- `with_article(lang: str, kind: str, name: str, gender: str, case: str='nom') -> str` - `name` preceded by its article: "una Rathian", "l'Akantor", "dello Zamtrios".
+- `de_decline(name: str, gender: str, kind: str, case: str) -> str` - The adjective of "Roter Khezu" after an article: "ein Roter", "einen Roten", "der Rote", "den Rot...
+- `de_name_forms(name: str) -> list[str]` - The German spellings of a monster name in a text: the name and its declined adjective forms.
+- `article_alternatives(lang: str) -> list[str]` - Every article and contraction of a language, longest first (to build regular expressions).
+- `article_regex(lang: str) -> str` - Regex source matching an article before a name, with the space (none after an apostrophe), case-i...
+- `convert_article(lang: str, token: str, old: tuple[str, str], new: tuple[str, str], default_case: str='nom') -> tuple[str, str] | None` - (article, name) that go with the `new` (name, gender) monster in place of `token` before `old`.
+- `de_compound(name: str) -> str` - German compounds join the monster name with hyphens: "Kecha-Wacha-Ohren".
+- `abbreviate(name: str) -> str` - Shorter monster name as the retail texts do it: "Kecha Wacha" -> "K. Wacha".
+- `fit(candidates: list[str], limit: int) -> str` - The first candidate that fits in `limit` characters (the last, shortest one if none does).
+
 ### `mh4u_rando/randomizer/maps.py` - Map choice, monster placement and map-dependent quest data.
 - `frequency_weight(frequency: Frequency) -> float`
 - class `MapProfile` - Map-dependent fields taken from a retail quest on that map.
@@ -454,6 +468,8 @@ its public classes and functions with their signatures.
 - `retarget_objectives(quest: Quest, mapping: dict[int, int]) -> None` - Point monster objectives (main and sub) at replacement monsters.
 - `has_sub_quest(quest: Quest) -> bool`
 - `randomize_sub_quest(quest: Quest, plan: LineupPlan, data: GameData, rng: random.Random) -> tuple[int, int] | None` - Turn the sub quest into "break a part" of one of the quest's monsters.
+- `can_add_sub_quest(quest: Quest) -> bool` - A quest without a sub quest that has a (placeholder) sub objective text, and large monsters to br...
+- `add_sub_quest(quest: Quest, plan: LineupPlan, data: GameData, rng: random.Random) -> tuple[int, int] | None` - Give a quest that had no sub quest a "break a part" one, paid like the retail ones.
 - class `RepairResult`
 - `present_monsters(quest: Quest) -> tuple[set[int], set[int], set[int]]` - (large, small, intruder) species currently in the quest.
 - `repair_objectives(quest: Quest, plan: LineupPlan | None, data: GameData, rng: random.Random) -> RepairResult` - Re-point every monster objective whose target is no longer in the quest.
@@ -549,8 +565,12 @@ its public classes and functions with their signatures.
 
 ### `mh4u_rando/randomizer/text.py` - Quest text (5 languages) for a randomized quest.
 - `apply_text(quest: Quest, plan: LineupPlan, data: GameData, mode: TextMode) -> None`
+- `main_objectives(quest: Quest, data: GameData) -> list | None` - The monster objectives the main objective text describes, or None when it cannot be generated
+- `write_main_objective(quest: Quest, data: GameData) -> bool` - Write the main objective from the real objectives, like the retail quests do. False when it canno...
+- `fix_failure_text(quest: Quest) -> None` - A quest that is no longer won by capturing must not say that the capture target dying fails it.
 - `replace_monster_names(quest: Quest, replacement: dict[int, int], data: GameData, include_sub_objective: bool=True) -> None` - Replace the names of monsters `old id -> new id` in titles, objectives and descriptions.
 - `set_sub_quest_text(quest: Quest, data: GameData, target: tuple[int, int] | None) -> None`
+- `sub_quest_text(data: GameData, monster_id: int, part: str, lang: str) -> str` - "Break the Seltas's horn" / "Rompe el cuerno del Seltas" / "Seltas-Horn brechen", shortened as the
 
 ### `mh4u_rando/randomizer/validation.py` - Check a randomized quest against every known engine rule.
 - `validate_quest(quest: Quest, data: GameData, settings: Settings) -> list[str]`
@@ -584,6 +604,14 @@ its public classes and functions with their signatures.
 
 ### `tools/build_hud_asm.py` - Build mh4u_rando/hud/asm/* with devkitARM (or the Arm GNU Toolchain) and compare them with the bytes
 - `assemble(source: Path, address: int, bin_dir: Path, defines: tuple[str, ...]=()) -> bytes` - Machine code of `source` (.s, or .c with its .ld and the macros `defines`) linked at `address`.
+- `main() -> None`
+
+### `tools/build_monster_grammar.py` - Build mh4u_rando/data/curated/monster_grammar.json from the retail quest texts.
+- `monster_patterns(data)` - language -> (regex, {name: [monster ids]}). Longest names first so "Seltas Queen" beats "Seltas".
+- `collect(data, quests)`
+- `default_gender(monster) -> str`
+- `build(data, quests, previous: dict) -> tuple[dict, list[str]]`
+- `sub_quest_ratios(quests) -> None`
 - `main() -> None`
 
 ### `tools/citra_state.py` - Read the game's .data / .bss from a Citra save state (docs/hud_code.md, "Debugging in Citra").

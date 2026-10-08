@@ -22,7 +22,8 @@ data/
     quest_rules.json    category of every quest in quest01.arc
                         (key / urgent / normal / arena / expedition)
     monster_names.json  monster names in the 5 quest languages
-    part_names.json     breakable part names in the 5 quest languages
+    part_names.json     breakable part names in the 5 quest languages + verb and gender of each part
+    monster_grammar.json  gender and objective article of every large monster, per language
     small_monster_rules.json  interchangeable small monster groups
     supply_pool.json    consumables for supply boxes, with max capacity
     monster_icons.json  new icon cell of the monsters shown with "?" (new_monster_icons)
@@ -88,6 +89,23 @@ point decay, skill count weights, excluded skill trees). Each entry is
 `{"value": ..., "description": ...}`; change the value and keep the
 description accurate (`tests/test_equipment.py` checks every entry is
 documented). Format limits (5 skills per piece, 3 slots...) stay in code.
+
+## Grammar of the quest texts (`curated/monster_grammar.json`, `part_names.json`)
+
+The quest texts need the grammatical gender of every monster and part:
+
+* `monster_grammar.json`: per large monster `gender` (m/f in fr, es, de, it) and `objective` (the article the
+  retail main objective uses, per language: `indefinite` "un Rathian", `definite` "al Dalamadur" or `none`
+  "Slay Dalamadur"). `verified: true` entries were read from the retail quests by
+  `python tools/build_monster_grammar.py` (the word before each name in titles, objectives, descriptions and
+  sub objectives); `verified: false` ones are defaults (masculine, indefinite; Rathian and Queen feminine) for
+  monsters that never appear in a retail text. English a/an and French/Italian elisions (l', dell', uno) are
+  computed from the name (`randomizer/grammar.py`). To correct an entry by hand, edit it and delete its
+  `generated` key so the tool keeps it (`--force` ignores existing entries). `--ratios` prints the retail
+  median sub quest reward and HRP shares per rank used in `tuning.json`.
+* `part_names.json` `grammar`: per part the `verb` of the sub objective ("break" or "wound"; the retail
+  texts mix them, this is a fixed choice) and the gender in fr, es, it; a trailing `pl` marks a plural part.
+  Written by hand.
 
 ## Editing `curated/`
 
