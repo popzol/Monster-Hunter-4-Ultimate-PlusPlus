@@ -8,18 +8,15 @@ is done or discovered.
 * **Package the GUI** as an .exe with PyInstaller (the GUI itself is done:
   `python -m mh4u_rando.gui`).
 * **HUD / one-screen play** (docs/hud_layout.md, docs/hud_code.md):
-  * **Probe 20** (`tools/hud_probe.py ... --minimap --target-button
-    --target-face --hint-controls`, HUD 70 %). Probe 19 showed the face at the
-    right height, but L + up moved the camera without switching, and no hint;
-    both rebuilt (docs/hud_code.md, "Target switch"; docs/hud_layout.md,
-    "Target switch hint"). To check:
-    * L + D-pad up switches the target, with a melee weapon and with a bowgun;
-    * with L held the D-pad does not move the camera, but the C-stick does (if
-      the C-stick also stops, it sets the game-layout D-pad bits);
-    * L + X with a bowgun only changes the ammo;
-    * the D-pad hint shows only in the open L bar and is legible; which of the
-      two control sprites show (if only the Y one does, the texture is still not
-      used: give the glyph a texture path of its own);
+  * **Probe 21** (`tools/hud_probe.py ... --minimap --target-button
+    --target-face --hint-controls`, HUD 70 %). Probe 20: L + up switches the
+    target and the D-pad no longer moves the camera with L, but still no hint;
+    the copies inherited the template's "hidden" flag, now set visible
+    (docs/hud_layout.md, "Target switch hint"). To check:
+    * the D-pad hint shows only in the open L bar and is legible;
+    * which of the two control sprites show (if only the Y one does, the texture
+      is still not used: give the glyph a texture path of its own);
+    * then drop `--hint-controls`, update the docs and merge the branch;
   * base game (no update) support for the executable patches (signatures).
 * **Species base health**: done for the data (`generated/monster_health.json`,
   Kiranico) and used by `stats.py` for the health index; still to measure in the

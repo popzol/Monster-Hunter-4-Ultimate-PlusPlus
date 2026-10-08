@@ -24,8 +24,8 @@ game (says which); **Guess** = plausible from names or values, unverified.
 | Option in the randomizer (settings, pipeline, GUI, CLI) | **Done**: data files and executable patches (`code.ips` from the update's executable) |
 | Minimap: data + icon patch | **Verified** (icon positions probe 3, size probe 5) |
 | Mount gauge: data + face patch | **Verified** (probe 6) |
-| L + D-pad up switches the target; the D-pad does not move the camera while L is held | **Rebuilt, waiting for probe 20**: probe 19's filter was in the wrong place (hud_code.md, "Target switch"). Replaces L + X (probe 11), which the gunners use for ammo |
-| Hint of the switch in the item selector | **Rebuilt, waiting for probe 20**: not shown in probe 19; now the glyph is in every copy of `qst00_ID` and the sprite is animated (below, "Target switch hint") |
+| L + D-pad up switches the target; the D-pad does not move the camera while L is held | **Works** (probe 20). Replaces L + X (probe 11), which the gunners use for ammo |
+| Hint of the switch in the item selector | **Rebuilt, waiting for probe 21**: not shown in probes 19–20; the copy of the Y glyph inherited its "hidden" flag (below, "Target switch hint") |
 | Target face (monster icon) on the top screen | **Works** (probes 16–17: hidden during area loads, clear of the open item selector; probe 19: at the item icon's height) |
 | Minimap without the Map item | **Works** (probes 16–17) |
 
@@ -201,10 +201,18 @@ for groups and nulls the size of their subtree **without text panes**).
 | Kind | Field offsets (f32 unless stated) |
 |---|---|
 | Group | 0x0C x, y, z · 0x18 1.0 (alpha?) · 0x1C u8 flags |
-| Null | 0x0C x, y, z · 0x18 scale x, y · 0x20 RGBA · 0x24 0.0 · 0x28 1.0 |
-| Sprite | 0x0C x, y, z · 0x18 width, height · 0x20 scale x, y · 0x28 texture u, v, w, h (0–1) · 0x38 RGBA ×4 (corners) · 0x54 u32 flags (e.g. `0x71110`; the second byte varies, maybe the pivot) |
+| Null | 0x0C x, y, z · 0x18 scale x, y · 0x20 RGBA · 0x24 0.0 · 0x28 1.0 · 0x2C u32 visible |
+| Sprite | 0x0C x, y, z · 0x18 width, height · 0x20 scale x, y · 0x28 texture u, v, w, h (0–1) · 0x38 RGBA ×4 (corners) · 0x54 u32 flags (e.g. `0x71110`; the second byte varies, maybe the pivot) · 0x58 u32 texture index · 0x60 u32 visible |
 | Text | 0x0C u32 text offset · 0x18 font width, height · 0x20 character / line spacing · 0x28 x, y, z · 0x34 width, height · 0x44 RGBA ×4 |
 | Boundary | 0x0C x, y · 0x14 width, height · 0x1C scale x, y · 0x24 0.0 |
+
+**Visible flag** (`Pane.visible`): 1 = shown when the layout loads, 0 =
+hidden until the code shows the pane. 0 on exactly the panes the code turns on
+by state: the item selector's button glyphs (`ui205_y_button00/01`,
+`ui205_a_button01`), the fifth Hunting Horn note (`ui202_onpu04`), the
+bowgun's `changing11` / `loading11`, the Gunlance's `b_null02`. Animations
+never touch it (no `lanl` property for it), so a copy of such a pane needs the
+flag set (probe 20, below). Group records have no such field.
 
 **Positions are relative to the parent pane.** All values are in screen
 pixels. The writer edits existing fields; the only structural change is
@@ -262,6 +270,14 @@ normalized (u, v, w, h) of the texture's size.
 `tools/hud_probe.py --hint-controls` adds two always-shown sprites above the
 item bar (`hint.CONTROLS`): a plain copy of the Y glyph (does the layout take
 new panes?) and a copy of the D-pad glyph (is the texture used?).
+
+**Not shown in probe 20** either. Cause found in the files: the template
+`ui205_y_button01` has the visible flag at 0 (the code shows it when the bar
+opens), and every copy inherited it, control sprites included, so nothing
+ever showed them. Now
+the hint and the control sprites are inserted visible; the hint's corner alpha
+is 0, so it stays transparent until animation 6 fades it in (the
+control sprites stay opaque, without animation). Waiting for probe 21.
 
 ### Coordinates
 

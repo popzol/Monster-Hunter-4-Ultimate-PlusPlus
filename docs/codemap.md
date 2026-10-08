@@ -265,6 +265,8 @@ its public classes and functions with their signatures.
   - `spacing(value: tuple[float, float]) -> None`
   - `colors() -> list[tuple[int, int, int, int]] | None` - RGBA of the 4 corners (sprites and texts).
   - `colors(value: list[tuple[int, int, int, int]]) -> None`
+  - `visible() -> bool | None` - Whether a sprite or null is shown when the layout loads; the code shows and hides some panes later
+  - `visible(value: bool) -> None`
   - `walk()` - This pane and all its descendants, in file order.
 - class `Layout`
   - `roots() -> list[Pane]`

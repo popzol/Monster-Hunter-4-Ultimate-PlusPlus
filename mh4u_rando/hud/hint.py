@@ -82,12 +82,17 @@ def add_hint(raw_arc: bytes, controls: bool = False) -> bytes:
             index = next(i for i, name in enumerate(layout.textures) if name.endswith(TEXTURE))
             region = (GLYPH_AT[0] / TEXTURE_SIZE, GLYPH_AT[1] / TEXTURE_SIZE,
                       GLYPH_SIZE / TEXTURE_SIZE, GLYPH_SIZE / TEXTURE_SIZE)
-            layout.insert_sprite(layout.find(PARENT), layout.find(TEMPLATE), NAME, hint_position(), region, index)
+            # TEMPLATE starts hidden and the code shows it by name, so the copies are shown from the start; the
+            # hint is transparent until the bar's animation fades it in, like TEMPLATE
+            hint = layout.insert_sprite(layout.find(PARENT), layout.find(TEMPLATE), NAME, hint_position(), region,
+                                        index)
+            hint.visible = True
+            hint.colors = [(r, g, b, 0) for r, g, b, _ in hint.colors]
             if controls:
                 x = hint_position()[0]
                 for k, (name, glyph) in enumerate(CONTROLS):  # left to right on screen (x is reversed)
                     layout.insert_sprite(layout.find(PARENT), layout.find(TEMPLATE), name,
-                                         (x - 20 * k, CONTROL_Y), *((region, index) if glyph else ()))
+                                         (x - 20 * k, CONTROL_Y), *((region, index) if glyph else ())).visible = True
             entry.data = layout.to_bytes()
             done.add("layout")
         elif entry.type_hash == LANL_TYPE_HASH and short == ANIMATION:

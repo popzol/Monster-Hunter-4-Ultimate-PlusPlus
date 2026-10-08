@@ -328,7 +328,7 @@ ZR, the Circle Pad (0xF0000000) and bits 0xF0000 in +0x8C during a quest.
 | 11 | Action 12 | **Works**: L + X locks / switches the target |
 | 18 | Event log, also on changes of +0x8C / +0x30C | The D-pad rows in "Pad"; with and without L the D-pad sets the camera actions |
 | 19 | L + D-pad up: filter in the action copy of 0x2C5470 (raw D-pad bits) + FLAG | **Fails**: L + up moves the camera and does not switch; L + X no longer switches (expected). The D-pad actions are ORed into p + 0x3CC after that copy (0xB3CC64), so the filter never saw them |
-| 20 | Filter as a wrapper of 0xB3CC64 (game-layout D-pad bits hidden while L) + FLAG | Pending |
+| 20 | Filter as a wrapper of 0xB3CC64 (game-layout D-pad bits hidden while L) + FLAG | **Works**: L + up switches the target and the D-pad does not move the camera while L is held. The hint still did not show (hud_layout.md, "Target switch hint") |
 
 ## Debugging in Citra
 

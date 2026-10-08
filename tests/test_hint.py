@@ -101,6 +101,20 @@ def test_insert_a_sprite_after_the_last_child():
                     "n": RECORD_SIZES[PaneKind.NULL], "g2": RECORD_SIZES[PaneKind.GROUP]}
 
 
+def test_visibility_flag():
+    layout = parse_lyt(layout_with_a_text())
+    sprite, null, group = layout.find("s"), layout.find("n"), layout.find("g")
+    for pane, at in ((sprite, 0x60), (null, 0x2C)):
+        assert pane.visible is False
+        pane.visible = True
+        assert struct.unpack_from("<I", layout.data, pane.offset + at)[0] == 1
+    again = parse_lyt(layout.to_bytes())
+    assert again.find("s").visible and again.find("n").visible and again.find("t").name == "t"
+    assert group.visible is None
+    with pytest.raises(AttributeError):
+        group.visible = True
+
+
 def test_insert_a_sprite_inside_a_null_grows_its_ancestors():
     layout = parse_lyt(layout_with_a_text())
     layout.insert_sprite(layout.find("n"), layout.find("s"), "inner", (1, 1))
@@ -177,6 +191,9 @@ def test_add_the_hint_to_the_game():
     sprite = layout.find(NAME)
     assert sprite.parent.name == PARENT and sprite.size == (16, 16) and sprite.position == pytest.approx(hint_position())
     before = parse_lyt(entry(original, "ui205").data)
+    # The template starts hidden (the code shows it); the hint starts shown, transparent until the bar opens.
+    assert before.find(TEMPLATE).visible is False and layout.find(TEMPLATE).visible is False
+    assert sprite.visible is True and [c[3] for c in sprite.colors] == [0] * 4
     assert [p.name for p in layout.panes if p.name != NAME] == [p.name for p in before.panes]
     for pane in layout.panes:
         assert struct.unpack_from("<I", layout.data, pane.offset)[0] == name_hash(pane.name)
@@ -220,4 +237,19 @@ def test_hint_controls():
     assert y.position[0] > dpad.position[0]  # Y on the left of the screen
     assert layout.data[y.offset + 0x28:y.offset + 0x5C] == layout.data[template.offset + 0x28:template.offset + 0x5C]
     hint = layout.find(NAME)
-    assert layout.data[dpad.offset + 0x28:dpad.offset + 0x5C] == layout.data[hint.offset + 0x28:hint.offset + 0x5C]
+    for at, size in ((0x28, 16), (0x58, 4)):  # the glyph's region and texture
+        assert layout.data[dpad.offset + at:dpad.offset + at + size] == layout.data[hint.offset + at:hint.offset + at + size]
+    assert y.visible and dpad.visible and all(c[3] == 255 for c in y.colors + dpad.colors)
+
+
+def test_visibility_flag_of_the_game_layouts():
+    """Panes the code shows on demand start hidden: the item selector's button glyphs, the fifth Hunting Horn
+    note, the bowgun's reload states."""
+    rom, _ = game_files()
+    arc = parse_arc(rom.read("spa/data/core_quest.arc"))
+    selector, gauges = parse_lyt(entry(arc, "ui205").data), parse_lyt(entry(arc, "ui202").data)
+    assert [selector.find(n).visible for n in ("ui205_y_button00", "ui205_y_button01", "ui205_a_button01")] == [False] * 3
+    assert selector.find("ui205_l_button").visible and selector.find("ui205_shita00").visible
+    assert [gauges.find(n).visible for n in ("ui202_onpu03", "ui202_onpu04")] == [True, False]
+    assert [gauges.find(n).visible for n in ("ui202_change11", "ui202_changing11")] == [True, False]
+    assert gauges.find("ui202_hue").visible is None

@@ -23,9 +23,10 @@ is the closest previous pane one level up. Record layouts:
                (record size, or for groups/nulls the size of their subtree
                without text panes). Unnamed panes have hash 0 and name offset 0.
     group      0x0C f32 x, y, z
-    null       0x0C f32 x, y, z; 0x18 f32 scale x, y; 0x20 RGBA
+    null       0x0C f32 x, y, z; 0x18 f32 scale x, y; 0x20 RGBA; 0x2C u32 visible
     sprite     0x0C f32 x, y, z; 0x18 f32 width, height; 0x20 f32 scale x, y;
-               0x28 f32 u, v, width, height (texture); 0x38 RGBA x4 (corners)
+               0x28 f32 u, v, width, height (texture); 0x38 RGBA x4 (corners);
+               0x58 u32 texture index; 0x60 u32 visible
     text       0x0C u32 text offset; 0x18 f32 font width, height;
                0x20 f32 spacing x, y; 0x28 f32 x, y, z; 0x34 f32 width, height;
                0x44 RGBA x4
@@ -69,6 +70,7 @@ POSITION_AT = {PaneKind.SPRITE: 0x0C, PaneKind.NULL: 0x0C, PaneKind.GROUP: 0x0C,
 SIZE_AT = {PaneKind.SPRITE: 0x18, PaneKind.TEXT: 0x34, PaneKind.BOUNDARY: 0x14}
 SCALE_AT = {PaneKind.SPRITE: 0x20, PaneKind.NULL: 0x18, PaneKind.BOUNDARY: 0x1C}
 COLORS_AT = {PaneKind.SPRITE: 0x38, PaneKind.TEXT: 0x44}  # 4 corners, RGBA bytes
+VISIBLE_AT = {PaneKind.SPRITE: 0x60, PaneKind.NULL: 0x2C}  # u32 1 / 0: shown when the layout loads
 FONT_SIZE_AT = 0x18  # text only
 SPACING_AT = 0x20    # text only
 HEADER = struct.Struct("<4sIIIIIIIIIII")
@@ -146,6 +148,20 @@ class Pane:
         if at is None or len(value) != 4:
             raise AttributeError(f"{self.kind.name.lower()} panes have no corner colors")
         self.layout.data[self.offset + at:self.offset + at + 16] = bytes(c for rgba in value for c in rgba)
+
+    @property
+    def visible(self) -> bool | None:
+        """Whether a sprite or null is shown when the layout loads; the code shows and hides some panes later
+        (e.g. the item selector's button glyphs start hidden)."""
+        at = VISIBLE_AT.get(self.kind)
+        return None if at is None else bool(struct.unpack_from("<I", self.layout.data, self.offset + at)[0])
+
+    @visible.setter
+    def visible(self, value: bool) -> None:
+        at = VISIBLE_AT.get(self.kind)
+        if at is None:
+            raise AttributeError(f"{self.kind.name.lower()} panes have no visibility flag")
+        struct.pack_into("<I", self.layout.data, self.offset + at, int(value))
 
     def walk(self):
         """This pane and all its descendants, in file order."""
