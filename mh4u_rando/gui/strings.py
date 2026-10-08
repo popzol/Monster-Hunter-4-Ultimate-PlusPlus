@@ -51,6 +51,8 @@ FAILED = T("Error durante la randomización.", "Randomization failed.")
 
 LOG_START = T("Randomizando {name} con la semilla {seed}…", "Randomizing {name} with seed {seed}…")
 LOG_DONE = T("Archivo generado: {path}", "Archive written: {path}")
+LOG_QUESTS_UNCHANGED = T("Misiones sin cambios: no se ha generado ningún archivo de misiones.",
+                         "Quests left as they are: no quest archive was written.")
 LOG_EQUIPMENT = T("Parche de equipo generado: {path} ({count} piezas cambiadas)",
                   "Equipment patch written: {path} ({count} pieces changed)")
 LOG_HUD = T("HUD al {scale} %: {count} archivos en {path}", "HUD at {scale}%: {count} files in {path}")

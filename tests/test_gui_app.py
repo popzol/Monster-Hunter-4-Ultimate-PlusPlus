@@ -85,6 +85,25 @@ def test_set_all_changes_every_stat_of_the_group(window):
     assert helper.menu.cget("state") == "disabled"
 
 
+def test_master_switches_disable_their_area(window):
+    monsters, structure = window.widgets["randomize_monsters"], window.widgets["structure"]
+    window.widgets["randomize_quests"].set(False)
+    assert monsters._controls[0].cget("state") == "disabled"
+    assert structure._controls[0].cget("state") == "disabled"
+    window.widgets["randomize_quests"].set(True)
+    assert monsters._controls[0].cget("state") == "normal"
+    assert structure._controls[0].cget("state") == "disabled"  # still needs randomize_monsters
+    monsters.set(True)
+    assert structure._controls[0].cget("state") == "normal"
+    window.widgets["randomize_quests"].set(False)
+    assert structure._controls[0].cget("state") == "disabled"
+    helper = next(h for h in window.set_all_widgets if "armor_defense" in {t.option.field for t in h.targets})
+    window.widgets["randomize_armor_stats"].set(True)
+    assert helper.menu.cget("state") == "normal"
+    window.widgets["randomize_equipment"].set(False)
+    assert helper.menu.cget("state") == "disabled"
+
+
 def test_range_keeps_n_not_above_m(window):
     low, high = window.widgets["recipe_material_count_min"], window.widgets["recipe_material_count_max"]
     low.set(3)

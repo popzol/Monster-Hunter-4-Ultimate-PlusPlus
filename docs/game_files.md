@@ -28,6 +28,8 @@ Both dump folders are git-ignored. Tools:
 | `tools/extract_code_bin.py` | Extracts the decompressed `code.bin` from a .3ds or an update `.app` |
 | `tools/equipment_tables.py` | Prints the equipment tables of `code.bin` with names |
 | `tools/build_equipment_data.py` | Regenerates `data/generated/equipment_names.json` from `core_common.arc` |
+| `tools/music_inventory.py` | Lists the music queues and tracks, decodes a track to WAV ([music.md](music.md)) |
+| `tools/music_replace.py` | Replaces a track with your own WAV, looping seamlessly ([music.md](music.md)) |
 
 ## RomFS layout
 
@@ -37,7 +39,7 @@ Both dump folders are git-ignored. Tools:
 | `eng/ fre/ ger/ ita/ spa/ data/` | Per-language ARCs: UI layouts, menus, all texts, maps' UI |
 | `loc/data/` | Language-independent stages (`mNNaNN`), `quest00/01.arc` (quests, `.mib`), `pl_base_*` (shared player data), DLC/event equipment models |
 | `loc/sound/` | Sounds for DLC equipment and Palicoes |
-| `sound/bgm/` | Music streams (`.stq` + `.mca`) |
+| `sound/bgm/` | Music streams (`.mca` tracks; the loose `.stq` queues are unused copies of the ones in ARCs), see [music.md](music.md); only in the base game |
 | `mov/*.moflex` | Video cutscenes (Mobiclip) |
 | `system/` | Fonts, software keyboard, shaders |
 | `titleLT/` | Title screen logos |
@@ -87,7 +89,7 @@ Both dump folders are git-ignored. Tools:
 | 76820D81 | `LMT` | Motion (animations) |
 | 0026E7FF | `CCL` | Collision capsules |
 | 535D969F | `CTC` | Cloth/chain physics |
-| 67195A2E | `MADP` | Sound wave (`.mca`) |
+| 67195A2E | `MADP` | Sound wave (`.mca`, DSP ADPCM; [music.md](music.md)) |
 | 14B5C8E6 / 2618DE3F | `SNDB` / `SREQ` | Sound bank / sound requests |
 | 6E171A6E, 68CD2933, 3A6A5A4D, 4A4B677C, 7BEA3086, 07437CCE | `MSS`, `SES`, `STRQ`, `REV`, `CFL`, `XFS` | Other sound control data |
 | 6D5AE854 / 4E397417 / 148B6F89 | `EFL` / `EAN` / `MEF` | Effects |

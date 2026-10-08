@@ -6,6 +6,7 @@ import pytest
 from mh4u_rando.data import load_game_data
 from mh4u_rando.mib import load_mib, parse_mib, write_mib
 from mh4u_rando.randomizer.objectives import UNKNOWN_PICTURE
+from mh4u_rando.randomizer.supplies import gunner_pool
 from mh4u_rando.randomizer import (
     DuplicateMode, Frequency, ProgressionMode, RewardSource, Settings, StructureMode, SubQuestMode, TextMode,
     randomize_quests, unrandomized_quests, validate_quest,
@@ -151,6 +152,23 @@ def test_supplies_keep_slots_and_use_full_stacks(originals, data):
             for slot in box.items:
                 if slot.item_id not in (0, 768):
                     assert slot.qty == capacity[slot.item_id], data.item_name(slot.item_id)
+
+
+def test_gunner_supplies_and_sorted_boxes(originals, data):
+    quests, _, _ = run(originals, data, seed="GUN", randomize_supplies=True, gunner_supplies=True)
+    capacity = {**dict(data.supply_pool), **dict(gunner_pool(data))}
+    ammo = set(dict(gunner_pool(data)))
+    for name, quest in quests.items():
+        if not originals[name].all_large_monsters():
+            continue
+        slots = [s for b in quest.supplies for s in b.items if s.item_id not in (0, 768)]
+        assert sum(s.item_id in ammo for s in slots) == min(4, len(slots)), name
+        for slot in slots:
+            assert slot.qty == capacity[slot.item_id], data.item_name(slot.item_id)
+        for box in quest.supplies:
+            ids = [s.item_id for s in box.items]
+            key = lambda i: (i == 0, i != 768, i)
+            assert ids == sorted(ids, key=key), name
 
 
 def test_field_maps_always_have_a_map(originals, data):

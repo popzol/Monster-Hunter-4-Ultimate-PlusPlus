@@ -42,6 +42,7 @@ def variant_settings(full: Settings, variant: str) -> Settings:
     step = VARIANTS.index(variant)
     s = Settings.from_dict(full.to_dict())
     if step < 1:
+        s.randomize_equipment = False
         for name in EQUIPMENT_SWITCHES:
             setattr(s, name, False)
         s.armor_skills = ArmorSkillMode.KEEP
@@ -77,6 +78,7 @@ ARMOR_FIELD = {"D": "armor_defense", "Z": "armor_resistances", "L": "armor_slots
 def group_settings(full: Settings, group: str) -> Settings:
     """`full` with only the equipment options of `group` (and no interface options)."""
     s = variant_settings(full, "Q")
+    s.randomize_equipment = full.randomize_equipment
     for name in EQUIPMENT_GROUPS[group]:
         setattr(s, name, getattr(full, name))
     if group in ("R", "A", "S"):

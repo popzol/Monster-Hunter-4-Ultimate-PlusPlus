@@ -59,7 +59,7 @@ class InputCheck:
 
 @dataclass
 class RunResult:
-    arc_path: Path
+    arc_path: Path | None  # None: the quests were left untouched (randomize_quests off), no archive written
     spoiler_path: Path
     reports: list[QuestReport]
     seed: str
@@ -199,7 +199,7 @@ def run(game: Path, output_dir: Path, settings: Settings,
     if settings.patches_interface_code:
         if not is_container(game):
             raise ValueError("the interface options need the game ROM")
-    if settings.patches_interface_code or want_icons or settings.allow_op_equipment or starting_items:
+    if settings.patches_interface_code or want_icons or settings.allows_op_equipment or starting_items:
         update, update_used = open_update(update_path)
         if update is None and settings.needs_update:
             raise ValueError("the target options need the update's 00000000.app (installed in "
@@ -211,7 +211,7 @@ def run(game: Path, output_dir: Path, settings: Settings,
                        "keep the \"?\" icon")
     patch_interface_code = update_used is not None and (settings.patches_interface_code or new_icons)
     code = None
-    if update_used is not None and (patch_interface_code or settings.allow_op_equipment or starting_items):
+    if update_used is not None and (patch_interface_code or settings.allows_op_equipment or starting_items):
         # The update's executable is the one that runs; allow_op_equipment patches code that only it has.
         code = load_code(update_used)  # fail before any work if the executable is unsupported
     elif settings.randomizes_equipment or starting_items:
@@ -222,16 +222,27 @@ def run(game: Path, output_dir: Path, settings: Settings,
     input_check = check_input(quests, data)
 
     announce("quests")
+    before = {} if settings.randomize_quests else {name: write_mib(quest) for name, quest in quests.items()}
     reports = randomize_quests(quests, settings, data, progress, new_icons)
 
     announce("write")
+    changed = settings.randomize_quests
     for name, quest in quests.items():
-        entries[name].data = write_mib(quest)
+        new_data = write_mib(quest)
+        if not settings.randomize_quests and new_data != before[name]:
+            changed = True  # only the quest board pictures can differ
+        if settings.randomize_quests or new_data != before[name]:
+            entries[name].data = new_data
 
     output_dir = mod_folder(output_dir)
     arc_path = output_arc_path(output_dir)
-    arc_path.parent.mkdir(parents=True, exist_ok=True)
-    arc_path.write_bytes(write_arc(arc))
+    if changed:
+        arc_path.parent.mkdir(parents=True, exist_ok=True)
+        arc_path.write_bytes(write_arc(arc))
+    else:
+        arc_path.unlink(missing_ok=True)  # an archive left by an earlier run would still be loaded
+        arc_path = None
+    output_dir.mkdir(parents=True, exist_ok=True)
     spoiler_path = output_dir / f"spoiler_{settings.seed}.txt"
     spoiler_path.write_text(write_spoiler_text(reports, data, settings.seed, settings.to_dict()), encoding="utf-8")
     (output_dir / f"spoiler_{settings.seed}.json").write_text(write_spoiler_json(reports), encoding="utf-8")

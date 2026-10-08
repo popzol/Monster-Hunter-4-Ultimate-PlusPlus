@@ -59,6 +59,9 @@ the update installed in the emulator (the update changes neither file). For
 advanced use, `--arc quest01.arc` replaces `--rom`, with `--code` (code.bin,
 .3ds or the update's `00000000.app`) for the equipment options.
 
+`--no-quests` / `--no-equipment` (the GUI's "Randomize quests" / "Randomize
+equipment" switches) leave the quests / the equipment untouched, over the preset.
+
 `--hud-scale 90|80|70|60` (or the GUI's Interface tab) shrinks the top-screen
 HUD, each element towards its corner. It needs `--rom`; the minimap, the mount
 gauge and the prompts over the characters also need the update's decrypted

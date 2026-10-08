@@ -9,6 +9,7 @@ screen too (all need --rom and the update's 00000000.app, found in
 Citra/Azahar/Lime3DS or given with --update; without it the HUD size only
 changes data files).
 The new game's items (starting_items, expanded_starting_inventory) are set in the preset only.
+--no-quests / --no-equipment leave the quests / the equipment untouched.
 Advanced: --arc quest01.arc (instead of --rom) plus --code code.bin|game.3ds|update.app.
 The output folder is a mod folder: copy its contents into Citra's
 load/mods/0004000000126100/.
@@ -43,9 +44,17 @@ def main(argv=None) -> int:
     parser.add_argument("--touchless-target", action="store_true",
                         help="lock on to monsters without the touch screen: L + D-pad up locks / switches the "
                              "target, with a hint in the item selector and the target's face on the top screen")
+    parser.add_argument("--no-quests", action="store_true",
+                        help="leave the quests as they are (switches randomize_quests off, over the preset)")
+    parser.add_argument("--no-equipment", action="store_true",
+                        help="leave the equipment as it is (switches randomize_equipment off, over the preset)")
     args = parser.parse_args(argv)
 
     settings = Settings.load(args.preset) if args.preset else Settings()
+    if args.no_quests:
+        settings.randomize_quests = False
+    if args.no_equipment:
+        settings.randomize_equipment = False
     if args.seed:
         settings.seed = args.seed
     if args.hud_scale:
@@ -68,7 +77,7 @@ def main(argv=None) -> int:
     result = run(args.rom or args.arc, args.out, settings, progress, code_path=args.code, update_path=args.update)
     print()
     print(f"Seed: {result.seed}")
-    print(f"Quests: {result.arc_path}")
+    print(f"Quests: {result.arc_path or 'not randomized, no archive written'}")
     print(f"Spoiler log: {result.spoiler_path}")
     if result.ips_path:
         print(f"Executable patch: {result.ips_path}" + (" (from the update's executable)"

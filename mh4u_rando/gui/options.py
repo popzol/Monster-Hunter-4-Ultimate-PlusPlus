@@ -55,9 +55,11 @@ class Section:
 
 @dataclass(frozen=True)
 class Area:
-    """First row of tabs (quests / equipment); its sections are the second row."""
+    """First row of tabs (quests / equipment); its sections are the second row. `master` is a bool switch shown
+    above the tabs; with it off, every option of the area is disabled."""
     title: T
     sections: tuple[Section, ...]
+    master: Option | None = None
 
 
 STAT_CHOICES = (
@@ -248,9 +250,16 @@ QUEST_SECTIONS: tuple[Section, ...] = (
         Group(T("Suministros", "Supplies"), (
             Option("randomize_supplies", T("Randomizar suministros", "Randomize supplies"),
                    T("Cada hueco de la caja de suministros contiene un consumible al azar en su cantidad máxima. "
-                     "El mapa se conserva siempre.",
+                     "El mapa se conserva siempre. Cada caja se ordena: mapa primero, luego por id de objeto y los "
+                     "huecos vacíos al final.",
                      "Each supply box slot holds a random consumable in its maximum quantity. "
-                     "The map is always kept.")),
+                     "The map is always kept. Each box is sorted: Map first, then by item id, empty slots last.")),
+            Option("gunner_supplies", T("Munición para artilleros", "Gunner ammo"),
+                   T("Al menos 4 huecos de los baúles (inicial y reabastecimiento) llevan munición o revestimientos "
+                     "distintos al azar, en stack lleno. Si hay menos huecos, todos.",
+                     "At least 4 slots of the supply boxes (initial and refills) hold different random ammo or "
+                     "coatings, in full stacks. With fewer slots, all of them."),
+                   requires="randomize_supplies"),
         )),
     )),
     Section(T("Otros monstruos", "Other monsters"), (
@@ -625,21 +634,41 @@ NEW_GAME_SECTIONS: tuple[Section, ...] = (
 )
 
 AREAS: tuple[Area, ...] = (
-    Area(T("Misiones", "Quests"), QUEST_SECTIONS),
-    Area(T("Equipo", "Equipment"), EQUIPMENT_SECTIONS),
+    Area(T("Misiones", "Quests"), QUEST_SECTIONS,
+         Option("randomize_quests", T("Randomizar misiones", "Randomize quests"),
+                T("Desactivado, las misiones quedan como en el juego original y se ignoran todas las opciones de "
+                  "esta pestaña.",
+                  "When off, quests stay as in the original game and every option of this tab is ignored."))),
+    Area(T("Equipo", "Equipment"), EQUIPMENT_SECTIONS,
+         Option("randomize_equipment", T("Randomizar equipo", "Randomize equipment"),
+                T("Desactivado, el equipo queda como en el juego original (el ejecutable no se parchea por esto) y "
+                  "se ignoran todas las opciones de esta pestaña.",
+                  "When off, equipment stays as in the original game (the executable is not patched for it) and "
+                  "every option of this tab is ignored."))),
     Area(T("Partida nueva", "New game"), NEW_GAME_SECTIONS),
     Area(T("Interfaz", "Interface"), INTERFACE_SECTIONS),
 )
 SECTIONS: tuple[Section, ...] = QUEST_SECTIONS + EQUIPMENT_SECTIONS + NEW_GAME_SECTIONS + INTERFACE_SECTIONS
 
 
+def area_options(area: Area) -> list[Option]:
+    """The options of an area's sections (not its master switch)."""
+    return [option for section in area.sections for group in section.groups for option in group.options]
+
+
+def area_masters() -> list[Option]:
+    return [area.master for area in AREAS if area.master]
+
+
 def all_options() -> list[Option]:
-    return [option for section in SECTIONS for group in section.groups for option in group.options]
+    return area_masters() + [option for section in SECTIONS for group in section.groups for option in group.options]
 
 
 def all_texts() -> list[T]:
     """Every translatable text of the option panels (for tests)."""
     texts = [area.title for area in AREAS]
+    for master in area_masters():
+        texts += [master.label, master.tooltip]
     for section in SECTIONS:
         texts.append(section.title)
         for group in section.groups:

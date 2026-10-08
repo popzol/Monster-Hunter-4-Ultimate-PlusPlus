@@ -20,6 +20,41 @@ its public classes and functions with their signatures.
 - `parse_arc(buf: bytes) -> Arc`
 - `write_arc(arc: Arc) -> bytes`
 
+### `mh4u_rando/audio/__init__.py` - Game audio: MADP (.mca) tracks with DSP ADPCM decoding and encoding (the encoder needs numpy),
+
+### `mh4u_rando/audio/madp.py` - MADP (.mca) audio: Capcom's container for Nintendo DSP ADPCM (format in docs/music.md).
+- class `DspState` - Decoder state before a sample: frame header byte (predictor << 4 | scale) and the last two samples.
+- class `Channel`
+- class `SeekPoint` - Decoder state of every channel at `sample` (a frame boundary).
+- class `Madp`
+  - `seconds() -> float`
+- `frame_count(samples: int) -> int`
+- `parse_madp(data: bytes) -> Madp`
+- `decode_channel(frames: bytes, coefs: list[int], samples: int, watch: set[int]=frozenset()) -> tuple[list[int], dict[int, DspState]]` - 16-bit PCM of one channel, and the decoder state at each sample index in `watch`.
+- `decode_madp(madp: Madp) -> list[list[int]]` - 16-bit PCM of each channel.
+- `build_madp(madp: Madp) -> bytes` - The .mca bytes: header, seek table, channel info, then the frames interleaved in blocks.
+- `compute_coefs(x) -> list[int]` - 8 predictor pairs (s16, 1.0 = 2048) for one channel: k-means of the frames by prediction error.
+- `encode_channel(x, coefs: list[int], watch: set[int]=frozenset()) -> tuple[bytes, dict[int, DspState]]` - DSP frames of one channel (int16 samples), and the decoder state at each frame start in `watch`.
+- `encode_madp(pcm, rate: int=RATE, loop_start: int=0, loop_end: int=0) -> Madp` - A MADP of int16 PCM (channels x samples). `loop_start` must be a frame boundary (multiple of 14).
+- `prepare_pcm(pcm, rate: int, loop: tuple[int, int] | None=None, target_rate: int=RATE)` - Make source audio ready for `encode_madp`: stereo int16 at the game's rate, loop on a frame bound...
+
+### `mh4u_rando/audio/strq.py` - STRQ (.stq) stream queues: the tracks a queue can play and the requests the game asks for (docs/m...
+- `parse_strq(data: bytes) -> dict` - A .stq: its streams (one per .mca) and its requests (what the game asks to play).
+- `build_strq(queue: dict) -> bytes` - The .stq bytes of a parsed queue (streams, then requests, then the paths in stream order).
+- `unused_streams(queue: dict) -> list[int]` - Indexes of the streams no request plays. No retail queue has one; a battle queue with one (a request
+- `stream_entry(path: str, data: bytes) -> dict` - A .stq stream entry for the .mca `data`, played from `path` ('sound\bgm\...\name', no extension).
+- `romfs_path(stream_path: str) -> str` - 'sound\bgm\stage\wav\bgm_map_01' -> 'sound/bgm/stage/wav/bgm_map_01.mca'.
+- `stream_path(romfs: str) -> str` - 'sound/bgm/stage/wav/bgm_map_01.mca' -> 'sound\bgm\stage\wav\bgm_map_01'.
+- `queue_name(romfs: str) -> str` - 'sound/bgm/battle/bgm_bat.stq' -> the ARC entry name 'sound\bgm\battle\bgm_bat'.
+- `queue_archives(queue: str) -> list[str]` - RomFS paths of the ARCs the game reads queue `queue` ('sound\bgm\battle\bgm_bat') from.
+- `replace_queue(arc_data: bytes, queue: str, stq: bytes) -> bytes` - The ARC `arc_data` with its copy of `queue` replaced by `stq`.
+- `read_queue(read: Callable[[str], bytes], queue: str) -> bytes` - The .stq bytes of `queue` as the game sees them: its copy in the first of its ARCs, read with `re...
+- `queue_files(read: Callable[[str], bytes], queue: str, stq: bytes) -> dict[str, bytes]` - {RomFS path: new ARC} putting `stq` as `queue` in every ARC that holds it; `read` gives each ARC's
+
+### `mh4u_rando/audio/wav.py` - WAV files: read source music (with its loop points) and write decoded tracks.
+- `read_wav(path: Path)` - (samples as float rows in the int16 range, rate, loop or None) of a PCM or float WAV.
+- `write_wav(path: Path, pcm: list[list[int]], rate: int) -> None` - 16-bit WAV of channel rows of int samples.
+
 ### `mh4u_rando/data/__init__.py` - Game knowledge base: monsters, maps, items, quests and the rules that govern them.
 
 ### `mh4u_rando/data/gamedata.py` - Typed access to the game knowledge base.
@@ -159,10 +194,12 @@ its public classes and functions with their signatures.
 - class `Option`
 - class `Group`
 - class `Section`
-- class `Area` - First row of tabs (quests / equipment); its sections are the second row.
+- class `Area` - First row of tabs (quests / equipment); its sections are the second row. `master` is a bool switc...
 - `materials_range(prefix: str, requires: str) -> Option`
 - `quantity_range(prefix: str, requires: str) -> Option`
 - `stat(field: str, label: T, requires: str, tooltip: T=EMPTY) -> Option`
+- `area_options(area: Area) -> list[Option]` - The options of an area's sections (not its master switch).
+- `area_masters() -> list[Option]`
 - `all_options() -> list[Option]`
 - `all_texts() -> list[T]` - Every translatable text of the option panels (for tests).
 
@@ -564,6 +601,7 @@ its public classes and functions with their signatures.
   - `patches_interface_code() -> bool` - The interface options that patch the executable and the update's files (mh4u_rando/hud).
   - `needs_update() -> bool` - Interface options that cannot work without the update's 00000000.app (the HUD size can; the monster
   - `randomizes_equipment() -> bool`
+  - `allows_op_equipment() -> bool` - allow_op_equipment, unless the equipment master switch is off.
   - `to_dict() -> dict`
   - `from_dict(values: dict) -> 'Settings'`
   - `save(path: Path) -> None`
@@ -581,6 +619,10 @@ its public classes and functions with their signatures.
 
 ### `mh4u_rando/randomizer/supplies.py` - Supply boxes.
 - `randomize_supplies(quest: Quest, data: GameData, rng: random.Random) -> list[int]` - Replace every consumable slot. Returns the item ids handed out.
+- `gunner_pool(data: GameData) -> list[tuple[int, int]]` - (item id, stack size) of every ammo and coating the pouch can hold.
+- `add_gunner_supplies(quest: Quest, data: GameData, rng: random.Random, minimum: int=GUNNER_MINIMUM) -> list[int]` - Turn `minimum` random non-Map slots of the quest's boxes (initial and refills) into different amm...
+- `sort_boxes(quest: Quest) -> None` - Map first, then by item id, empty slots last; the number of slots does not change.
+- `handed_out(quest: Quest) -> list[int]` - Item ids of the non-empty, non-Map slots of every box, in box order.
 - `ensure_map(quest: Quest, map_info: MapInfo) -> None` - Make sure the initial supply box holds a Map on maps with several areas.
 
 ### `mh4u_rando/randomizer/templates.py` - Quest text templates: the retail sentences of the five languages (curated/text_templates.json).
@@ -712,4 +754,29 @@ its public classes and functions with their signatures.
 - `ramp_colour(ramp: Ramp, t: float) -> tuple[int, int, int]`
 - `recolour(rgba: bytes, ramp: Ramp) -> bytes`
 - `contact_sheet(pairs: list[tuple[bytes, bytes]], zoom: int=4) -> bytes` - Base and new icon side by side, one pair per row, over grey.
+- `main() -> None`
+
+### `tools/music_inventory.py` - List the game's music: every stream queue (.stq) with its tracks (.mca), lengths and loops.
+- `inventory(rom: RomFS) -> list[dict]` - Every .stq with its streams, checked against the .mca headers.
+- `print_report(queues: list[dict], requests: bool) -> None`
+- `main() -> None`
+
+### `tools/music_probe.py` - Build a music test mod for Citra (see docs/music.md).
+- `probe_T(rom: RomFS, current: Callable[[str], bytes]) -> dict[str, bytes]`
+- `probe_A(rom: RomFS, current: Callable[[str], bytes]) -> dict[str, bytes]` - Points Tigrex's own stream entry at Gogmazios's track, instead of remapping the request to another
+- `probe_B(rom: RomFS, current: Callable[[str], bytes]) -> dict[str, bytes]`
+- `probe_C(rom: RomFS, current: Callable[[str], bytes]) -> dict[str, bytes]`
+- `probe_D(rom: RomFS, current: Callable[[str], bytes]) -> dict[str, bytes]`
+- `probe_M(rom: RomFS, current: Callable[[str], bytes]) -> dict[str, bytes]`
+- `probe_E(rom: RomFS, current: Callable[[str], bytes]) -> dict[str, bytes]`
+- `main() -> None`
+
+### `tools/music_replace.py` - Replace a game track with your own audio, looping seamlessly (see docs/music.md).
+- `open_game(rom_path: Path | None) -> tuple[RomFS, RomFS | None]` - The ROM (default: the GUI's) and the update (the GUI's, or the one installed in an emulator).
+- `mod_reader(mods: list[Path], rom: RomFS, update: RomFS | None) -> Callable[[str], bytes]` - Reads a RomFS file as a mod would leave it: its copy in the first of the mod folders `mods` that has
+- `write_files(out: Path, files: dict[str, bytes]) -> None`
+- `replace_track(read: Callable[[str], bytes], queues: list[str], path: str, mca: bytes) -> dict[str, bytes]` - {RomFS path: data}: the track `path` ('sound\bgm\...\name') as `mca`, and the ARCs of `queues` with
+- `seam_test()` - (pcm, rate, loop) of the synthetic seam test (every loop component has whole cycles in the loop).
+- `encode_track(pcm, rate: int, loop: tuple[int, int] | None) -> bytes` - The .mca of source audio (loop in source samples, end exclusive; None plays once).
+- `find_queues(rom: RomFS, target: str) -> tuple[str, list[str]]` - The track's stream path ('sound\bgm\...\name') and the queues ('sound\bgm\...\bgm_st_02') that list
 - `main() -> None`

@@ -201,8 +201,13 @@ def _randomize_large_monster_quest(quest: Quest, info: QuestInfo, ctx: Randomize
             data, _rng(ctx, quest, "rewards"))
 
     if settings.randomize_supplies:
-        report.supplies = supplies.randomize_supplies(quest, data, _rng(ctx, quest, "supplies"))
-    supplies.ensure_map(quest, map_info)
+        supplies.randomize_supplies(quest, data, _rng(ctx, quest, "supplies"))
+    supplies.ensure_map(quest, map_info)  # before the ammo: it may take over a slot
+    if settings.randomize_supplies:
+        if settings.gunner_supplies:
+            supplies.add_gunner_supplies(quest, data, _rng(ctx, quest, "gunner_supplies"))
+        supplies.sort_boxes(quest)
+        report.supplies = supplies.handed_out(quest)
 
     if settings.randomize_small_monsters:
         report.small_monsters = randomize_small_monsters(quest, data, _rng(ctx, quest, "small_monsters"))

@@ -84,6 +84,37 @@ def test_pipeline_writes_a_mod_folder_with_the_equipment_patch(tmp_path):
     assert not (out / "exefs" / "code.ips").exists()  # a stale patch would still be applied by the emulator
 
 
+@needs_quests
+def test_quests_master_switch_off_writes_no_archive(tmp_path):
+    source = tmp_path / "original" / "quest01.arc"
+    source.parent.mkdir()
+    source.write_bytes(write_arc(build_original_arc()))
+    out = tmp_path / "out"
+
+    run(source, out, Settings(seed="ON", **QUEST_RANDOM))
+    assert (out / "romfs" / "loc" / "data" / "quest01.arc").exists()
+    result = run(source, out, Settings(seed="OFF", randomize_quests=False, new_monster_icons=False, **{
+        k: v for k, v in QUEST_RANDOM.items() if k != "randomize_quests"}))
+
+    assert result.arc_path is None and result.reports == [] and not result.unrandomized
+    assert not (out / "romfs" / "loc" / "data" / "quest01.arc").exists()  # the earlier run's archive is gone
+    assert result.spoiler_path.exists()
+
+
+def test_cli_flags_switch_the_masters_off(tmp_path, monkeypatch):
+    from mh4u_rando import __main__ as cli
+    seen = {}
+
+    def fake_run(game, out, settings, *args, **kwargs):
+        seen["settings"] = settings
+        raise SystemExit(0)
+
+    monkeypatch.setattr(cli, "run", fake_run)
+    with pytest.raises(SystemExit):
+        cli.main(["--arc", str(tmp_path / "q.arc"), "--out", str(tmp_path), "--no-quests", "--no-equipment"])
+    assert not seen["settings"].randomize_quests and not seen["settings"].randomize_equipment
+
+
 def test_mod_folder_accepts_the_old_output_location(tmp_path):
     from mh4u_rando.pipeline import mod_folder, output_arc_path
     mod = tmp_path / "load" / "mods" / "0004000000126100"

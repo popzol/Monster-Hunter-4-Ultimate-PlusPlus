@@ -19,11 +19,18 @@ def randomize_quests(quests: dict[str, Quest], settings: Settings, data: GameDat
                      progress: ProgressCallback | None = None, new_icons: bool | None = None) -> list[QuestReport]:
     """Randomize every quest in place (keyed by file name). Fills in a seed if missing. `new_icons`: the new
     monster icons are in the mod (default: the option's value); without them the option still replaces the "?"
-    pictures of monsters that have an icon in the game (Dalamadur)."""
+    pictures of monsters that have an icon in the game (Dalamadur). With `randomize_quests` off nothing else
+    changes and no reports are returned."""
     data = data or load_game_data()
     if not settings.seed:
         settings.seed = new_seed()
     new_icons = settings.new_monster_icons if new_icons is None else new_icons and settings.new_monster_icons
+    if not settings.randomize_quests:
+        # Master switch off: the quests stay as they are, except for the interface option's pictures.
+        if settings.new_monster_icons:
+            for quest in quests.values():
+                replace_unknown_pictures(quest, data, new_icons)
+        return []
     # Map profiles always come from the untouched originals.
     profiles = MapProfiles([copy.deepcopy(q) for q in quests.values()], data)
     ctx = RandomizerContext(settings=settings, data=data, map_profiles=profiles, new_icons=new_icons)

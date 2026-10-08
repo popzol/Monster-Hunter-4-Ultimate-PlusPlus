@@ -37,7 +37,7 @@ from ..randomizer.rng import new_seed
 from . import strings as S
 from . import theme
 from .i18n import LANGUAGE_NAMES
-from .options import AREAS, all_options
+from .options import AREAS, all_options, area_options
 from .preferences import Preferences
 from .progress import ProgressAnimator
 from .widgets import GroupCard, OptionWidget, tip
@@ -92,7 +92,7 @@ class RandomizerApp(ctk.CTk):
         main = ctk.CTkFrame(self, fg_color="transparent")
         main.grid(row=0, column=1, sticky="nsew", padx=(0, 16), pady=16)
         main.grid_columnconfigure(0, weight=1)
-        main.grid_rowconfigure(1, weight=1)
+        main.grid_rowconfigure(2, weight=1)
         self._build_tabs(main)
         self._build_activity(main)
         self.apply_settings(settings)
@@ -190,8 +190,14 @@ class RandomizerApp(ctk.CTk):
                                                     command=lambda name: self._show_area(area_names.index(name)))
         self.area_selector.grid(row=0, column=0, sticky="ew", pady=(0, 4))
         self.area_tabs = []
+        self.area_masters = []
         defaults = Settings()
         for area_index, area in enumerate(AREAS):
+            master = None
+            if area.master:
+                master = OptionWidget(parent, area.master, getattr(defaults, area.master.field), self.language)
+                self.widgets[area.master.field] = master
+            self.area_masters.append(master)
             tabs = ctk.CTkTabview(parent, fg_color=theme.BACKGROUND, segmented_button_fg_color=theme.NEUTRAL,
                                   segmented_button_selected_color=theme.SEGMENT_SELECTED,
                                   segmented_button_selected_hover_color=theme.SEGMENT_SELECTED_HOVER,
@@ -218,9 +224,14 @@ class RandomizerApp(ctk.CTk):
         self.area_index = index
         self.area_selector.set(self.tr(AREAS[index].title).upper())
         for i, tabs in enumerate(self.area_tabs):
+            master = self.area_masters[i]
             if i == index:
-                tabs.grid(row=1, column=0, sticky="nsew")
+                if master:
+                    master.frame.grid(row=1, column=0, sticky="w", padx=6)
+                tabs.grid(row=2, column=0, sticky="nsew")
             else:
+                if master:
+                    master.frame.grid_remove()
                 tabs.grid_remove()
 
     def _remember_section(self, area_index: int):
@@ -230,7 +241,7 @@ class RandomizerApp(ctk.CTk):
     def _build_activity(self, parent):
         card = ctk.CTkFrame(parent, fg_color=theme.CARD, border_width=1, border_color=theme.CARD_BORDER,
                             corner_radius=12)
-        card.grid(row=2, column=0, sticky="ew", pady=(10, 0))
+        card.grid(row=3, column=0, sticky="ew", pady=(10, 0))
         ctk.CTkLabel(card, text=self.tr(S.ACTIVITY), text_color=theme.HEADING, font=theme.font(12, "bold")) \
             .pack(anchor="w", padx=16, pady=(10, 4))
         self.progress = ctk.CTkProgressBar(card, height=10)
@@ -245,27 +256,43 @@ class RandomizerApp(ctk.CTk):
         self.log.configure(state="disabled")
 
     def _wire_requirements(self):
-        """Grey out options whose master switch is off (or whose master choice is the first, "don't change")."""
+        """Grey out options whose master switch is off (or whose master choice is the first, "don't change"),
+        and every option of an area whose own master switch (Area.master) is off."""
         options = {option.field: option for option in all_options()}
-        dependants: dict[str, list[OptionWidget]] = {}
+        # widget -> the settings fields that must all be "on" for it to be enabled
+        needs: list[tuple[object, tuple[str, ...]]] = []
+        area_master = {}
+        for area in AREAS:
+            if area.master:
+                for option in area_options(area):
+                    area_master[option.field] = area.master.field
+                    if option.range_to:
+                        area_master[option.range_to] = area.master.field
         for option in options.values():
-            if option.requires:
-                dependants.setdefault(option.requires, []).append(self.widgets[option.field])
-                if option.range_to:
-                    dependants[option.requires].append(self.widgets[option.range_to])
+            masters = tuple(m for m in (area_master.get(option.field), option.requires) if m)
+            if not masters:
+                continue
+            needs.append((self.widgets[option.field], masters))
+            if option.range_to:
+                needs.append((self.widgets[option.range_to], masters))
         for helper in self.set_all_widgets:
-            if helper.requires:
-                dependants.setdefault(helper.requires, []).append(helper)
-        for master, widgets in dependants.items():
-            variable = self.widgets[master].variable
-            off = options[master].choices[0].value.value if options[master].choices else False
+            first = helper.targets[0].option
+            masters = tuple(m for m in (area_master.get(first.field), first.requires) if m)
+            if masters:
+                needs.append((helper, masters))
 
-            def refresh(*_, variable=variable, widgets=widgets, off=off):
-                for widget in widgets:
-                    widget.set_enabled(variable.get() != off and bool(variable.get()))
+        def is_on(field: str) -> bool:
+            value = self.widgets[field].variable.get()
+            off = options[field].choices[0].value.value if options[field].choices else False
+            return value != off and bool(value)
 
-            variable.trace_add("write", refresh)
-            refresh()
+        def refresh(*_):
+            for widget, masters in needs:
+                widget.set_enabled(all(is_on(m) for m in masters))
+
+        for field in {m for _, masters in needs for m in masters}:
+            self.widgets[field].variable.trace_add("write", refresh)
+        refresh()
 
     # ----- language and appearance -----------------------------------------------
 
@@ -430,7 +457,10 @@ class RandomizerApp(ctk.CTk):
         self.status.configure(text=S.FINISHED.format(self.language, seed=result.seed), text_color=theme.SUCCESS)
         skipped = sum(1 for r in result.reports if r.skipped or (not any(r.original_waves) and not r.intruders))
         notes = sum(1 for r in result.reports if r.notes)
-        self._log(S.LOG_DONE.format(self.language, path=result.arc_path))
+        if result.arc_path is None:
+            self._log(self.tr(S.LOG_QUESTS_UNCHANGED))
+        else:
+            self._log(S.LOG_DONE.format(self.language, path=result.arc_path))
         if result.equipment_report:
             self._log(S.LOG_EQUIPMENT.format(self.language, path=result.ips_path,
                                              count=len(result.equipment_report.pieces)))
@@ -443,8 +473,9 @@ class RandomizerApp(ctk.CTk):
                                        path=result.output_dir / "romfs"))
             if result.hud_update is None:
                 self._log(self.tr(S.LOG_HUD_NO_UPDATE))
-        self._log(S.LOG_SUMMARY.format(self.language, randomized=len(result.reports) - skipped, skipped=skipped,
-                                       notes=notes))
+        if result.reports:
+            self._log(S.LOG_SUMMARY.format(self.language, randomized=len(result.reports) - skipped,
+                                           skipped=skipped, notes=notes))
         for warning in result.warnings:
             self._log(f"{self.tr(S.LOG_WARNING)}: {warning}")
         if messagebox.askyesno(self.tr(S.DONE_TITLE),

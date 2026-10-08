@@ -25,7 +25,10 @@ Paths differ per machine; `<user>` is the Windows user folder.
   same between two addresses, also outside functions), `Scalars.java` (every
   instruction that uses a constant, as an immediate or a literal-pool word),
   `Dump.java` (halfwords at an address, or at the pointer stored there with
-  `*ADDR`). Each run takes about a minute, so pass several scripts at once.
+  `*ADDR`), `Strings.java` (ASCII strings matching a case-insensitive regex,
+  with their references; `analyzeHeadless.bat` is a cmd script, so keep `|`,
+  `(` and `)` out of the arguments). Each run takes about a minute, so pass
+  several scripts at once.
   Text messages are asked for by (file, index) and the index is often
   computed, so searching a message index with `Scalars.java` finds mostly
   unrelated constants. Example, from PowerShell:

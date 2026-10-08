@@ -10,12 +10,15 @@ memory) and `mh4u_rando.pipeline.run()` (archive in, archive out).
 original game: every switch off and every mode on its least random value,
 which is also the first choice in the GUI (choices are listed from least to
 most random; `tests/test_gui_options.py` enforces it). The only switches on by
-default are restrictions (`always_music`, `one_monster_per_wave_on_arenas`).
+default are restrictions (`always_music`, `one_monster_per_wave_on_arenas`)
+and the two master switches (`randomize_quests`, `randomize_equipment`).
 With the defaults, quests only get the safety repairs listed below.
 
 | Option | Values | Meaning |
 |---|---|---|
 | `seed` | text | Same seed + same settings = same result |
+| `randomize_quests` | bool (default on) | Master switch of the quest options. Off: quests are not touched, no `quest01.arc` is written (only the new monster icons' quest picture fixes, if they change something) and the quest spoiler is empty. CLI: `--no-quests` |
+| `randomize_equipment` | bool (default on) | Master switch of every hunter and Felyne equipment option, including `allow_op_equipment`. Off: no equipment changes and no equipment log; the executable is still patched for the interface options. CLI: `--no-equipment` |
 | `randomize_monsters` | bool | Replace large monsters |
 | `structure` | keep / keep_progression / random | Waves and monsters per wave: original, original only in key and urgent quests, or random |
 | `duplicates` | only_if_original / never / allowed | Same species twice in a quest |
@@ -30,7 +33,8 @@ With the defaults, quests only get the safety repairs listed below.
 | `randomize_rewards` | bool | Reward boxes become full stacks of monster materials |
 | `reward_source` | quest_monsters_and_rank / rank | Materials partly from the quest's monsters, or any of the rank |
 | `reward_item_count` | int | Different materials per reward box |
-| `randomize_supplies` | bool | Same slots, each one a random consumable (`curated/supply_pool.json`) at its maximum capacity; the Map is kept |
+| `randomize_supplies` | bool | Same slots, each one a random consumable (`curated/supply_pool.json`) at its maximum capacity; the Map is kept. Every box is then sorted: Map first, then by item id, empty slots last |
+| `gunner_supplies` | bool | With `randomize_supplies`: at least 4 slots (all if fewer) of the initial box and refills hold different random ammo or coatings (`ItemCategory.AMMO`, usable, with a stack size, so no Normal S Lv1) in full stacks. Own stream `gunner_supplies`; runs after the Map is ensured |
 | `randomize_small_monsters` | bool | Swap small species within their group |
 | `randomize_intruders` | bool | Replace intruders (never finale or cutscene monsters) |
 | `debug_weak_monsters` | bool | Debug: health and attack index 1 for every monster, to test quests quickly |

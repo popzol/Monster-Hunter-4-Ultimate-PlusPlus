@@ -284,7 +284,16 @@ Without that option the randomizer keeps generated armor under these limits
   works there is unknown. Retail Everwood quests in `quest01.arc` have no
   large monsters. — *User knowledge*
 * Maps without field music (6, 9, 14, 16, 19, 20, 21) are silent unless a
-  monster with its own theme (`own_music`) is present. — *Legacy knowledge*
+  monster with its own theme (`own_music`) is present. — *Legacy knowledge*;
+  the executable agrees for 9, 14, 16, 19, 20, 21 (no field battle theme). On
+  the Great Desert (6) its code would play Dah'ren Mohran's theme for any
+  monster (*To verify*; `field_music` stays false there). Which monsters have
+  a theme comes from the executable's theme switch (docs/music.md): Khezu and
+  Red Khezu have none, Desert Seltas uses the small boss theme like Seltas,
+  and the Dalamadur tails have none but always come with their head.
+  In combat the theme with the highest priority among the monsters fighting
+  wins, so on the Arena and Tower Summit a themeless monster's field theme
+  beats Tigrex, Zinogre, Brachydios... — *Executable (docs/music.md)*
 
 ## Moving a quest to another map
 

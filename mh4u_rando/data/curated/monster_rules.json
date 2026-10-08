@@ -252,14 +252,14 @@
     "36": {
       "name": "Khezu",
       "tier": 2,
-      "own_music": true,
+      "own_music": false,
       "can_be_frenzied": true,
       "can_swarm": true
     },
     "37": {
       "name": "Red Khezu",
       "tier": 4,
-      "own_music": true,
+      "own_music": false,
       "can_be_frenzied": true
     },
     "38": {
@@ -411,7 +411,7 @@
     "94": {
       "name": "Desert Seltas",
       "tier": 2,
-      "own_music": false,
+      "own_music": true,
       "can_be_frenzied": true,
       "can_swarm": true
     },

@@ -41,6 +41,9 @@ is done or discovered.
   e.g. Paintball x30); check the item box contents and order, item set 1 (and
   that sets 2-3 are empty) and that loading the set fills the pouch.
 
+* **Gunner supplies and sorted boxes**: with `randomize_supplies` +
+  `gunner_supplies`, the supply box holds ammo / coatings that can be picked
+  up in full stacks, the Map comes first, and refills deliver ammo too.
 * **Equipment stat limits** (docs/game_rules.md): `tools/bisect_mod.py caps`
   builds K1 (armor at 179 defense at max level, resistances 9: quests
   accepted), K2 (base defense 180: refused), K3 (fire resistance 10: refused)
@@ -92,14 +95,37 @@ is done or discovered.
   uses them, positions are (0, 0, 0). Default: rare (arena category).
 * Hunt-a-thons (Khezu x99, Gypceros x99) with other species: the quantity is
   kept, so a different monster keeps respawning.
+* **Music** (docs/music.md, "In-game results"): custom tracks work for the
+  title, field themes and monster themes, with seamless loops (probes T, B, C,
+  M, D verified). Open: why A (a stream entry pointed at a path another entry
+  of the same queue already has) still played the original theme. Also: is a
+  themeless monster on the Great Desert (6) silent or does it play Dah'ren
+  Mohran's theme, as the code says? Khezu / Red Khezu are now treated as
+  themeless (`own_music: false`), Desert Seltas as themed.
 
 ## Ideas / smaller items
 
-* **Music research**: how the game's BGM loops, where tracks are stored, whether
-  they're replaceable/addable, and what priority rules pick which track plays.
-* **Toggle for the quest/equipment randomizers**: an easy option to disable the
-  quest randomizer and/or the equipment randomizer independently.
-* Supplies: optional ammo and coatings for gunners.
+* **Music shuffle** (docs/music.md): point the stream entries
+  of `battle/bgm_bat.stq` at other tracks so monsters get other themes (never
+  remap a request: it leaves a stream unused, which hung every quest; two
+  entries with the same path in one queue did not work, probe A), and give each
+  `stage/bgm_st_NN.stq` another field theme by rewriting its stream entry
+  (any track of any folder). Only queues are written, inside their ARCs
+  (`queue_files`, `stream_entry` in `mh4u_rando/audio/strq.py`); the
+  `core_quest` copies must be the HUD/icon options' when those are on.
+* **Custom tracks** (the mechanism is verified in-game, docs/music.md): let
+  the user pick their own WAV files (and loop points, or a WAV `smpl` loop)
+  for the title, field themes or monster themes in the GUI, and write them
+  with the mod. `mh4u_rando.audio` already encodes them and updates the stream
+  entries (`replace_track` in `tools/music_replace.py`; needs numpy, the
+  `audio` extra). To decide: which tracks can be replaced, whether custom
+  tracks join a theme shuffle, and keeping `bgm_mid01` and the phase themes
+  (Eiyu, `_2`) out or in.
+* **Music on silent maps**: point 0xF00624[map] (code.ips) at an existing
+  `bgm_st_NN` path for maps 9, 14, 16, 20, 21 (as map 12 already uses
+  `bgm_st_11`) and add request 0x0B to `bgm_st_19.stq`; `always_music` could
+  then go. Also find what game mode byte 0xC8C = 7 / 0x0B / 0x0C is (it turns
+  off several monster themes, docs/music.md).
 * Arena quests keep their map; decide later whether they may move.
 * Encrypted DLC quests (`Documentation/mib.js` has the Blowfish keys).
 * Equipment: class-specific weapon data (phials, shells, notes, kinsect, ammo,

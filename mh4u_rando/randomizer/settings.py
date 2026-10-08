@@ -5,6 +5,8 @@ and edited by the GUI. Every option is documented where it is declared.
 
 Defaults are as close to the original game as possible: every switch off and
 every mode on its least random value (also the first choice shown in the GUI).
+The two master switches (`randomize_quests`, `randomize_equipment`) are on by
+default; with every option under them off they change nothing either.
 """
 
 import json
@@ -105,6 +107,9 @@ EQUIPMENT_SWITCHES = ("randomize_recipes", "randomize_weapon_stats", "randomize_
 class Settings:
     seed: str = ""
 
+    # Master switch of every quest option below (up to "Equipment"); off, quest01.arc is left as it is
+    randomize_quests: bool = True
+
     # Large monsters
     randomize_monsters: bool = False
     structure: StructureMode = StructureMode.KEEP
@@ -127,13 +132,15 @@ class Settings:
     randomize_rewards: bool = False
     reward_source: RewardSource = RewardSource.QUEST_MONSTERS_AND_RANK
     reward_item_count: int = 5
-    randomize_supplies: bool = False     # the Map is always kept
+    randomize_supplies: bool = False     # the Map is always kept; boxes are sorted (Map, item id, empty slots)
+    gunner_supplies: bool = False        # at least 4 slots get different ammo / coatings in full stacks
 
     # Other monsters
     randomize_small_monsters: bool = False
     randomize_intruders: bool = False
 
     # Equipment (patches the game executable)
+    randomize_equipment: bool = True     # master switch of every hunter and Felyne equipment option below
     randomize_recipes: bool = False      # monster materials of the equipment's rank
     recipe_material_count_min: int = 1   # different materials per recipe, "between N and M" (1-4)
     recipe_material_count_max: int = 4
@@ -212,8 +219,13 @@ class Settings:
 
     @property
     def randomizes_equipment(self) -> bool:
-        return (any(getattr(self, name) for name in EQUIPMENT_SWITCHES) or self.armor_skills is not ArmorSkillMode.KEEP
-                or self.allow_op_equipment)
+        return self.randomize_equipment and (any(getattr(self, name) for name in EQUIPMENT_SWITCHES)
+                                             or self.armor_skills is not ArmorSkillMode.KEEP or self.allow_op_equipment)
+
+    @property
+    def allows_op_equipment(self) -> bool:
+        """allow_op_equipment, unless the equipment master switch is off."""
+        return self.randomize_equipment and self.allow_op_equipment
 
     def to_dict(self) -> dict:
         return {k: (v.value if isinstance(v, Enum) else v) for k, v in asdict(self).items()}
