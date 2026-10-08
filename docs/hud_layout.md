@@ -8,7 +8,7 @@ touch-screen map shrinking with the minimap is acceptable. It must work in
 Citra/Azahar and on a 3DS with Luma3DS. Menus are out of scope.
 
 This document covers the option and the data side (layout files). The
-executable patches it needs (minimap icons, mount gauge, L + X target switch)
+executable patches it needs (minimap icons, mount gauge, L + D-pad up target switch)
 are in [hud_code.md](hud_code.md). Offsets are for MH4U EUR (title
 0004000000126100); [game_files.md](game_files.md) maps the RomFS.
 
@@ -24,9 +24,10 @@ game (says which); **Guess** = plausible from names or values, unverified.
 | Option in the randomizer (settings, pipeline, GUI, CLI) | **Done**: data files and executable patches (`code.ips` from the update's executable) |
 | Minimap: data + icon patch | **Verified** (icon positions probe 3, size probe 5) |
 | Mount gauge: data + face patch | **Verified** (probe 6) |
-| L + X switches the target | **Verified** (probe 11, the player's action 12; see hud_code.md, "Target switch"). Conflicts with the gunners' ammo selection: input to change. The "X" hint next to the item selector is not done |
-| Target face (monster icon) on the top screen | **Works** (probe 16); hiding during area loads and the gap to the open item selector pending (probe 17; hud_code.md, "Target face on the top screen") |
-| Minimap without the Map item | **Works** (probe 16, the circle follows the shrunk map); the last pixel pending (probe 17) |
+| L + D-pad up switches the target; the D-pad does not move the camera while L is held | **Built, not seen in the game yet** (D-pad measured in probe 18; see hud_code.md, "Target switch"). Replaces L + X (probe 11), which the gunners use for ammo |
+| Hint of the switch in the item selector | **Built, not seen in the game yet**: glyph + sprite inserted into `ui205` (below, "Target switch hint") |
+| Target face (monster icon) on the top screen | **Works** (probes 16–17: hidden during area loads, clear of the open item selector); its height now follows the item's icon (not seen yet) |
+| Minimap without the Map item | **Works** (probes 16–17) |
 
 ## Code and tools
 
@@ -38,7 +39,7 @@ game (says which); **Guess** = plausible from names or values, unverified.
 | `mh4u_rando/hud/build.py` | `HUD_LAYOUTS` / `CODE_PATCH_LAYOUTS` (what to scale and towards where), `hud_files()` / `write_hud_files()` / `remove_hud_files()`, `find_update()` |
 | `mh4u_rando/hud/code_patch.py` | Executable patches — see [hud_code.md](hud_code.md) |
 | `tools/lyt_dump.py` | Prints the pane tree of the layouts in an ARC (`.arc`, RomFS dump folder or ROM) |
-| `tools/hud_probe.py` | Builds the test mods (below); `--target-asm` puts a diagnostic routine in place of the L + X one |
+| `tools/hud_probe.py` | Builds the test mods (below); `--target-asm` puts a diagnostic routine in place of the target switch one |
 | `tools/asm/input_event_log.s` | Diagnostic routine: logs the player's buttons and actions (hud_code.md, "Debugging in Citra") |
 | `tools/citra_state.py` | Reads `.data` / `.bss` (and that log) from a Citra save state |
 | `tests/test_hud.py` | Synthetic files + game files (skipped without the dump / update / ROM) |
@@ -54,7 +55,7 @@ python tools/citra_state.py %APPDATA%/Citra/states/0004000000126100.02.cst --inp
 
 `hud_probe.py`: default = every `HUD_LAYOUTS` entry scaled; `--tint` = probe 1
 (colours); `--minimap` adds `CODE_PATCH_LAYOUTS` and writes `exefs/code.ips`
-with `patch_hud()`; `--target-button` adds the L + X patch (`--target-asm` assembles another routine in its place); `--merge-ips` keeps
+with `patch_hud()`; `--target-button` adds the L + D-pad up patch and its hint (`--target-asm` assembles another routine in its place); `--merge-ips` keeps
 another patch's changes (e.g. the randomizer's equipment `code.ips`; an earlier
 HUD patch in it is undone first).
 
@@ -74,7 +75,7 @@ Without it the prompts over the characters keep their size.
 `CODE_PATCH_LAYOUTS` (minimap, map icons, mount gauge) and `code_patch.patch_hud()`
 goes into `exefs/code.ips`. Two separate switches, GUI group "Objetivo /
 Target" (`Settings.target_switch`, `Settings.target_face_top`; CLI
-`--target-switch`, `--target-face`), add `patch_target_button()` (L + X) and
+`--target-switch`, `--target-face`), add `patch_target_button()` (L + D-pad up) and
 `patch_target_face()` (the target's face on the top screen). Whenever one of
 these executable patches is on, `exefs/code.ips` is built from the **update's**
 executable (`load_code(update .app)`) with the equipment changes, then
@@ -206,9 +207,43 @@ for groups and nulls the size of their subtree **without text panes**).
 | Boundary | 0x0C x, y · 0x14 width, height · 0x1C scale x, y · 0x24 0.0 |
 
 **Positions are relative to the parent pane.** All values are in screen
-pixels. The writer only edits existing fields: **inserting a pane** (needed for
-the X hint) means rebuilding the pane table, shifting the name / text offsets
-and the header counts and offsets — not implemented.
+pixels. The writer edits existing fields; the only structural change is
+`Layout.insert_sprite` (below).
+
+**Inserting a sprite** (`Layout.insert_sprite`, used by the target switch hint):
+the new record (a copy of a template sprite, 0x6C bytes) goes after the last
+descendant of the parent, so the previous last pane's trailing (kind, depth)
+points to it and it takes over the old trailing one; the `size` field (subtree
+without texts) of the parent and all its ancestors grows by 0x6C; the header's
+sprite count (0x14) grows by one; the new name goes after the other names
+(where the text strings start, 4-byte aligned) and **every offset behind the
+pane table moves**: the panes' name offsets (+0x04), the texts' string offsets
+(+0x0C), the texture names' offsets if they lie behind the table, and the
+trailing table's offset (header 0x2C; every trailing table checked is zeros).
+Checked on `ui205`: all panes, texts and hashes come back identical and the
+size invariant holds. Not done for layouts with a non-empty trailing table.
+
+### Target switch hint
+
+With the switch on (L + D-pad up) the item selector's L bar (`ui205_shita_ita`)
+gets a 16 × 16 glyph (`ui205_dpad_up`, `mh4u_rando/hud/hint.py`): a D-pad with
+only the up arm bright, black outline. The game has no D-pad-up glyph. Its
+hint glyphs (L, A, B, X, Y, "+") live in `cmn_win00_ID` (256 × 256), which has
+no free 16 × 16 area (every blank region is claimed by some sprite of the 254
+layouts that use it), so the glyph is drawn into the quest texture
+`qst00_ID` (512 × 512, one copy in each language's `core_quest.arc`, used by
+`ui205` as its third texture), whose lower-right quarter is empty and unused:
+at (448, 448), `Tex.set_glyph`. Both textures are **ETC1A4** (format 12; `cmn_icon_GSM_NOMIP`
+and `qst01` are 8-bit grey, format 16, not decoded), which `tex.py` now reads;
+glyphs use four grey levels per 4 × 4 block with base 132 and modifier table 7.
+
+The sprite is a copy of `ui205_y_button01` at layout (−13.6, −87): the height
+of the item's icon (`ui205_icon00`, y −87) and the target face, 2 px to the
+left of the face's lock mark (`hint.hint_position`). The group shrinks with the
+HUD size, so the hint is inserted before scaling (`hud_files(target_hint=True)`;
+with the HUD at 100 % only `core_quest.arc` is written, `hint_files`). The
+texture index (+0x58) is `qst00_ID`'s in the layout and the UV (+0x28) are
+normalized (u, v, w, h) of the texture's size.
 
 ### Coordinates
 

@@ -619,16 +619,28 @@ def test_layouts_with_the_code_patch():
 
 def test_patch_target_button():
     from mh4u_rando.hud.code_patch import (
-        BASE_ADDRESS, TARGET_BUTTON, TARGET_ROUTINE, TARGET_SET, TARGET_SKIP, TARGET_TEST, TARGET_TEST_ORIGINAL,
-        CodePatchError, bl_target, patch_hud, patch_target_button,
+        ACTIONS_COPY, ACTIONS_COPY_ORIGINAL, BASE_ADDRESS, CAVE_END, DPAD_FILTER, DPAD_FILTER_CODE, FACE_LOADER,
+        FACE_ROUTINE, TARGET_BUTTON, TARGET_FACE, TARGET_ROUTINE, TARGET_SET, TARGET_SKIP, TARGET_TEST,
+        TARGET_TEST_ORIGINAL, CodePatchError, bl_target, patch_hud, patch_target_button,
     )
     code = bytearray(synthetic_update_code())
     with pytest.raises(CodePatchError):
         patch_target_button(bytes(code))  # the original test is missing
     code[TARGET_TEST - BASE_ADDRESS:TARGET_TEST - BASE_ADDRESS + 16] = TARGET_TEST_ORIGINAL
+    with pytest.raises(CodePatchError):
+        patch_target_button(bytes(code))  # the action copy is missing
+    code[ACTIONS_COPY - BASE_ADDRESS:ACTIONS_COPY - BASE_ADDRESS + 4] = ACTIONS_COPY_ORIGINAL
     patched = patch_target_button(bytes(code))
     assert patched[TARGET_ROUTINE - BASE_ADDRESS:TARGET_ROUTINE - BASE_ADDRESS + len(TARGET_BUTTON)] == TARGET_BUTTON
+    assert TARGET_ROUTINE + len(TARGET_BUTTON) <= FACE_LOADER
     assert bl_target(patched, TARGET_TEST) == TARGET_ROUTINE
+    # The action copy goes through the D-pad filter, which starts with the instruction it replaces.
+    assert bl_target(patched, ACTIONS_COPY) == DPAD_FILTER
+    assert patched[DPAD_FILTER - BASE_ADDRESS:DPAD_FILTER - BASE_ADDRESS + len(DPAD_FILTER_CODE)] == DPAD_FILTER_CODE
+    assert DPAD_FILTER_CODE[:4] == ACTIONS_COPY_ORIGINAL and DPAD_FILTER + len(DPAD_FILTER_CODE) <= CAVE_END
+    assert FACE_ROUTINE + len(TARGET_FACE) <= DPAD_FILTER
+    flag = struct.pack("<I", 0x111D128)  # the request, in both routines
+    assert TARGET_BUTTON.endswith(flag + struct.pack("<2I", 0x10572E0, 0xFB6B7C)) and DPAD_FILTER_CODE.endswith(flag)
     words = struct.unpack_from("<3I", patched, TARGET_TEST + 4 - BASE_ADDRESS)
     assert words[0] == 0xE3500000                                               # cmp r0, #0
     assert words[1] >> 24 == 0x0A and TARGET_TEST + 16 + 4 * (words[1] & 0xFFFFFF) == TARGET_SKIP  # beq
@@ -639,6 +651,8 @@ def test_patch_target_button():
     patched = patch_target_button(bytes(code), diagnostic)
     assert patched[TARGET_ROUTINE - BASE_ADDRESS:TARGET_ROUTINE - BASE_ADDRESS + len(diagnostic)] == diagnostic
     assert bl_target(patched, TARGET_TEST) == TARGET_ROUTINE
+    assert patched[ACTIONS_COPY - BASE_ADDRESS:ACTIONS_COPY - BASE_ADDRESS + 4] == ACTIONS_COPY_ORIGINAL  # no filter
+    assert not any(patched[DPAD_FILTER - BASE_ADDRESS:CAVE_END - BASE_ADDRESS])
 
 
 def test_patch_target_button_on_the_game():
@@ -721,15 +735,16 @@ def test_patch_target_face():
 
 
 def test_face_params_follow_the_hud_size():
-    from mh4u_rando.hud.code_patch import FACE_CORNER_GAP, FACE_SCALE, face_params
+    from mh4u_rando.hud.code_patch import FACE_RIGHT_GAP, FACE_SCALE, ITEM_ICON_Y, face_params
     for factor in (1.0, 0.7):
         x, y, scale = face_params(factor)
         assert scale == pytest.approx(FACE_SCALE * factor)
         half = 40 * 1.2 / 2 * scale                        # ui601_icon00, centred at (80, 86) * scale
         right = 200 - (x + 80 * scale) + half              # the face's right edge
-        bottom = 120 - (y + 86 * scale) + half
-        assert right == pytest.approx(400 - FACE_CORNER_GAP[0] * factor)
-        assert bottom == pytest.approx(240 - FACE_CORNER_GAP[1] * factor)
+        centre = 120 - (y + 86 * scale)                    # the face's centre, on screen
+        assert right == pytest.approx(400 - FACE_RIGHT_GAP * factor)
+        icon_distance_to_bottom = 240 - (120 - ITEM_ICON_Y)  # the item icon shrinks towards the corner
+        assert centre == pytest.approx(240 - icon_distance_to_bottom * factor)
 
 
 def test_patch_target_face_on_the_game():
@@ -763,11 +778,11 @@ def test_embedded_code_matches_the_sources():
 
 
 def test_pipeline_with_every_interface_option(tmp_path):
-    """code.ips from the update's executable: equipment, HUD size, L + X and the target face together."""
+    """code.ips from the update's executable: equipment, HUD size, L + D-pad up and the target face together."""
     from conftest import rom_path
     from mh4u_rando.exefs import apply_ips, load_code
     from mh4u_rando.hud.code_patch import (
-        CAVE, FACE_HOOK, FACE_ROUTINE, ICON_CALLS, TARGET_ROUTINE, TARGET_TEST, bl_target,
+        ACTIONS_COPY, CAVE, DPAD_FILTER, FACE_HOOK, FACE_ROUTINE, ICON_CALLS, TARGET_ROUTINE, TARGET_TEST, bl_target,
     )
     from mh4u_rando.pipeline import run
     from mh4u_rando.randomizer import HudScale, Settings
@@ -782,7 +797,13 @@ def test_pipeline_with_every_interface_option(tmp_path):
     patched = apply_ips(original, result.ips_path.read_bytes())
     assert all(bl_target(patched, site) == CAVE for site in ICON_CALLS)
     assert bl_target(patched, TARGET_TEST) == TARGET_ROUTINE and bl_target(patched, FACE_HOOK) == FACE_ROUTINE
+    assert bl_target(patched, ACTIONS_COPY) == DPAD_FILTER
     assert patched != original
+    from mh4u_rando.hud.hint import NAME
+    for lang in ("eng", "spa"):  # the L + D-pad up hint, shrunk with the rest of the item selector
+        quest_hud = parse_arc((tmp_path / "romfs" / lang / "data" / "core_quest.arc").read_bytes())
+        assert any(e.type_hash == LYT_TYPE_HASH and e.name.endswith("ui205") and NAME.encode() in e.data
+                   for e in quest_hud.entries)
     result = run(rom, tmp_path, Settings(seed="interface", new_monster_icons=False))  # all off: everything goes
     assert result.ips_path is None and not (tmp_path / "exefs" / "code.ips").exists()
     assert not result.hud_paths and not any((tmp_path / "romfs").rglob("core_*.arc"))

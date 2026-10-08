@@ -46,6 +46,7 @@ def original_skeleton(quest: Quest, data: GameData) -> LineupPlan:
                 template=monster,
                 meta=meta,
                 original_tier=info.tier if info else None,
+                original_base_hp=info.base_hp if info else None,
                 is_companion=escort,
                 quantity=monster.qty if (escort or (alone and monster.qty > 1)) else 1,
             ))
@@ -75,6 +76,7 @@ def random_skeleton(quest: Quest, data: GameData, rng: random.Random) -> LineupP
                 template=template.template,
                 meta=template.meta,
                 original_tier=reference_tier,
+                original_base_hp=template.original_base_hp,  # goes with the template's stat block
             ))
             index += 1
         plan.waves.append(wave)

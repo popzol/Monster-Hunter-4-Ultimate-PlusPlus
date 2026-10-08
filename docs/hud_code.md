@@ -1,7 +1,7 @@
 # HUD executable patches (exefs/code.ips)
 
 What the HUD size option ([hud_layout.md](hud_layout.md)) cannot do with data,
-because the game's code places some panes itself, plus the L + X target
+because the game's code places some panes itself, plus the L + D-pad up target
 switch. All addresses are **virtual addresses in the update's executable**
 (`0004000E00126100`, `Documentation/exefs/code_update.bin`): virtual address
 = file offset + 0x100000 (text, rodata and data are contiguous).
@@ -211,6 +211,14 @@ setting bytes `*(0xFB6B7C) + 0x7D` = 1, `+ 0x7E` = 0.
 | A | 0x2000 | 0x20 | 0x10 | 0x20 |
 | Y | 0x8000 | 0x200 | 0x2080 | 0x200 |
 | L | 0x100 | 0x8 | 0x100 | 0x8 |
+| D-pad ↑ | 0x10 | 0x2000 | 0x1 | 0x2000 |
+| D-pad ↓ | 0x40 | 0x1000 | 0x2 | 0x1000 |
+| D-pad ← | 0x80 | 0x800 | 0x4 | 0x800 |
+| D-pad → | 0x20 | 0x400 | 0x8 | 0x400 |
+
+The D-pad rows are from probe 18 (same settings). Each direction also sets one
+of the 0xF0000000 bits of +0x8C (↑ 0x10000000, → 0x20000000, ↓ 0x40000000,
+← 0x80000000). While L is held, the player copy is all zeros.
 
 (p = `*(player + 0xE30)`, player = `*(0x108260C)`.) Probe 8 also saw R, ZL,
 ZR, the Circle Pad (0xF0000000) and bits 0xF0000 in +0x8C during a quest.
@@ -238,8 +246,19 @@ ZR, the Circle Pad (0xF0000000) and bits 0xF0000 in +0x8C during a quest.
   0xB8E2A8 (14, 15); 0xCA51C0, the player state, with 12–15 when
   `*(player + 0xA29C) + 0xEC` has 0x100000 (12 / 13 probably the gunners'
   ammo selection); 0xB95E18, a HUD hint, with 11–13.
+* **D-pad actions** (probe 18): ↑ 1 (one frame) + 2 (held), ↓ 3 + 4, ← 5 + 6,
+  → 7 + 8 (plus 17 for ↑ / →, 16 for ↓ / ←, not while L is held). They are
+  set **with and without L**. The **camera** (0xBFD028) moves on 2 / 4 / 6 / 8.
+  The touch screen sets the same actions (0xB88F4C → 0xB1C63C(player, n), which
+  ORs bit n into p + 0x3D0), so the actions do not tell where the input came
+  from.
+* **Action copy**: actions are collected in p + 0x3D0. Once per frame
+  0x2C5470 (the player's input copy) copies them into p + 0x3CC (`0x2C5484 ldr
+  r1, [r0, #0x3D0]; str r1, [r0, #0x3CC]`), for every hunter, before checking
+  the local one (`*(settings) + 0x2F == p + 0x33`). Its callers are 0x2C15DC
+  and 0xAF92D0.
 
-## Target switch (L + X) — verified in Citra (probe 11)
+## Target switch (L + D-pad up)
 
 * The touch-screen target camera panel (`ui601`) is run by 0xB8D074(enabled):
   the current target is `*(0x105729C) + 0xED5` (0 = none, else slot 1 / 2).
@@ -248,7 +267,7 @@ ZR, the Circle Pad (0xF0000000) and bits 0xF0000 in +0x8C during a quest.
   slot; with two, the two-button view (0xD8FFAC) or `+ 0x27E` cycles slot 1 →
   slot 2 → none. A monster only counts once its flag `*(monster + 0xE28) +
   0x1C0` is set (its icon becomes tappable once it has been found); before
-  that a toggle is undone, so L + X, like a tap, does nothing at the start of
+  that a toggle is undone, so the switch, like a tap, does nothing at the start of
   a quest. `enabled` = 0xB84F38(13) ≠ 1.
 * Its caller 0xB94854 (called once per frame from 0xB826BC, at 0xB82B50) has a
   button shortcut: if GUI pressed (pad + 0x348) has 0x8000 and the setting
@@ -258,20 +277,30 @@ ZR, the Circle Pad (0xF0000000) and bits 0xF0000 in +0x8C during a quest.
   target camera, is in one of the 6 touch-screen slots, halfwords at
   `*(0x1287A4()) + 0x7A`), `0x19FBF0(*0xFB5EDC)` = 0 and 0xB40A48
   (`*(0x13F230())`) = 0. Probe 7 measured it running every quest frame.
-* **Patch** (`code_patch.patch_target_button`): the four instructions of that
-  test at 0xB948AC become `bl 0xDEC7E0; cmp r0, #0; beq 0xB948E4; b 0xB948D8`.
-  The routine (`asm/target_button.s`) returns 1 when the player's **action
-  12** is set (one frame, on L held + X pressed), else the original test. The
-  action already follows the button configuration, so keyboard and gamepad
-  behave the same.
-* **Gunners**: action 12 is also theirs (0xCA51C0), so with a bow or bowgun
-  L + X would switch the target and the ammo. The switch must move to another
-  input for them (or for everyone) — to decide.
-* Still to do: the "X" hint next to the item selector's L hints (a new sprite
-  in `ui205_shita_ita`, see [hud_layout.md](hud_layout.md)). The target's face
-  on the top screen: next section.
+* **Patch** (`code_patch.patch_target_button`) has two parts:
+  * **Target test.** The four instructions of the test at 0xB948AC become
+    `bl 0xDEC7E0; cmp r0, #0; beq 0xB948E4; b 0xB948D8`. The routine
+    (`asm/target_button.s`) returns non-zero when the word **FLAG**
+    (0x111D128, in the free tail of `.bss`) is set, and clears it. Otherwise it
+    runs the original test.
+  * **D-pad filter.** The action copy's load at 0x2C5484 becomes
+    `bl 0xDECF80`, which calls `asm/dpad_filter.s`. That routine returns the
+    actions. For the local hunter, while action 11 (L held) is set, it clears
+    the two actions of each direction whose **D-pad bit is held in the "raw"
+    buttons** (+0x8C). FLAG = action 1 when the D-pad up removed it (else 0).
+  * Result: with L held the D-pad does not move the camera, but the C-stick and
+    the touch screen, which do not set those raw bits, still do. L + D-pad up
+    switches the target once per press, so L + X is free again for the
+    gunners' ammo (action 12).
+  * The filter sits at the end of the free space, after the target face.
+    `--face-debug` builds have no room for it and leave it out.
+* History: L + X (action 12, probe 11) worked, but gunners use action 12 for
+  their ammo (0xCA51C0), so with a bow or bowgun it switched both.
+* The D-pad-up hint in the item selector opened with L: see
+  [hud_layout.md](hud_layout.md), "Target switch hint". The target's face on
+  the top screen: next section.
 
-### History (probes 5–11)
+### History (probes 5–19)
 
 | Probe | Routine tested | Result |
 |---|---|---|
@@ -282,6 +311,8 @@ ZR, the Circle Pad (0xF0000000) and bits 0xF0000 in +0x8C during a quest.
 | 9 | Logs the player copy and actions | The item actions never coincide with the assumed L: the bits are wrong |
 | 10 | Event log (`tools/asm/input_event_log.s`), one button at a time | The table in "Pad" above |
 | 11 | Action 12 | **Works**: L + X locks / switches the target |
+| 18 | Event log, also on changes of +0x8C / +0x30C | The D-pad rows in "Pad"; with and without L the D-pad sets the camera actions |
+| 19 | L + D-pad up (filter + FLAG), full randomizer mod | Pending |
 
 ## Debugging in Citra
 
@@ -328,7 +359,7 @@ Option `target_face_top` (`code_patch.patch_target_face`, `asm/face_loader.s`,
 face of the touch-screen target camera panel is also drawn on the top screen,
 small, left of the item selector, with the lock mark over it. It shows "?"
 while the monster is unknown, else the locked monster, else the first known
-one; L + X (or a tap) cycles like the panel. It is shown only while the touch
+one; L + D-pad up (or a tap) cycles like the panel. It is shown only while the touch
 panel and the top-screen HUD (its health bar) are. The touch panel stays
 where it is.
 
@@ -501,7 +532,9 @@ entry 0 is the clock).
 * **Placement** (`code_patch.face_params(factor)`): scale `0.6 · factor` (the
   face is then about the size of the item selector's icon); the face
   (`icon00`, centred at (80, 86) · scale) ends `144 · factor` px from the
-  right edge and `4 · factor` px from the bottom. The item selector opened
+  right edge and its centre is at the height of the selected item's icon
+  (`ui205_icon00`, layout y −87, screen y 207 at 100 %; it shrinks towards the
+  corner, so `240 − 33 · factor`; `ITEM_ICON_Y`). The item selector opened
   with L (`ui205_shita_ita`) reaches 137 px from the right edge at 100 %
   (`ui205_y_button01`, x −71 ± 8); the lock mark (60 · scale wide) sticks out
   of the face (48 · scale) by 6 · scale on each side; plus 2 px. With 131
@@ -582,7 +615,7 @@ the state's memory is not 4-byte aligned.
 
 * Offline: the bytes built from the sources match the embedded ones
   (`test_embedded_code_matches_the_sources`, needs devkitARM); on the
-  update's executable the patch applies with the HUD size and L + X in any
+  update's executable the patch applies with the HUD size and the target switch in any
   order; the loader hook calls `0x2B51C0`, `0xC0F474` and the release
   routine, which calls `0xB044F4`; `FUN_00ae53e0` jumps to the visibility
   routine, which jumps back to 0xAE53E4 after the replaced instruction; the

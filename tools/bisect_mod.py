@@ -8,7 +8,7 @@ at a time.
     python tools/bisect_mod.py caps --rom game.3ds [--settings S.json --update U.app]   # armor limit tests
 
 Every variant has the same seed and adds one piece to the previous one, from the settings file:
-Q quests only | E + equipment | H + HUD size | X + L + X | F + target face | I + monster icons
+Q quests only | E + equipment | H + HUD size | X + L + D-pad up | F + target face | I + monster icons
 (the variants that would equal the previous one are skipped). --split-equipment builds the equipment
 groups apart instead (EQUIPMENT_GROUPS). `caps` builds the tests of docs/game_rules.md, "Equipment stat
 limits". Output: output/bisect/<variant>/. Never touches the ROM. The installed mod is the Citra mod

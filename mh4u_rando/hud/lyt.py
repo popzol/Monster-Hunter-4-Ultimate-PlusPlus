@@ -160,14 +160,14 @@ class Layout:
         if len(self.data) < HEADER.size:
             raise LytFormatError("file too short for a layout header")
         (magic, self.version, groups, textures, self.null_capacity, sprites, _, texts, boundaries,
-         texture_table, pane_table, self.tail_offset) = HEADER.unpack_from(self.data)
+         self.texture_table, self.pane_table, self.tail_offset) = HEADER.unpack_from(self.data)
         if magic != MAGIC:
             raise LytFormatError("not a layout (missing 'lyt' magic)")
         if self.version != VERSION:
             raise LytFormatError(f"unsupported layout version {self.version:#x}")
-        self.textures = [self._string(struct.unpack_from("<I", self.data, texture_table + 8 * i + 4)[0])
+        self.textures = [self._string(struct.unpack_from("<I", self.data, self.texture_table + 8 * i + 4)[0])
                          for i in range(textures)]
-        self.panes = self._parse_panes(pane_table)
+        self.panes = self._parse_panes(self.pane_table)
         expected = {PaneKind.GROUP: groups, PaneKind.SPRITE: sprites, PaneKind.TEXT: texts,
                     PaneKind.BOUNDARY: boundaries}
         for kind, count in expected.items():
@@ -218,6 +218,73 @@ class Layout:
             if pane.name == name:
                 return pane
         raise KeyError(name)
+
+    def insert_sprite(self, parent: Pane, template: Pane, name: str, position: tuple[float, float],
+                      region: tuple[float, float, float, float] | None = None, texture: int | None = None) -> Pane:
+        """Add a sprite as the last child of `parent`: a copy of `template` with a new name and position,
+        optionally another texture region (u, v, width, height, 0-1) and texture (index in `textures`).
+
+        The pane table grows by one record, the name goes after the other names, and every file offset
+        behind them (names, texts, trailing table) moves; the sizes of `parent` and its ancestors and the
+        header's sprite count follow. Panes obtained earlier are stale afterwards: use the returned one."""
+        if parent.layout is not self or template.layout is not self or template.kind != PaneKind.SPRITE:
+            raise LytFormatError("the parent and the template sprite must belong to this layout")
+        if parent.kind not in CONTAINERS:
+            raise LytFormatError(f"a {parent.kind.name.lower()} cannot have children")
+        if not name or not name.isascii() or any(p.name == name for p in self.panes):
+            raise LytFormatError(f"the name {name!r} is empty, not ASCII or already used")
+        if any(self.data[self.tail_offset:]):
+            raise LytFormatError("layouts with a trailing table are not supported")
+        size = RECORD_SIZES[PaneKind.SPRITE]
+        last = list(parent.walk())[-1]
+        insert_at = last.offset + RECORD_SIZES[last.kind]
+        text_offsets = [struct.unpack_from("<I", self.data, p.offset + 0x0C)[0]
+                        for p in self.panes if p.kind == PaneKind.TEXT]
+        boundary = min(text_offsets, default=self.tail_offset)  # the names end where the texts start
+        panes_end = self.panes[-1].offset + RECORD_SIZES[self.panes[-1].kind]
+        name_offsets = [struct.unpack_from("<I", self.data, p.offset + 4)[0] for p in self.panes]
+        if not panes_end <= boundary <= self.tail_offset or any(o and not panes_end <= o < boundary for o in name_offsets):
+            raise LytFormatError("unexpected order of the pane table, names and texts")
+        encoded = name.encode("ascii") + b"\x00"
+        encoded += b"\x00" * (-len(encoded) % 4)
+
+        record = bytearray(self.data[template.offset:template.offset + size])
+        struct.pack_into("<II", record, 0, name_hash(name), boundary + size)
+        struct.pack_into("<2f", record, POSITION_AT[PaneKind.SPRITE], *position)
+        if region is not None:
+            struct.pack_into("<4f", record, 0x28, *region)
+        if texture is not None:
+            struct.pack_into("<I", record, 0x58, texture)
+        record[-8:] = self.data[insert_at - 8:insert_at]  # what followed the previous last pane follows the new one
+
+        data = (self.data[:insert_at] + record + self.data[insert_at:boundary] + encoded + self.data[boundary:])
+        struct.pack_into("<II", data, insert_at - 8, PaneKind.SPRITE, parent.depth + 1)
+
+        def moved(offset: int) -> int:  # offsets before the pane table (the texture names) stay
+            return offset if offset < panes_end else offset + size + (len(encoded) if offset >= boundary else 0)
+
+        chain, pane = [], parent  # the parent and its ancestors: their subtrees grow
+        while pane is not None:
+            chain.append(pane)
+            pane = pane.parent
+        for pane in self.panes:
+            at = pane.offset + (size if pane.offset >= insert_at else 0)
+            if struct.unpack_from("<I", data, at + 4)[0]:
+                struct.pack_into("<I", data, at + 4, moved(struct.unpack_from("<I", data, at + 4)[0]))
+            if pane.kind == PaneKind.TEXT:
+                struct.pack_into("<I", data, at + 0x0C, moved(struct.unpack_from("<I", data, at + 0x0C)[0]))
+            if pane in chain:
+                struct.pack_into("<I", data, at + 8, struct.unpack_from("<I", data, at + 8)[0] + size)
+        for i in range(len(self.textures)):
+            at = self.texture_table + 8 * i + 4
+            struct.pack_into("<I", data, at, moved(struct.unpack_from("<I", data, at)[0]))
+        sprites = struct.unpack_from("<I", data, 0x14)[0]
+        struct.pack_into("<I", data, 0x14, sprites + 1)
+        struct.pack_into("<I", data, 0x2C, moved(self.tail_offset))
+        self.data = data
+        self.tail_offset = moved(self.tail_offset)
+        self.panes = self._parse_panes(self.pane_table)
+        return self.find(name)
 
     def to_bytes(self) -> bytes:
         return bytes(self.data)

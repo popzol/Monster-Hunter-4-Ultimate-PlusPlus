@@ -109,7 +109,7 @@ class Settings:
     structure: StructureMode = StructureMode.KEEP
     duplicates: DuplicateMode = DuplicateMode.ONLY_IF_ORIGINAL
     progression: ProgressionMode = ProgressionMode.BALANCED
-    adjust_stats: bool = False           # scale health to the tier change (provisional formula)
+    adjust_stats: bool = False           # health by base health ratio of the species, attack by tier change
 
     # Maps
     randomize_maps: bool = False
@@ -187,7 +187,7 @@ class Settings:
     # Interface (game files and executable patches, not randomized)
     hud_scale: HudScale = HudScale.FULL  # each top-screen HUD element shrinks towards its corner
     new_monster_icons: bool = True       # no "?" monster icon: Fatalis and Gogmazios icons (ROM and update), Dalamadur's quests
-    target_switch: bool = False          # L + X locks / switches the large-monster target
+    target_switch: bool = False          # L + D-pad up locks / switches the large-monster target
     target_face_top: bool = False        # the target camera panel's monster faces also on the top screen
 
     # Debug

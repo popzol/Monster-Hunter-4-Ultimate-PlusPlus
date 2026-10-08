@@ -35,7 +35,7 @@ monitor (`romfs/<language>/data`).
 * [docs/game_files.md](docs/game_files.md) - map of the game's files
 * [docs/equipment_data.md](docs/equipment_data.md) - equipment tables in the executable
 * [docs/hud_layout.md](docs/hud_layout.md) - HUD layouts and the HUD size option
-* [docs/hud_code.md](docs/hud_code.md) - executable patches for the HUD (minimap icons, L + X target switch)
+* [docs/hud_code.md](docs/hud_code.md) - executable patches for the HUD (minimap icons, L + D-pad up target switch)
 * [docs/monster_icons.md](docs/monster_icons.md) - monster icons: no "?" icon, how to replace the images
 * [docs/roadmap.md](docs/roadmap.md) - pending work and open questions
 
@@ -66,9 +66,9 @@ gauge and the prompts over the characters also need the update's decrypted
 `--update`.
 
 For playing with the top screen only (GUI's Interface tab, "Target"):
-`--target-switch` makes L + X lock / switch the large-monster target like a
-tap on the target camera panel (gunners use L + X for ammo too, to be
-changed), and `--target-face` shows the target camera panel's monster faces
+`--target-switch` makes L + D-pad up lock / switch the large-monster target
+like a tap on the target camera panel (with a hint in the item selector; while
+L is held the D-pad no longer moves the camera, the C-stick still does), and `--target-face` shows the target camera panel's monster faces
 on the top screen as well, left of the item selector. Both need `--rom` and
 the update. With any of these executable patches, `exefs/code.ips` is built
 from the update's executable (equipment changes included), so it is only

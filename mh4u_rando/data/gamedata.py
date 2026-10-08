@@ -123,6 +123,7 @@ class MonsterInfo:
     special_variants: dict[int, str] = field(default_factory=dict)
     break_parts: dict[int, str] = field(default_factory=dict)
     material_ids: tuple[int, ...] = ()   # items this monster provides (carves/rewards)
+    base_hp: int | None = None           # the species' base health (generated/monster_health.json); large monsters only
     localized_names: dict[str, str] = field(default_factory=dict)  # language code -> name
     # Other names the retail quest texts use (e.g. Golden Rajang is just "Rajang" there).
     aliases: dict[str, tuple[str, ...]] = field(default_factory=dict)
@@ -272,7 +273,7 @@ def _build_maps(generated: dict, curated: dict) -> dict[int, MapInfo]:
 
 
 def _build_monsters(generated: dict, curated: dict, maps: dict[int, MapInfo],
-                    materials: dict, names: dict, icons: dict) -> dict[int, MonsterInfo]:
+                    materials: dict, names: dict, icons: dict, health: dict) -> dict[int, MonsterInfo]:
     finale = set(curated["groups"]["finale_monsters"]["monsters"])
     monsters = {}
     for key, gen in generated.items():
@@ -280,6 +281,9 @@ def _build_monsters(generated: dict, curated: dict, maps: dict[int, MapInfo],
         rules = curated["monsters"].get(key, {})
         if gen["is_large"] and not rules:
             raise GameDataError(f"large monster {monster_id} ({gen['name']}) missing from curated/monster_rules.json")
+        if gen["is_large"] and key not in health:
+            raise GameDataError(f"large monster {monster_id} ({gen['name']}) missing from generated/monster_health.json "
+                                "(tools/fetch_monster_health.py)")
         allowed = rules.get("allowed_maps")
         monsters[monster_id] = MonsterInfo(
             monster_id=monster_id,
@@ -302,6 +306,7 @@ def _build_monsters(generated: dict, curated: dict, maps: dict[int, MapInfo],
             special_variants=_int_keys(gen["special_variants"]),
             break_parts=_int_keys(gen["break_parts"]),
             material_ids=tuple(materials.get(key, ())),
+            base_hp=health[key]["base_hp"] if key in health else None,
             localized_names={lang: name for lang, name in names.get(
                 key, names.get(str(rules.get("body_part_of")), {})).items() if lang in LANGUAGES},
             aliases={lang: tuple(values) for lang, values in names.get(key, {}).get("aliases", {}).items()},
@@ -346,7 +351,8 @@ def load_game_data(data_dir: Path = DATA_DIR) -> GameData:
         monsters=_build_monsters(_read(generated / "monsters.json"), monster_rules, maps,
                                  _read(generated / "monster_materials.json"),
                                  _read(curated / "monster_names.json")["names"],
-                                 _read(curated / "monster_icons.json")["icons"]),
+                                 _read(curated / "monster_icons.json")["icons"],
+                                 _read(generated / "monster_health.json")),
         maps=maps,
         items=_build_items(_read(generated / "items.json"), _read(generated / "item_categories.json")),
         quests=_build_quests(_read(curated / "quest_rules.json")),

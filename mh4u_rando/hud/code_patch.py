@@ -14,9 +14,10 @@ the data.
 
 Target switch (not part of the HUD size): FUN_00b94854 runs the touch-screen
 target camera panel and has a button shortcut test; it is redirected to
-asm/target_button.s, which also accepts the player's action 12 (L held + X
-pressed, after the game's button configuration). See docs/hud_code.md,
-"Target switch".
+asm/target_button.s, which also accepts L held + D-pad up. That request comes from
+asm/dpad_filter.s, called from the player's per-frame action copy, which also
+keeps the D-pad from moving the camera while L is held (the C-stick still does).
+See docs/hud_code.md, "Target switch".
 
 Target face: a second instance of the target camera panel's layout (ui601) is
 loaded on the top screen at fixed GUI manager slots (asm/face_loader.s,
@@ -26,7 +27,7 @@ frame, left of the item selector. See docs/hud_code.md, "Target face on the
 top screen".
 
 The free space at the end of .text is shared: minimap wrapper, target switch
-and target face, up to CAVE_END. Each patch only checks and fills its own
+and target face, and the D-pad filter at its end, up to CAVE_END. Each patch only checks and fills its own
 range.
 
 Addresses are virtual (file offset + 0x100000) in the update's executable
@@ -61,12 +62,20 @@ MOUNT_FACE_FLOATS = {0xB987D4: -98.0, 0xB987D8: 45.0}
 # wrapper the map's top edge (y 120, v = 0) stays put, so the offset scales with the map.
 MINIMAP_CIRCLE_OFFSET = (0xB97AFC, 4.0)
 
-# L + X target switch: asm/target_button.s, right after the minimap wrapper.
+# L + D-pad up target switch: asm/target_button.s, right after the minimap wrapper.
 TARGET_ROUTINE = 0xDEC7E0
 TARGET_BUTTON = bytes.fromhex(
-    "64c09fe500c09ce500005ce30700000a0ecc8ce230c09ce500005ce30300000acc039ce5010a10e30100a0131eff2f11"
-    "2cc09fe500c09ce548039ce5020910e30000a0031eff2f0118c09fe500c09ce52b00dce5010050e30000a0130100a003"
-    "1eff2fe1e07205017c6bfb000c260801")
+    "3cc09fe500009ce5000050e30010a01300108c151eff2f1128c09fe500c09ce548039ce5020910e21eff2f0118c09fe5"
+    "00c09ce52b00dce5010050e30000a0131eff2fe128d11101e07205017c6bfb00")
+# asm/dpad_filter.s at the end of the free space (the normal target face ends before it; its diagnostic
+# build does not leave room for it), called from FUN_002c5470 instead of `ldr r1, [r0, #0x3d0]`.
+DPAD_FILTER = 0xDECF80
+DPAD_FILTER_CODE = bytes.fromhex(
+    "d01390e55c209fe5002092e5df22d2e13330d0e5030052e11eff2f110030a0e3020b11e30b00000a34209fe5002092e5"
+    "8c2092e5100012e3023001120610c113400012e31810c113800012e36010c113200012e3061dc1130c209fe5003082e5"
+    "1eff2fe1e07205017c6bfb0028d11101")
+ACTIONS_COPY = 0x2C5484
+ACTIONS_COPY_ORIGINAL = bytes.fromhex("d01390e5")
 # Target face on the top screen: asm/face_loader.s, asm/face_free.s, asm/face_show.s, the placement
 # and asm/target_face.c, after the target switch routine.
 FACE_LOADER = 0xDEC850
@@ -86,11 +95,13 @@ SHOW_HOOK = 0xAE53E0        # FUN_00ae53e0 (show / hide a group), first instruct
 SHOW_HOOK_ORIGINAL = bytes.fromhex("70002de9")
 FACE_HOOK = 0xB82B50        # FUN_00b826bc: bl FUN_00b94854 (target panel update, every frame)
 PANEL_UPDATE = 0xB94854
-# Size of the face relative to the touch panel, and the gaps (right, bottom) between the face and
-# the screen's bottom-right corner at 100 %, in pixels: the item selector opened with L reaches 137
-# from the right edge (ui205_y_button01); the lock mark is 0.1 face wider on each side, plus 2.
+# Size of the face relative to the touch panel; the gap between the face's right edge and the screen's
+# right edge at 100 %, in pixels (the item selector opened with L reaches 137 from the right edge,
+# ui205_y_button01; the lock mark is 0.1 face wider on each side, plus 2); and the layout y of the
+# selected item's icon (ui205_icon00 in ui205_shita_ita), whose height the face's centre follows.
 FACE_SCALE = 0.6
-FACE_CORNER_GAP = (144.0, 4.0)
+FACE_RIGHT_GAP = 144.0
+ITEM_ICON_Y = -87.0
 # asm/face_loader.s, asm/face_free.s, asm/face_show.s and asm/target_face.c linked at FACE_LOADER,
 # FACE_FREE, FACE_SHOW and FACE_ROUTINE (tools/build_hud_asm.py prints them).
 FACE_SHOW_CODE = bytes.fromhex(
@@ -214,19 +225,33 @@ def patch_hud(code: bytes, factor: float) -> bytes:
     return patch_mount_gauge(patch_minimap_icons(code, factor), factor)
 
 
-def patch_target_button(code: bytes, routine_code: bytes = TARGET_BUTTON) -> bytes:
-    """`code` where L + X switches the large-monster target, like a tap on the target camera panel.
+def patch_target_button(code: bytes, routine_code: bytes | None = None) -> bytes:
+    """`code` where L + D-pad up switches the large-monster target, like a tap on the target camera
+    panel, and where the D-pad does not move the camera while L is held (asm/dpad_filter.s).
 
     `routine_code` replaces asm/target_button.s, linked at TARGET_ROUTINE (diagnostic routines of
-    tools/hud_probe.py --target-asm); it must return r0 = 1 to switch, like the original test.
+    tools/hud_probe.py --target-asm, which may reach FACE_END); it must return r0 != 0 to switch, like
+    the original test. The D-pad filter is only added with the default routine, which reads its request.
     """
+    with_filter = routine_code is None
+    routine_code = TARGET_BUTTON if routine_code is None else routine_code
     out = bytearray(code)
     routine = slice(_offset(TARGET_ROUTINE), _offset(TARGET_ROUTINE) + len(routine_code))
     test = slice(_offset(TARGET_TEST), _offset(TARGET_TEST) + len(TARGET_TEST_ORIGINAL))
-    if any(out[routine]) or not TARGET_ROUTINE >= CAVE + len(MINIMAP_WRAPPER) or routine.stop > _offset(FACE_END):
+    end = FACE_LOADER if with_filter else FACE_END
+    if any(out[routine]) or not TARGET_ROUTINE >= CAVE + len(MINIMAP_WRAPPER) or routine.stop > _offset(end):
         raise CodePatchError("no free space for the target switch routine")
     if bytes(out[test]) != TARGET_TEST_ORIGINAL:
         raise CodePatchError(f"unexpected instructions at {TARGET_TEST:#x}: not the update's executable")
+    if with_filter:
+        dpad = slice(_offset(DPAD_FILTER), _offset(DPAD_FILTER) + len(DPAD_FILTER_CODE))
+        copy = slice(_offset(ACTIONS_COPY), _offset(ACTIONS_COPY) + 4)
+        if len(out) < _offset(CAVE_END) or dpad.stop > _offset(CAVE_END) or any(out[dpad]):
+            raise CodePatchError("no free space for the D-pad filter")
+        if bytes(out[copy]) != ACTIONS_COPY_ORIGINAL:
+            raise CodePatchError(f"unexpected instruction at {ACTIONS_COPY:#x}: not the update's executable")
+        out[dpad] = DPAD_FILTER_CODE
+        out[copy] = encode_bl(ACTIONS_COPY, DPAD_FILTER)
     out[routine] = routine_code
     out[test] = (encode_branch(TARGET_TEST, TARGET_ROUTINE, link=True)
                  + struct.pack("<I", 0xE3500000)  # cmp r0, #0
@@ -238,17 +263,19 @@ def patch_target_button(code: bytes, routine_code: bytes = TARGET_BUTTON) -> byt
 def face_params(factor: float) -> tuple[float, float, float]:
     """Top-screen position (layout coordinates) and scale of the target face for a HUD `factor`.
 
-    Like the item selector, the face keeps its gap to the bottom-right corner times `factor`:
-    the one-monster face (ui601_icon00, 40 x 40 pixels at scale 1.2, centred at (120, 86) in
-    ui601_target_icon00 at x -40, all scaled by `scale`) ends FACE_CORNER_GAP from the corner. A
-    sprite's position is its centre, at screen (200 - x, 120 - y) (measured in probe 12).
+    Like the item selector (which shrinks towards the bottom-right corner), the face keeps its
+    distances to that corner times `factor`: the one-monster face (ui601_icon00, 40 x 40 pixels at
+    scale 1.2, centred at (120, 86) in ui601_target_icon00 at x -40, all scaled by `scale`) ends
+    FACE_RIGHT_GAP from the right edge, and its centre is at the height of the selected item's
+    icon (ITEM_ICON_Y). A sprite's position is its centre, at screen (200 - x, 120 - y) (measured
+    in probe 12).
     """
     scale = FACE_SCALE * factor
-    right = 400 - FACE_CORNER_GAP[0] * factor
-    bottom = 240 - FACE_CORNER_GAP[1] * factor
+    right = 400 - FACE_RIGHT_GAP * factor
     half = 40 * 1.2 / 2
+    icon_y = -120 + (ITEM_ICON_Y + 120) * factor
     x = 200 - right + (half - (120 - 40)) * scale
-    y = 120 - bottom + (half - 86) * scale
+    y = icon_y - 86 * scale
     return x, y, scale
 
 
@@ -263,10 +290,11 @@ def patch_target_face(code: bytes, factor: float = 1.0, routine_code: bytes | No
     """
     routine_code = TARGET_FACE if routine_code is None else routine_code
     out = bytearray(code)
-    area = slice(_offset(FACE_LOADER), _offset(FACE_END))
     blocks = ((FACE_LOADER, FACE_LOADER_CODE, FACE_FREE), (FACE_FREE, FACE_FREE_CODE, FACE_SHOW),
               (FACE_SHOW, FACE_SHOW_CODE, FACE_PARAMS), (FACE_ROUTINE, routine_code, FACE_END))
-    if len(out) < area.stop or any(out[area]) or any(address + len(data) > end for address, data, end in blocks):
+    used = slice(_offset(FACE_LOADER), _offset(FACE_ROUTINE) + len(routine_code))  # D-pad filter after it
+    if (len(out) < _offset(FACE_END) or any(out[used])
+            or any(address + len(data) > end for address, data, end in blocks)):
         raise CodePatchError("no free space for the target face")
     # address: (original instruction, routine, bl or b)
     hooks = {LOADER_HOOK: (LOADER_HOOK_ORIGINAL, FACE_LOADER, True),
@@ -288,7 +316,8 @@ def patch_target_face(code: bytes, factor: float = 1.0, routine_code: bytes | No
 
 
 def patch_interface(code: bytes, factor: float, target_switch: bool = False, target_face: bool = False) -> bytes:
-    """Every interface patch the randomizer's settings ask for: the HUD size (below 1), L + X, the target face."""
+    """Every interface patch the randomizer's settings ask for: the HUD size (below 1), L + D-pad up, the target
+    face."""
     if factor < 1:
         code = patch_hud(code, factor)
     if target_switch:

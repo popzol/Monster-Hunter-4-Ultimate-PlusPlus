@@ -8,23 +8,22 @@ is done or discovered.
 * **Package the GUI** as an .exe with PyInstaller (the GUI itself is done:
   `python -m mh4u_rando.gui`).
 * **HUD / one-screen play** (docs/hud_layout.md, docs/hud_code.md):
-  * results of probe 17 (the target face works since probe 16): hidden with
-    the HUD during area loads, clear of the item selector opened with L; the
-    minimap's circle without the Map item centred; then build the face's
-    final version (`hud_probe.py` without `--face-debug`, or the randomizer);
-  * target face: raise it to the height of the item selector's icon (it now
-    sits lower, at the height of the item name bar; screenshot of probe 17 in
-    `input/alejandro/Captura.PNG`): change the y of `code_patch.face_params`
-    (`FACE_CORNER_GAP[1]`) to the icon's centre (`ui205_name_base`);
-  * L + X target switch: **works** (probe 11), but gunners use the same
-    input (the player's action 12) to select ammo: choose another input for
-    them or for everyone;
-  * "X" hint next to the item selector's L hints (insert a pane in `ui205`);
+  * **C-stick check** (with the probe 18 mod): the D-pad filter assumes that the
+    C-stick does not set the D-pad's "raw" bits (+0x8C). If it does, the filter
+    must read another layer.
+  * **Probe 19** (the full mod, HUD 70 %), all built but not seen in the game:
+    * L + D-pad up switches the target, with a melee weapon and with a bowgun;
+    * with L held the D-pad does not move the camera, but the C-stick does;
+    * L + X with a bowgun only changes the ammo;
+    * the face sits at the item icon's height (`face_params`);
+    * the D-pad hint sprite (`hint.py`, glyph drawn into `qst00_ID`) shows only
+      in the L bar and is legible;
   * base game (no update) support for the executable patches (signatures).
-* **Species base health**: retail analysis shows the stat indices depend on
-  the quest rank only (docs/game_rules.md, "Stats"). Find each monster's base
-  HP (wiki data or in-game measurement) so `stats.py` can scale indices by
-  base(old) / base(new) instead of the tier heuristic.
+* **Species base health**: done for the data (`generated/monster_health.json`,
+  Kiranico) and used by `stats.py` for the health index; still to measure in the
+  game: that the index is proportional to the final health (test quests: the same
+  monster at two indices, and two monsters with the base-health ratio, timing
+  fixed-damage hits), and `em_data` (`etd` / `emd`) was not decoded.
 * **Stats research in-game**: the hp/atk bytes are believed to index a
   multiplier table. Build test quests (same monster, different indices; same
   index, different monsters), measure in-game, then replace the provisional

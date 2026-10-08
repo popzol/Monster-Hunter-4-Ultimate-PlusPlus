@@ -6,6 +6,7 @@ data/
     items.json          id -> name, usable
     item_categories.json id -> category, rarity, carry_limit (monsterhunterwiki.org)
     monster_materials.json monster id -> material item ids (monsterhunterwiki.org)
+    monster_health.json monster id -> base_hp and rank multipliers (kiranico.com)
     equipment_names.json weapon class / armor part -> names by id
                         (tools/build_equipment_data.py, from the game dump)
     monsters.json       id -> name, is_large, preview_id, intro_cutscene_map,
@@ -41,13 +42,25 @@ Sources: `Documentation/constants.js` (tables of the online quest editor) and
 the original quest files (`Scripts/og_loc/loc/quest` by default). The test
 `test_generated_files_are_up_to_date` fails if the committed files are stale.
 
-`item_categories.json` and `monster_materials.json` are produced separately
-because they need network access:
+`item_categories.json`, `monster_materials.json` and `monster_health.json` are
+produced separately because they need network access:
 
 ```
 python tools/fetch_item_categories.py
 python tools/fetch_monster_materials.py
+python tools/fetch_monster_health.py
 ```
+
+`monster_health.json` comes from the monster pages of Kiranico's MH4U database
+(`kiranico.com/en/mh4u/monster/<name>`; the old `mh4u.kiranico.com` is gone),
+which embed `window.js_vars = {"monster": {...}}` with `base_hp` (2000 Seltas
+… 18000 Gogmazios; Dalamadur 17600) and the per-rank multipliers `hp_mult_low`
+/ `_high` / `_g` (0 where the monster has no such rank). Each record has the
+monster id, its name, the Kiranico name, `base_hp` and `hp_mult`. Tails use their
+head's record, Apex monsters their own, Golden Rajang is "Furious Rajang",
+Black Fatalis "Fatalis", and the Super Crimson Fatalis uses "Crimson Fatalis".
+The monsterhunterwiki.org pages have no health for MH4U (their HP rows read
+"???").
 
 Monster materials come from the wiki categories `MH4U <Monster> Materials`.
 Apex monsters use their base species' materials; Black Fatalis is "Fatalis",

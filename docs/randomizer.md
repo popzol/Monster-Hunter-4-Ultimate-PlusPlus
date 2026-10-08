@@ -20,7 +20,7 @@ With the defaults, quests only get the safety repairs listed below.
 | `structure` | keep / keep_progression / random | Waves and monsters per wave: original, original only in key and urgent quests, or random |
 | `duplicates` | only_if_original / never / allowed | Same species twice in a quest |
 | `progression` | progressive / balanced / none | Tier choice: weighted by rank (`curated/progression.json`), within ±2 tiers of the replaced monster, or any |
-| `adjust_stats` | bool | Provisional health/attack scaling by tier difference |
+| `adjust_stats` | bool | Health index scaled by base health of the old / new species (Kiranico data); attack (and health without data) by tier difference, provisional |
 | `randomize_maps` | bool | Move quests to other maps |
 | `arena_maps`, `everwood` | normal / rare / never | How often those map categories are used |
 | `always_music` | bool | Avoid silent maps unless every monster has its own theme |

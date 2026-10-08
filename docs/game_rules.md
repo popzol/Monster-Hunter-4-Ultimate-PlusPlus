@@ -137,8 +137,20 @@ Retail data analysis (2026-10-05):
 
 To keep the original difficulty, the randomizer needs each species' **base
 health** (and ideally attack): new index ≈ old index × base(old) / base(new).
-Until that data is available, the tier-based scaling in `stats.py` is only an
-approximation.
+The base health is now in `generated/monster_health.json` (Kiranico, docs/data.md:
+2000 for Seltas and Velocidrome up to 18000 for Gogmazios, 17600 for Dalamadur)
+and `stats.py` uses it for health (indices from 6 to 95). Attack, and health when
+a species has no data, still use the tier heuristic.
+
+What the data says about the index table (2026-10-08): Kiranico also gives each
+monster a rank multiplier (low 0.46–0.64, high 0.64–1.06, G 1.21–1.42), which
+is close to the retail index / 50 (low ≈ 23–27, high ≈ 32–53, G ≈ 61–71), so
+the multiplier is probably proportional to the index; but only 12 of 144 retail
+single-monster quests match `50 × multiplier` exactly, and the correlation
+between base health and index inside one rank is weak (+0.5 … −0.3), so quest
+designers did not offset base health with the index. The proportionality is
+unmeasured in the game. `etd` / `emd` of `em_data.arc` (per monster, 1–14 KB,
+variable structure) were not decoded; the wiki has no health for MH4U.
 
 Planned in-game experiment: build test quests with the same monster and
 different hp indices (and the same index with different monsters) and measure

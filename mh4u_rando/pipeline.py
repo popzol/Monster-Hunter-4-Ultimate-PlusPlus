@@ -9,7 +9,7 @@ Output layout (copy its contents into load/mods/0004000000126100/):
     romfs/loc/data/quest01.arc     randomized quests
     romfs/<lang>/data/core_*.arc   smaller top-screen HUD (HUD size below 100 %) and the new monster icons
     exefs/code.ips                 equipment changes and the interface's executable patches (HUD size,
-                                   L + X target switch, target face); built from the update's executable
+                                   L + D-pad up target switch, target face); built from the update's executable
                                    when there are interface patches, from the ROM's otherwise
     spoiler_<seed>.txt/.json       quest log
     equipment_<seed>.txt/.json     equipment log
@@ -26,6 +26,7 @@ from .arc import parse_arc, write_arc
 from .data import GameData, load_game_data
 from .exefs import ExtractError, RomFS, is_container, load_code, make_ips
 from .hud import UPDATE_TITLE_ID, find_update, hud_files, remove_hud_files
+from .hud.build import hint_files
 from .hud.code_patch import patch_interface
 from .hud.icons import icon_files, new_icon_cells, patch_monster_icons, remove_icon_files
 from .mib import Quest, parse_mib, write_mib
@@ -152,7 +153,11 @@ def write_interface_files(result: "RunResult", rom: RomFS | None, update: RomFS 
     remove_hud_files(output_dir)
     remove_icon_files(output_dir)
     resize_hud = settings.hud_scale != HudScale.FULL
-    hud = dict(hud_files(rom, update, settings.hud_scale.factor, with_code_patch)) if resize_hud else {}
+    target_hint = settings.target_switch and rom is not None  # the L + D-pad up glyph in the item selector
+    if resize_hud:
+        hud = dict(hud_files(rom, update, settings.hud_scale.factor, with_code_patch, target_hint))
+    else:
+        hud = dict(hint_files(rom)) if target_hint else {}
     icons = dict(icon_files(rom, update, hud)) if new_icons else {}
     for path, data in {**hud, **icons}.items():
         target = output_dir / "romfs" / path

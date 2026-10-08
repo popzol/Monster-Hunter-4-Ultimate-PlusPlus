@@ -11,7 +11,7 @@ needs the executable patch (minimap, map icons, mount gauge) and, with UPDATE,
 writes exefs/code.ips with it (mh4u_rando/hud/code_patch.py); --merge-ips keeps the changes of another
 code.ips (e.g. the randomizer's equipment patch) in it. --tint: the first probe
 instead (main HUD scaled, other candidate layouts tinted to identify them).
---target-button adds the L + X target switch; --target-asm assembles another
+--target-button adds the L + D-pad up target switch (and its hint); --target-asm assembles another
 routine in its place (a diagnostic one such as tools/asm/input_event_log.s,
 read back with tools/citra_state.py; needs devkitARM or the Arm GNU Toolchain).
 --target-face shows the target panel's monster faces on the top screen too;
@@ -31,7 +31,7 @@ from mh4u_rando.exefs import RomFS, apply_ips, load_code, make_ips  # noqa: E402
 from mh4u_rando.hud import LANGUAGES, LYT_TYPE_HASH, Anchor, hud_files, parse_lyt, scale_arc  # noqa: E402
 from mh4u_rando.hud.build import MAP_ARC, short_name  # noqa: E402
 from mh4u_rando.hud.code_patch import (  # noqa: E402
-    BASE_ADDRESS, CAVE, CAVE_END, FACE_HOOK, FACE_ROUTINE, FREE_HOOK, ICON_CALLS, LOADER_HOOK, MOUNT_FACE_FLOATS, SHOW_HOOK,
+    ACTIONS_COPY, BASE_ADDRESS, CAVE, CAVE_END, FACE_HOOK, FACE_ROUTINE, FREE_HOOK, ICON_CALLS, LOADER_HOOK, MOUNT_FACE_FLOATS, SHOW_HOOK,
     TARGET_BUTTON, TARGET_ROUTINE, TARGET_TEST, patch_hud, patch_target_button, patch_target_face,
 )
 from build_hud_asm import ASM, DEFAULT_DEVKITARM, assemble  # noqa: E402
@@ -139,7 +139,7 @@ def without_hud_patch(code: bytes, original: bytes) -> bytes:
     """`code` with the original bytes back wherever code_patch.patch_hud writes."""
     out = bytearray(code)
     spans = [(CAVE, CAVE_END)] + [(site, site + 4) for site in ICON_CALLS] + \
-        [(address, address + 4) for address in MOUNT_FACE_FLOATS] + [(TARGET_TEST, TARGET_TEST + 16)] + \
+        [(address, address + 4) for address in MOUNT_FACE_FLOATS] + [(TARGET_TEST, TARGET_TEST + 16), (ACTIONS_COPY, ACTIONS_COPY + 4)] + \
         [(hook, hook + 4) for hook in (LOADER_HOOK, FREE_HOOK, SHOW_HOOK, FACE_HOOK)]
     for start, end in spans:
         out[start - BASE_ADDRESS:end - BASE_ADDRESS] = original[start - BASE_ADDRESS:end - BASE_ADDRESS]
@@ -155,7 +155,7 @@ def main() -> None:
     parser.add_argument("--tint", action="store_true")
     parser.add_argument("--minimap", action="store_true")
     parser.add_argument("--merge-ips", type=Path, help="code.ips whose changes are kept in the new one")
-    parser.add_argument("--target-button", action="store_true", help="also L + X to switch the target")
+    parser.add_argument("--target-button", action="store_true", help="also L + D-pad up to switch the target")
     parser.add_argument("--target-asm", type=Path, help="routine assembled instead of asm/target_button.s")
     parser.add_argument("--devkitarm", type=Path, default=DEFAULT_DEVKITARM, help="bin folder of the assembler")
     parser.add_argument("--target-face", action="store_true", help="also the target's face on the top screen")
@@ -166,7 +166,7 @@ def main() -> None:
     rom = RomFS(args.rom)
     update = RomFS(args.update) if args.update else None
     files = tint_files(rom, update, factor) if args.tint else \
-        hud_files(rom, update, factor, with_code_patch=args.minimap)
+        hud_files(rom, update, factor, with_code_patch=args.minimap, target_hint=args.target_button)
     count = 0
     for path, data in files:
         target = args.out / "romfs" / path
@@ -182,7 +182,9 @@ def main() -> None:
         ips.parent.mkdir(parents=True, exist_ok=True)
         code = patch_hud(code, factor)
         if args.target_button:
-            routine = assemble(args.target_asm, TARGET_ROUTINE, args.devkitarm) if args.target_asm else TARGET_BUTTON
+            routine = assemble(args.target_asm, TARGET_ROUTINE, args.devkitarm) if args.target_asm else None
+            if routine is None and args.target_face and args.face_debug:
+                routine = TARGET_BUTTON  # the diagnostic face leaves no room for the D-pad filter: no L + up
             code = patch_target_button(code, routine)
         if args.target_face and args.face_debug:
             routine = assemble(ASM / "target_face.c", FACE_ROUTINE, args.devkitarm, ("FACE_DEBUG",))

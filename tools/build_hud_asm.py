@@ -1,5 +1,5 @@
 """Build mh4u_rando/hud/asm/* with devkitARM (or the Arm GNU Toolchain) and compare them with the bytes
-embedded in mh4u_rando/hud/code_patch.py (MINIMAP_WRAPPER, TARGET_BUTTON, FACE_LOADER_CODE, FACE_FREE_CODE, FACE_SHOW_CODE, TARGET_FACE).
+embedded in mh4u_rando/hud/code_patch.py (MINIMAP_WRAPPER, TARGET_BUTTON, DPAD_FILTER_CODE, FACE_LOADER_CODE, FACE_FREE_CODE, FACE_SHOW_CODE, TARGET_FACE).
 Also prints the size of the diagnostic build of target_face.c (-DFACE_DEBUG, tools/hud_probe.py
 --face-debug), which may use the free space up to CAVE_END.
 
@@ -20,7 +20,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from mh4u_rando.hud.code_patch import (  # noqa: E402
-    CAVE, CAVE_END, FACE_FREE, FACE_FREE_CODE, FACE_LOADER, FACE_LOADER_CODE, FACE_PARAMS, FACE_ROUTINE,
+    CAVE, CAVE_END, DPAD_FILTER, DPAD_FILTER_CODE, FACE_FREE, FACE_FREE_CODE, FACE_LOADER, FACE_LOADER_CODE, FACE_PARAMS, FACE_ROUTINE,
     FACE_SHOW, FACE_SHOW_CODE, MINIMAP_WRAPPER, PANEL_UPDATE, SHOW_HOOK, TARGET_BUTTON, TARGET_FACE,
     TARGET_ROUTINE,
 )
@@ -29,6 +29,7 @@ ASM = ROOT / "mh4u_rando" / "hud" / "asm"
 # source -> (link address, embedded bytes, name in code_patch.py)
 SOURCES = {"minimap_wrapper.s": (CAVE, MINIMAP_WRAPPER, "MINIMAP_WRAPPER"),
            "target_button.s": (TARGET_ROUTINE, TARGET_BUTTON, "TARGET_BUTTON"),
+           "dpad_filter.s": (DPAD_FILTER, DPAD_FILTER_CODE, "DPAD_FILTER_CODE"),
            "face_loader.s": (FACE_LOADER, FACE_LOADER_CODE, "FACE_LOADER_CODE"),
            "face_free.s": (FACE_FREE, FACE_FREE_CODE, "FACE_FREE_CODE"),
            "face_show.s": (FACE_SHOW, FACE_SHOW_CODE, "FACE_SHOW_CODE"),

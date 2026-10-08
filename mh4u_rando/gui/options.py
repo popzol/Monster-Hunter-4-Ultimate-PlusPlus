@@ -147,10 +147,10 @@ QUEST_SECTIONS: tuple[Section, ...] = (
                          "Any monster can appear in any quest.")),
             )),
             Option("adjust_stats", T("Ajustar vida y ataque a la dificultad", "Scale health and attack to difficulty"),
-                   T("Compensa la vida y el ataque según la diferencia de dificultad con el monstruo sustituido. "
-                     "Fórmula provisional.",
-                     "Compensates health and attack for the difficulty gap with the replaced monster. "
-                     "Provisional formula."),
+                   T("Mantiene la vida del monstruo sustituido según la vida base de cada especie, y compensa el "
+                     "ataque según la diferencia de dificultad. El ataque es una fórmula provisional.",
+                     "Keeps the replaced monster's health using each species' base health, and compensates "
+                     "attack for the difficulty gap. The attack formula is provisional."),
                    requires="randomize_monsters"),
         )),
     )),
@@ -547,13 +547,13 @@ INTERFACE_SECTIONS: tuple[Section, ...] = (
              "the characters. Needs the ROM and the update (found in Citra, Azahar or Lime3DS, or set on the "
              "left): part of the change goes into the update's executable.")),
         Group(T("Objetivo", "Target"), (
-            Option("target_switch", T("Cambiar de objetivo con L + X", "Switch the target with L + X"),
-                   T("Con L pulsado (modo objetos), X fija el monstruo grande o cambia al otro, igual que tocar el "
-                     "panel de la cámara de objetivo. Los tiradores usan L + X para la munición: con arco o "
-                     "ballesta hará las dos cosas (pendiente de cambiar).",
-                     "With L held (item mode), X locks the large monster or switches to the other one, like a "
-                     "tap on the target camera panel. Gunners use L + X for ammo: with a bow or bowgun it does "
-                     "both (to be changed).")),
+            Option("target_switch", T("Cambiar de objetivo con L + ↑", "Switch the target with L + D-pad up"),
+                   T("Con L pulsado (modo objetos), arriba en la cruceta fija el monstruo grande o cambia al otro, "
+                     "igual que tocar el panel de la cámara de objetivo; el selector de objetos lo indica. Con L "
+                     "pulsado la cruceta ya no mueve la cámara (el C-stick sí).",
+                     "With L held (item mode), D-pad up locks the large monster or switches to the other one, like "
+                     "a tap on the target camera panel; the item selector shows the hint. With L held the D-pad no "
+                     "longer moves the camera (the C-stick still does).")),
             Option("target_face_top", T("Cara del objetivo arriba", "Target face on the top screen"),
                    T("Muestra la cara del monstruo del panel de la cámara de objetivo también en la pantalla "
                      "superior, a la izquierda del selector de objetos, con su marca de fijado.",

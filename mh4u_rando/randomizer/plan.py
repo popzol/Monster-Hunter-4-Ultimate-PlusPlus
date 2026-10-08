@@ -20,6 +20,8 @@ class Slot:
     meta: MetaEntry | None = None
     # Tier of the replaced monster, used by the balanced progression and stat scaling.
     original_tier: int | None = None
+    # Base health of the replaced monster (MonsterInfo.base_hp), to keep its health when the species changes.
+    original_base_hp: int | None = None
     # Swarm entries (quantity > 1, e.g. Seltas x99 escorting a Seltas Queen) are kept as is.
     is_companion: bool = False
     # Automatically added part of another monster (Dalamadur tail).

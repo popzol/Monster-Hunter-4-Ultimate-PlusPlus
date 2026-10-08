@@ -3,8 +3,8 @@
     python -m mh4u_rando --rom game.3ds --out output_folder [--seed S] [--preset p.json]
 
 The ROM must be decrypted; quest01.arc and the executable are read from it.
---hud-scale 70 makes the top-screen HUD smaller, --target-switch lets L + X
-lock / switch the target, --target-face shows the target's face on the top
+--hud-scale 70 makes the top-screen HUD smaller, --target-switch lets L + D-pad
+up lock / switch the target, --target-face shows the target's face on the top
 screen too (all need --rom and the update's 00000000.app, found in
 Citra/Azahar/Lime3DS or given with --update; without it the HUD size only
 changes data files).
@@ -37,7 +37,7 @@ def main(argv=None) -> int:
     parser.add_argument("--update", type=Path,
                         help="the update's 00000000.app, for the interface options (found in Citra/Azahar/Lime3DS "
                              "by default)")
-    parser.add_argument("--target-switch", action="store_true", help="L + X locks / switches the target")
+    parser.add_argument("--target-switch", action="store_true", help="L + D-pad up locks / switches the target")
     parser.add_argument("--target-face", action="store_true", help="the target's face on the top screen too")
     args = parser.parse_args(argv)
 

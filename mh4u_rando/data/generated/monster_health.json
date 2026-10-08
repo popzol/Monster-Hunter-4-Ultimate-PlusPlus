@@ -1,0 +1,862 @@
+{
+ "1": {
+  "name": "Rathian",
+  "kiranico": "Rathian",
+  "base_hp": 4500,
+  "hp_mult": {
+   "low": 0.52,
+   "high": 0.7,
+   "g": 1.21
+  }
+ },
+ "2": {
+  "name": "Rathalos",
+  "kiranico": "Rathalos",
+  "base_hp": 4200,
+  "hp_mult": {
+   "low": 0.55,
+   "high": 0.7,
+   "g": 1.3
+  }
+ },
+ "3": {
+  "name": "Pink Rathian",
+  "kiranico": "Pink Rathian",
+  "base_hp": 4200,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.7,
+   "g": 1.21
+  }
+ },
+ "4": {
+  "name": "Azure Rathalos",
+  "kiranico": "Azure Rathalos",
+  "base_hp": 4300,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.76,
+   "g": 1.3
+  }
+ },
+ "5": {
+  "name": "Gold Rathian",
+  "kiranico": "Gold Rathian",
+  "base_hp": 4700,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "6": {
+  "name": "Silver Rathalos",
+  "kiranico": "Silver Rathalos",
+  "base_hp": 4900,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "7": {
+  "name": "Yian Kut-Ku",
+  "kiranico": "Yian Kut-Ku",
+  "base_hp": 3800,
+  "hp_mult": {
+   "low": 0.46,
+   "high": 0.64,
+   "g": 1.21
+  }
+ },
+ "8": {
+  "name": "Blue Yian Kut-Ku",
+  "kiranico": "Blue Yian Kut-Ku",
+  "base_hp": 4000,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.64,
+   "g": 1.21
+  }
+ },
+ "9": {
+  "name": "Gypceros",
+  "kiranico": "Gypceros",
+  "base_hp": 3900,
+  "hp_mult": {
+   "low": 0.46,
+   "high": 0.64,
+   "g": 1.21
+  }
+ },
+ "10": {
+  "name": "Purple Gypceros",
+  "kiranico": "Purple Gypceros",
+  "base_hp": 3900,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.64,
+   "g": 1.21
+  }
+ },
+ "11": {
+  "name": "Tigrex",
+  "kiranico": "Tigrex",
+  "base_hp": 5000,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.7,
+   "g": 1.3
+  }
+ },
+ "12": {
+  "name": "Brute Tigrex",
+  "kiranico": "Brute Tigrex",
+  "base_hp": 4500,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "13": {
+  "name": "Gendrome",
+  "kiranico": "Gendrome",
+  "base_hp": 2500,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "14": {
+  "name": "Iodrome",
+  "kiranico": "Iodrome",
+  "base_hp": 3500,
+  "hp_mult": {
+   "low": 0.64,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "15": {
+  "name": "Great Jaggi",
+  "kiranico": "Great Jaggi",
+  "base_hp": 2600,
+  "hp_mult": {
+   "low": 0.49,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "16": {
+  "name": "Velocidrome",
+  "kiranico": "Velocidrome",
+  "base_hp": 2000,
+  "hp_mult": {
+   "low": 0.49,
+   "high": 1.06,
+   "g": 1.21
+  }
+ },
+ "17": {
+  "name": "Congalala",
+  "kiranico": "Congalala",
+  "base_hp": 4600,
+  "hp_mult": {
+   "low": 0.52,
+   "high": 0.64,
+   "g": 1.21
+  }
+ },
+ "18": {
+  "name": "Emerald Congalala",
+  "kiranico": "Emerald Congalala",
+  "base_hp": 4100,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.64,
+   "g": 1.21
+  }
+ },
+ "19": {
+  "name": "Rajang",
+  "kiranico": "Rajang",
+  "base_hp": 4500,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "20": {
+  "name": "Kecha Wacha",
+  "kiranico": "Kecha Wacha",
+  "base_hp": 3800,
+  "hp_mult": {
+   "low": 0.46,
+   "high": 0.64,
+   "g": 1.21
+  }
+ },
+ "21": {
+  "name": "Tetsucabra",
+  "kiranico": "Tetsucabra",
+  "base_hp": 4000,
+  "hp_mult": {
+   "low": 0.46,
+   "high": 0.64,
+   "g": 1.21
+  }
+ },
+ "22": {
+  "name": "Zamtrios",
+  "kiranico": "Zamtrios",
+  "base_hp": 5200,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "23": {
+  "name": "Najarala",
+  "kiranico": "Najarala",
+  "base_hp": 4350,
+  "hp_mult": {
+   "low": 0.52,
+   "high": 0.7,
+   "g": 1.21
+  }
+ },
+ "24": {
+  "name": "Dalamadur (Head)",
+  "kiranico": "Dalamadur",
+  "base_hp": 17600,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "25": {
+  "name": "Seltas",
+  "kiranico": "Seltas",
+  "base_hp": 2000,
+  "hp_mult": {
+   "low": 0.49,
+   "high": 1.0,
+   "g": 1.21
+  }
+ },
+ "26": {
+  "name": "Seltas Queen",
+  "kiranico": "Seltas Queen",
+  "base_hp": 5200,
+  "hp_mult": {
+   "low": 0.55,
+   "high": 0.7,
+   "g": 1.3
+  }
+ },
+ "27": {
+  "name": "Nerscylla",
+  "kiranico": "Nerscylla",
+  "base_hp": 3900,
+  "hp_mult": {
+   "low": 0.55,
+   "high": 0.64,
+   "g": 1.21
+  }
+ },
+ "28": {
+  "name": "Gore Magala",
+  "kiranico": "Gore Magala",
+  "base_hp": 5000,
+  "hp_mult": {
+   "low": 0.55,
+   "high": 0.7,
+   "g": 1.3
+  }
+ },
+ "29": {
+  "name": "Shagaru Magala",
+  "kiranico": "Shagaru Magala",
+  "base_hp": 5500,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "30": {
+  "name": "Yian Garuga",
+  "kiranico": "Yian Garuga",
+  "base_hp": 4200,
+  "hp_mult": {
+   "low": 0.55,
+   "high": 0.76,
+   "g": 1.3
+  }
+ },
+ "31": {
+  "name": "Kushala Daora",
+  "kiranico": "Kushala Daora",
+  "base_hp": 4200,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "32": {
+  "name": "Teostra",
+  "kiranico": "Teostra",
+  "base_hp": 5300,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "33": {
+  "name": "Akantor",
+  "kiranico": "Akantor",
+  "base_hp": 6000,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "34": {
+  "name": "Kirin",
+  "kiranico": "Kirin",
+  "base_hp": 3200,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "35": {
+  "name": "Oroshi Kirin",
+  "kiranico": "Oroshi Kirin",
+  "base_hp": 3200,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "36": {
+  "name": "Khezu",
+  "kiranico": "Khezu",
+  "base_hp": 4500,
+  "hp_mult": {
+   "low": 0.52,
+   "high": 0.7,
+   "g": 1.21
+  }
+ },
+ "37": {
+  "name": "Red Khezu",
+  "kiranico": "Red Khezu",
+  "base_hp": 4500,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.7,
+   "g": 1.21
+  }
+ },
+ "38": {
+  "name": "Basarios",
+  "kiranico": "Basarios",
+  "base_hp": 2400,
+  "hp_mult": {
+   "low": 0.52,
+   "high": 0.7,
+   "g": 1.21
+  }
+ },
+ "39": {
+  "name": "Ruby Basarios",
+  "kiranico": "Ruby Basarios",
+  "base_hp": 2400,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.7,
+   "g": 1.21
+  }
+ },
+ "40": {
+  "name": "Gravios",
+  "kiranico": "Gravios",
+  "base_hp": 4400,
+  "hp_mult": {
+   "low": 0.55,
+   "high": 0.7,
+   "g": 1.3
+  }
+ },
+ "41": {
+  "name": "Black Gravios",
+  "kiranico": "Black Gravios",
+  "base_hp": 4600,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.76,
+   "g": 1.3
+  }
+ },
+ "42": {
+  "name": "Deviljho",
+  "kiranico": "Deviljho",
+  "base_hp": 6600,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 1.42
+  }
+ },
+ "43": {
+  "name": "Savage Deviljho",
+  "kiranico": "Savage Deviljho",
+  "base_hp": 6000,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 1.42
+  }
+ },
+ "44": {
+  "name": "Brachydios",
+  "kiranico": "Brachydios",
+  "base_hp": 4600,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "45": {
+  "name": "Golden Rajang",
+  "kiranico": "Furious Rajang",
+  "base_hp": 4800,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "46": {
+  "name": "Dah'ren Mohran",
+  "kiranico": "Dah'ren Mohran",
+  "base_hp": 16000,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "47": {
+  "name": "Lagombi",
+  "kiranico": "Lagombi",
+  "base_hp": 3600,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "48": {
+  "name": "Zinogre",
+  "kiranico": "Zinogre",
+  "base_hp": 5300,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "49": {
+  "name": "Stygian Zinogre",
+  "kiranico": "Stygian Zinogre",
+  "base_hp": 5100,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "77": {
+  "name": "Black Fatalis",
+  "kiranico": "Fatalis",
+  "base_hp": 9000,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "78": {
+  "name": "Crimson Fatalis",
+  "kiranico": "Crimson Fatalis",
+  "base_hp": 8000,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "79": {
+  "name": "White Fatalis",
+  "kiranico": "White Fatalis",
+  "base_hp": 9000,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "80": {
+  "name": "Molten Tigrex",
+  "kiranico": "Molten Tigrex",
+  "base_hp": 5000,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "82": {
+  "name": "Rusted Kushala Daora",
+  "kiranico": "Rusted Kushala Daora",
+  "base_hp": 4000,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "83": {
+  "name": "Dalamadur (Tail)",
+  "kiranico": "Dalamadur",
+  "base_hp": 17600,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "88": {
+  "name": "Seregios",
+  "kiranico": "Seregios",
+  "base_hp": 4200,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 1.3
+  }
+ },
+ "89": {
+  "name": "Gogmazios",
+  "kiranico": "Gogmazios",
+  "base_hp": 18000,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "90": {
+  "name": "Ash Kecha Wacha",
+  "kiranico": "Ash Kecha Wacha",
+  "base_hp": 3500,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 1.21
+  }
+ },
+ "91": {
+  "name": "Berserk Tetsucabra",
+  "kiranico": "Berserk Tetsucabra",
+  "base_hp": 4200,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "92": {
+  "name": "Tigerstripe Zamtrios",
+  "kiranico": "Tigerstripe Zamtrios",
+  "base_hp": 5000,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "93": {
+  "name": "Tidal Najarala",
+  "kiranico": "Tidal Najarala",
+  "base_hp": 4850,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 1.21
+  }
+ },
+ "94": {
+  "name": "Desert Seltas",
+  "kiranico": "Desert Seltas",
+  "base_hp": 2500,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 1.21
+  }
+ },
+ "95": {
+  "name": "Desert Seltas Queen",
+  "kiranico": "Desert Seltas Queen",
+  "base_hp": 5500,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 1.3
+  }
+ },
+ "96": {
+  "name": "Shrouded Nerscylla",
+  "kiranico": "Shrouded Nerscylla",
+  "base_hp": 3900,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 1.3
+  }
+ },
+ "97": {
+  "name": "Chaotic Gore Magala",
+  "kiranico": "Chaotic Gore Magala",
+  "base_hp": 5800,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "98": {
+  "name": "Raging Brachydios",
+  "kiranico": "Raging Brachydios",
+  "base_hp": 5500,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "99": {
+  "name": "Diablos",
+  "kiranico": "Diablos",
+  "base_hp": 4300,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 1.3
+  }
+ },
+ "100": {
+  "name": "Black Diablos",
+  "kiranico": "Black Diablos",
+  "base_hp": 4300,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 1.3
+  }
+ },
+ "101": {
+  "name": "Monoblos",
+  "kiranico": "Monoblos",
+  "base_hp": 4000,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 1.3
+  }
+ },
+ "102": {
+  "name": "White Monoblos",
+  "kiranico": "White Monoblos",
+  "base_hp": 6000,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 1.3
+  }
+ },
+ "103": {
+  "name": "Chameleos",
+  "kiranico": "Chameleos",
+  "base_hp": 6400,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "105": {
+  "name": "Cephadrome",
+  "kiranico": "Cephadrome",
+  "base_hp": 3600,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "107": {
+  "name": "Daimyo Hermitaur",
+  "kiranico": "Daimyo Hermitaur",
+  "base_hp": 3300,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 1.21
+  }
+ },
+ "108": {
+  "name": "Plum Daimyo Hermitaur",
+  "kiranico": "Plum D.Hermitaur",
+  "base_hp": 3500,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 1.21
+  }
+ },
+ "110": {
+  "name": "Shah Dalamadur (Head)",
+  "kiranico": "Shah Dalamadur",
+  "base_hp": 17600,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "111": {
+  "name": "Shah Dalamadur (Tail)",
+  "kiranico": "Shah Dalamadur",
+  "base_hp": 17600,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "112": {
+  "name": "Rajang (Apex)",
+  "kiranico": "Apex Rajang",
+  "base_hp": 5000,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "113": {
+  "name": "Deviljho (Apex)",
+  "kiranico": "Apex Deviljho",
+  "base_hp": 6600,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "114": {
+  "name": "Zinogre (Apex)",
+  "kiranico": "Apex Zinogre",
+  "base_hp": 5300,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "115": {
+  "name": "Gravios (Apex)",
+  "kiranico": "Apex Gravios",
+  "base_hp": 4800,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "116": {
+  "name": "Ukanlos",
+  "kiranico": "Ukanlos",
+  "base_hp": 7000,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "117": {
+  "name": "Crimson Fatalis (Super)",
+  "kiranico": "Crimson Fatalis",
+  "base_hp": 8000,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "119": {
+  "name": "Diablos (Apex)",
+  "kiranico": "Apex Diablos",
+  "base_hp": 4000,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "120": {
+  "name": "Tidal Najarala (Apex)",
+  "kiranico": "Apex Tidal Najarala",
+  "base_hp": 4850,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "121": {
+  "name": "Tigrex (Apex)",
+  "kiranico": "Apex Tigrex",
+  "base_hp": 5200,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ },
+ "122": {
+  "name": "Seregios (Apex)",
+  "kiranico": "Apex Seregios",
+  "base_hp": 4700,
+  "hp_mult": {
+   "low": 0.0,
+   "high": 0.0,
+   "g": 0.0
+  }
+ }
+}

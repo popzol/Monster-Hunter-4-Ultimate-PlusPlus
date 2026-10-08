@@ -201,12 +201,13 @@ its public classes and functions with their signatures.
   - `walk() -> Iterator[str]`
 - `short_name(entry_name: str) -> str`
 - `scale_arc(raw: bytes, layouts: Mapping[str, AnchorSpec | Mapping[str, AnchorSpec]], factor: float) -> bytes` - The ARC with the given layouts scaled, together with every animation of the ARC that moves them.
-- `hud_files(rom: GameFiles, update: GameFiles | None, factor: float, with_code_patch: bool=False) -> Iterator[tuple[str, bytes]]` - (RomFS path, new ARC) of every file of the HUD size mod, for the 5 languages. `with_code_patch` a...
+- `hint_files(rom: GameFiles) -> Iterator[tuple[str, bytes]]` - (RomFS path, new ARC) of the quest HUD of each language with only the target switch hint (hint.py).
+- `hud_files(rom: GameFiles, update: GameFiles | None, factor: float, with_code_patch: bool=False, target_hint: bool=False) -> Iterator[tuple[str, bytes]]` - (RomFS path, new ARC) of every file of the HUD size mod, for the 5 languages. `with_code_patch` a...
 - `emulator_folders() -> list[Path]` - User folders where Citra and its forks keep their data (Windows, Linux, macOS).
 - `find_update() -> Path | None` - The update's 00000000.app installed in an emulator, if any.
 - `hud_paths(mod_dir: Path) -> list[Path]` - Every file the HUD size mod can leave in a mod folder (core ARCs and the map ARCs).
 - `remove_hud_files(mod_dir: Path) -> None`
-- `write_hud_files(mod_dir: Path, rom: GameFiles, update: GameFiles | None, factor: float, with_code_patch: bool=False) -> list[Path]` - Write the HUD size mod into a mod folder (romfs/<lang>/data/...). Files of an earlier run are rep...
+- `write_hud_files(mod_dir: Path, rom: GameFiles, update: GameFiles | None, factor: float, with_code_patch: bool=False, target_hint: bool=False) -> list[Path]` - Write the HUD size mod into a mod folder (romfs/<lang>/data/...). Files of an earlier run are rep...
 
 ### `mh4u_rando/hud/code_patch.py` - Executable patches of the HUD size option (exefs/code.ips), for the update's code.bin.
 - class `CodePatchError(ValueError)`
@@ -216,10 +217,15 @@ its public classes and functions with their signatures.
 - `patch_minimap_icons(code: bytes, factor: float) -> bytes` - `code` with the minimap icons (and the visible circle without the Map item) scaled by `factor`
 - `patch_mount_gauge(code: bytes, factor: float) -> bytes` - `code` with the mount gauge's monster face moving along a bar scaled by `factor`.
 - `patch_hud(code: bytes, factor: float) -> bytes` - Every executable patch of the HUD size option.
-- `patch_target_button(code: bytes, routine_code: bytes=TARGET_BUTTON) -> bytes` - `code` where L + X switches the large-monster target, like a tap on the target camera panel.
+- `patch_target_button(code: bytes, routine_code: bytes | None=None) -> bytes` - `code` where L + D-pad up switches the large-monster target, like a tap on the target camera
 - `face_params(factor: float) -> tuple[float, float, float]` - Top-screen position (layout coordinates) and scale of the target face for a HUD `factor`.
 - `patch_target_face(code: bytes, factor: float=1.0, routine_code: bytes | None=None) -> bytes` - `code` showing the target camera panel's monster face on the top screen too.
-- `patch_interface(code: bytes, factor: float, target_switch: bool=False, target_face: bool=False) -> bytes` - Every interface patch the randomizer's settings ask for: the HUD size (below 1), L + X, the targe...
+- `patch_interface(code: bytes, factor: float, target_switch: bool=False, target_face: bool=False) -> bytes` - Every interface patch the randomizer's settings ask for: the HUD size (below 1), L + D-pad up, th...
+
+### `mh4u_rando/hud/hint.py` - The hint of the target switch (option target_switch, L + D-pad up): a D-pad glyph with only its u...
+- `hint_position() -> tuple[float, float]` - Layout coordinates of the glyph at 100 %: at the height of the item's icon and the face, left of the
+- `add_hint(raw_arc: bytes) -> bytes` - A core_quest.arc with the glyph in its texture qst00_ID and the hint sprite in ui205.
+- `add_hints(files: Mapping[str, bytes]) -> dict[str, bytes]` - `files` (RomFS path -> ARC), every core_quest.arc of them with the hint.
 
 ### `mh4u_rando/hud/icons.py` - New monster icons (option new_monster_icons) for the monsters the game draws with the "?" icon.
 - class `IconError(ValueError)`
@@ -261,6 +267,7 @@ its public classes and functions with their signatures.
 - class `Layout`
   - `roots() -> list[Pane]`
   - `find(name: str) -> Pane`
+  - `insert_sprite(parent: Pane, template: Pane, name: str, position: tuple[float, float], region: tuple[float, float, float, float] | None=None, texture: int | None=None) -> Pane` - Add a sprite as the last child of `parent`: a copy of `template` with a new name and position,
   - `to_bytes() -> bytes`
 - `parse_lyt(data: bytes) -> Layout`
 
@@ -281,6 +288,7 @@ its public classes and functions with their signatures.
 - class `Tex`
   - `get_rgba() -> bytes` - Mip 0 as RGBA bytes, rows from the top-left corner.
   - `get_region(x0: int, y0: int, width: int, height: int) -> bytes` - RGBA bytes of a rectangle of mip 0.
+  - `set_glyph(x0: int, y0: int, rows: list[str]) -> None` - Draw a small grey picture into an ETC1A4 texture, replacing whole 4x4 blocks.
   - `set_region(x0: int, y0: int, width: int, height: int, rgba: bytes) -> None` - Write RGBA bytes into a rectangle of mip 0 (rounded to 4 bits per channel).
   - `to_bytes() -> bytes`
 - `parse_tex(data: bytes) -> Tex`
@@ -525,7 +533,7 @@ its public classes and functions with their signatures.
 - `is_valid_meta(meta: MetaEntry | None) -> bool` - Retail stat blocks of real monsters never have zero size, health or attack.
 - `apply_stats(quest: Quest, plan: LineupPlan, data: GameData, adjust: bool) -> None`
 - `make_monsters_weak(quest: Quest) -> None` - Debug: lowest health and attack for every large, intruder and small monster stat block.
-- `scale_meta(meta: MetaEntry, tier_delta: int) -> None` - tier_delta > 0: the new monster is easier than the replaced one.
+- `scale_meta(meta: MetaEntry, tier_delta: int, health_ratio: float | None=None) -> None` - tier_delta > 0: the new monster is easier than the replaced one.
 
 ### `mh4u_rando/randomizer/structure.py` - Build the wave skeleton (empty slots) of a quest before choosing monsters.
 - `original_skeleton(quest: Quest, data: GameData) -> LineupPlan` - Same waves and slots as the original quest.
@@ -597,6 +605,12 @@ its public classes and functions with their signatures.
 - `fetch_wikitext(page: str) -> str`
 - `parse_item_rows(wikitext: str)` - Yield (name, rarity, carry_limit) for every GenericItemRow template.
 - `normalize(name: str) -> str`
+- `main() -> None`
+
+### `tools/fetch_monster_health.py` - Download each monster's base health from Kiranico's MH4U database (kiranico.com/en/mh4u/monster).
+- `fetch(url: str) -> str`
+- `monster_links(page: str) -> dict[str, str]` - Kiranico name -> page URL, from the monster list.
+- `monster_record(page: str) -> dict` - The `monster` object of a monster page's embedded js_vars.
 - `main() -> None`
 
 ### `tools/fetch_monster_materials.py` - Download which materials each large monster provides, from monsterhunterwiki.org.
