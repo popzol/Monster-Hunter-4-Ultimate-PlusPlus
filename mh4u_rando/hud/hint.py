@@ -1,4 +1,4 @@
-"""The hint of the target switch (option target_switch, L + D-pad up): a D-pad glyph with only its up arm
+"""The hint of the target switch (option touchless_target, L + D-pad up): a D-pad glyph with only its up arm
 lit, in the item selector's L bar, to the left of the target face (docs/hud_layout.md, "Target switch hint").
 
 The game has no "D-pad up" glyph, so one is drawn into a free corner of the quest texture qst00_ID and a
@@ -43,9 +43,6 @@ GLYPH_ROWS = [
 ]
 GLYPH_SIZE = 16
 GAP = 2.0                       # between the glyph and the lock mark of the face
-# Diagnostic sprites of tools/hud_probe.py --hint-controls: always shown, not animated, above the bar.
-CONTROLS = (("ui205_ctrl_y", None), ("ui205_ctrl_dpad", "glyph"))
-CONTROL_Y = -60.0
 
 
 def hint_position() -> tuple[float, float]:
@@ -70,9 +67,9 @@ def add_glyph(raw_arc: bytes) -> bytes:
     return write_arc(arc)
 
 
-def add_hint(raw_arc: bytes, controls: bool = False) -> bytes:
+def add_hint(raw_arc: bytes) -> bytes:
     """A core_quest.arc with the glyph in its texture qst00_ID and the hint sprite in ui205, animated like
-    TEMPLATE. `controls` also adds the diagnostic CONTROLS sprites."""
+    TEMPLATE."""
     arc = parse_arc(add_glyph(raw_arc))
     done = set()
     for entry in arc.entries:
@@ -88,11 +85,6 @@ def add_hint(raw_arc: bytes, controls: bool = False) -> bytes:
                                         index)
             hint.visible = True
             hint.colors = [(r, g, b, 0) for r, g, b, _ in hint.colors]
-            if controls:
-                x = hint_position()[0]
-                for k, (name, glyph) in enumerate(CONTROLS):  # left to right on screen (x is reversed)
-                    layout.insert_sprite(layout.find(PARENT), layout.find(TEMPLATE), name,
-                                         (x - 20 * k, CONTROL_Y), *((region, index) if glyph else ())).visible = True
             entry.data = layout.to_bytes()
             done.add("layout")
         elif entry.type_hash == LANL_TYPE_HASH and short == ANIMATION:

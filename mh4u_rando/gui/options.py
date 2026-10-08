@@ -547,23 +547,25 @@ INTERFACE_SECTIONS: tuple[Section, ...] = (
              "the characters. Needs the ROM and the update (found in Citra, Azahar or Lime3DS, or set on the "
              "left): part of the change goes into the update's executable.")),
         Group(T("Objetivo", "Target"), (
-            Option("target_switch", T("Cambiar de objetivo con L + ↑", "Switch the target with L + D-pad up"),
-                   T("Con L pulsado (modo objetos), arriba en la cruceta fija el monstruo grande o cambia al otro, "
-                     "igual que tocar el panel de la cámara de objetivo; el selector de objetos lo indica. Con L "
-                     "pulsado la cruceta ya no mueve la cámara (el C-stick sí).",
-                     "With L held (item mode), D-pad up locks the large monster or switches to the other one, like "
-                     "a tap on the target camera panel; the item selector shows the hint. With L held the D-pad no "
-                     "longer moves the camera (the C-stick still does).")),
-            Option("target_face_top", T("Cara del objetivo arriba", "Target face on the top screen"),
-                   T("Muestra la cara del monstruo del panel de la cámara de objetivo también en la pantalla "
-                     "superior, a la izquierda del selector de objetos, con su marca de fijado.",
-                     "Shows the monster face of the target camera panel on the top screen too, left of the item "
-                     "selector, with its lock mark.")),
-        ), T("Para jugar solo con la pantalla superior. Funcionan con el panel de la cámara de objetivo puesto en "
-             "la pantalla táctil, y solo cuando el monstruo ya se ha encontrado (como el panel). Necesitan la "
-             "ROM y la actualización.",
-             "For playing with the top screen only. They work with the target camera panel on the touch screen, "
-             "and only once the monster has been found (like the panel). They need the ROM and the update.")),
+            Option("touchless_target", T("Fijar monstruos sin pantalla táctil", "Lock on to monsters without the "
+                                          "touch screen"),
+                   T("Mantén pulsado L (modo objetos) y pulsa arriba en la cruceta: se fija el monstruo grande o "
+                     "se cambia al otro, igual que al tocar el panel de la cámara de objetivo. El selector de "
+                     "objetos muestra un icono de la cruceta mientras tanto, y con L pulsado la cruceta deja de "
+                     "mover la cámara (el C-stick sigue moviéndola). La cara del monstruo fijado se ve también en "
+                     "la pantalla superior, a la izquierda del selector de objetos, con su marca de fijado.",
+                     "Hold L (item mode) and press D-pad up: it locks the large monster or switches to the other "
+                     "one, like a tap on the target camera panel. The item selector shows a D-pad hint while L is "
+                     "held, and the D-pad no longer moves the camera then (the C-stick still does). The locked "
+                     "monster's face is also shown on the top screen, left of the item selector, with its lock "
+                     "mark.")),
+        ), T("Pensado para jugar solo con la pantalla superior (por ejemplo, en un monitor). Necesita el panel de "
+             "la cámara de objetivo puesto en la pantalla táctil, y solo funciona una vez que el monstruo ya se ha "
+             "encontrado (como el panel). Modifica el ejecutable de la actualización, así que necesita la ROM y "
+             "la actualización; desactivada, el juego no se toca.",
+             "Meant for playing with the top screen only (e.g. on a monitor). It needs the target camera panel on "
+             "the touch screen, and only works once the monster has been found (like the panel). It patches the "
+             "update's executable, so it needs the ROM and the update; switched off, the game is left untouched.")),
         Group(T("Iconos", "Icons"), (
             Option("new_monster_icons", T("Iconos propios, sin «?»", "Icons of their own, no \"?\""),
                    T("Ningún monstruo se muestra con el icono «?». Los Fatalis (negro, carmesí, blanco y carmesí "

@@ -498,7 +498,7 @@ def test_hud_scale_setting_and_checks(tmp_path):
     loose_arc.write_bytes(b"ARC\x00")
     with pytest.raises(ValueError, match="interface options need the game ROM"):
         run(loose_arc, tmp_path / "out", settings)
-    for option in (["--hud-scale", "70"], ["--target-switch"], ["--target-face"]):
+    for option in (["--hud-scale", "70"], ["--touchless-target"]):
         with pytest.raises(SystemExit):
             main(["--arc", str(loose_arc), "--out", str(tmp_path / "out"), *option])
 
@@ -508,11 +508,14 @@ def test_interface_settings():
     assert not Settings().patches_interface_code and not Settings().needs_update
     assert Settings().new_monster_icons  # on by default, but optional: left out without the update
     assert Settings(hud_scale=HudScale.P90).patches_interface_code and not Settings(hud_scale=HudScale.P90).needs_update
-    for name in ("target_switch", "target_face_top"):
-        settings = Settings(**{name: True})
-        assert settings.patches_interface_code and settings.needs_update
-        assert getattr(Settings.from_dict(settings.to_dict()), name) is True
+    settings = Settings(touchless_target=True)
+    assert settings.patches_interface_code and settings.needs_update
+    assert Settings.from_dict(settings.to_dict()).touchless_target is True
     assert Settings.from_dict(Settings(new_monster_icons=False).to_dict()).new_monster_icons is False
+    # Old presets had target_switch and target_face_top as two separate options: either one now turns on both.
+    assert Settings.from_dict({"target_switch": True}).touchless_target is True
+    assert Settings.from_dict({"target_face_top": True}).touchless_target is True
+    assert Settings.from_dict({}).touchless_target is False
 
 
 def test_target_options_need_the_update(tmp_path, monkeypatch):
@@ -524,7 +527,7 @@ def test_target_options_need_the_update(tmp_path, monkeypatch):
         pytest.skip("no ROM (set MH4U_ROM)")
     monkeypatch.setattr(pipeline, "find_update", lambda: None)
     with pytest.raises(ValueError, match="need the update"):
-        pipeline.run(rom, tmp_path, Settings(seed="target", target_face_top=True))
+        pipeline.run(rom, tmp_path, Settings(seed="target", touchless_target=True))
 
 
 def test_monster_icons_without_the_update(tmp_path, monkeypatch):
@@ -827,8 +830,7 @@ def test_pipeline_with_every_interface_option(tmp_path):
     rom = rom_path()
     if rom is None or not UPDATE_APP.is_file():
         pytest.skip("needs the ROM and the update (MH4U_ROM, MH4U_UPDATE_APP)")
-    settings = Settings(seed="interface", randomize_recipes=True, hud_scale=HudScale.P70, target_switch=True,
-                        target_face_top=True)
+    settings = Settings(seed="interface", randomize_recipes=True, hud_scale=HudScale.P70, touchless_target=True)
     result = run(rom, tmp_path, settings, update_path=UPDATE_APP)
     assert result.interface_patched and result.equipment_report is not None
     original = load_code(UPDATE_APP)

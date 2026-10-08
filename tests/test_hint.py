@@ -11,7 +11,7 @@ from mh4u_rando.exefs import RomFS
 from mh4u_rando.hud.build import LANGUAGES, hud_files, hint_files
 from mh4u_rando.hud.code_patch import FACE_RIGHT_GAP, FACE_SCALE, ITEM_ICON_Y, face_params
 from mh4u_rando.hud.hint import (
-    ANIMATION, CONTROLS, GAP, GLYPH_ARCS, GLYPH_AT, GLYPH_ROWS, GLYPH_SIZE, NAME, PARENT, TEMPLATE, TEXTURE, add_hint,
+    ANIMATION, GAP, GLYPH_ARCS, GLYPH_AT, GLYPH_ROWS, GLYPH_SIZE, NAME, PARENT, TEMPLATE, TEXTURE, add_hint,
     hint_position,
 )
 from mh4u_rando.hud.lanl import parse_lanl
@@ -227,19 +227,6 @@ def test_the_hint_shrinks_with_the_hud():
         for name in GLYPH_ARCS:
             for arc in (parse_arc(hints[f"{lang}/data/{name}"]), parse_arc(files[f"{lang}/data/{name}"])):
                 assert picture(parse_tex(entry(arc, TEXTURE).data), *GLYPH_AT, GLYPH_SIZE, GLYPH_SIZE) == GLYPH_ROWS
-
-
-def test_hint_controls():
-    rom, _ = game_files()
-    layout = parse_lyt(entry(parse_arc(add_hint(rom.read("spa/data/core_quest.arc"), controls=True)), "ui205").data)
-    (y_name, _), (dpad_name, _) = CONTROLS
-    y, dpad, template = layout.find(y_name), layout.find(dpad_name), layout.find(TEMPLATE)
-    assert y.position[0] > dpad.position[0]  # Y on the left of the screen
-    assert layout.data[y.offset + 0x28:y.offset + 0x5C] == layout.data[template.offset + 0x28:template.offset + 0x5C]
-    hint = layout.find(NAME)
-    for at, size in ((0x28, 16), (0x58, 4)):  # the glyph's region and texture
-        assert layout.data[dpad.offset + at:dpad.offset + at + size] == layout.data[hint.offset + at:hint.offset + at + size]
-    assert y.visible and dpad.visible and all(c[3] == 255 for c in y.colors + dpad.colors)
 
 
 def test_visibility_flag_of_the_game_layouts():

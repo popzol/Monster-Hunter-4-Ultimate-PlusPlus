@@ -25,7 +25,7 @@ game (says which); **Guess** = plausible from names or values, unverified.
 | Minimap: data + icon patch | **Verified** (icon positions probe 3, size probe 5) |
 | Mount gauge: data + face patch | **Verified** (probe 6) |
 | L + D-pad up switches the target; the D-pad does not move the camera while L is held | **Works** (probe 20). Replaces L + X (probe 11), which the gunners use for ammo |
-| Hint of the switch in the item selector | **Rebuilt, waiting for probe 21**: not shown in probes 19–20; the copy of the Y glyph inherited its "hidden" flag (below, "Target switch hint") |
+| Hint of the switch in the item selector | **Works** (probe 21): not shown in probes 19–20; the copy of the Y glyph inherited its "hidden" flag (below, "Target switch hint") |
 | Target face (monster icon) on the top screen | **Works** (probes 16–17: hidden during area loads, clear of the open item selector; probe 19: at the item icon's height) |
 | Minimap without the Map item | **Works** (probes 16–17) |
 
@@ -73,15 +73,17 @@ Without it the prompts over the characters keep their size.
 
 **Executable patches.** With the update, a HUD size below 100 % also writes
 `CODE_PATCH_LAYOUTS` (minimap, map icons, mount gauge) and `code_patch.patch_hud()`
-goes into `exefs/code.ips`. Two separate switches, GUI group "Objetivo /
-Target" (`Settings.target_switch`, `Settings.target_face_top`; CLI
-`--target-switch`, `--target-face`), add `patch_target_button()` (L + D-pad up) and
-`patch_target_face()` (the target's face on the top screen). Whenever one of
-these executable patches is on, `exefs/code.ips` is built from the **update's**
-executable (`load_code(update .app)`) with the equipment changes, then
+goes into `exefs/code.ips`. One switch, GUI group "Objetivo / Target"
+(`Settings.touchless_target`; CLI `--touchless-target`), adds both
+`patch_target_button()` (L + D-pad up and its hint) and `patch_target_face()`
+(the target's face on the top screen) together — they were two separate
+settings up to probe 21; `patch_interface()` still takes them as two
+parameters, both set from this one option. Whenever one of these executable
+patches is on, `exefs/code.ips` is built from the **update's** executable
+(`load_code(update .app)`) with the equipment changes, then
 `code_patch.patch_interface()` (and the monster icons' patch); otherwise it is
 built from the ROM's executable as before. Without the update, the HUD size
-only changes data files, and the target options (`Settings.needs_update`) stop
+only changes data files, and `touchless_target` (`Settings.needs_update`) stops
 the run with an error.
 
 ## Where the HUD lives
@@ -267,17 +269,71 @@ normalized (u, v, w, h) of the texture's size.
   closed state (0). `Animations.copy_pane` gives `ui205_dpad_up` copies of
   those tracks and a target in each of the three animations.
 
-`tools/hud_probe.py --hint-controls` adds two always-shown sprites above the
-item bar (`hint.CONTROLS`): a plain copy of the Y glyph (does the layout take
-new panes?) and a copy of the D-pad glyph (is the texture used?).
+For probe 21, `tools/hud_probe.py --hint-controls` (since removed, with the
+option merged into `touchless_target`) added two always-shown sprites above
+the item bar: a plain copy of the Y glyph (does the layout take new panes?)
+and a copy of the D-pad glyph (is the texture used?).
 
 **Not shown in probe 20** either. Cause found in the files: the template
 `ui205_y_button01` has the visible flag at 0 (the code shows it when the bar
 opens), and every copy inherited it, control sprites included, so nothing
-ever showed them. Now
-the hint and the control sprites are inserted visible; the hint's corner alpha
-is 0, so it stays transparent until animation 6 fades it in (the
-control sprites stay opaque, without animation). Waiting for probe 21.
+ever showed them. The hint and the control sprites are inserted visible; the
+hint's corner alpha is 0, so it stays transparent until animation 6 fades it
+in (the control sprites stay opaque, without animation).
+
+**Works in probe 21**, once actually installed: the hint only shows with the
+L bar open, and both control sprites were visible. (The first in-game check
+of probe 21 had failed because Citra's mod folder still held probe 20's
+`core_quest.arc` — only that file had changed between the two builds, so an
+unrelated stale copy made a real fix look like it had not worked; see
+[hud_code.md](hud_code.md), "Debugging in Citra".) With that confirmed, the
+diagnostic control sprites were removed and the two separate options
+(`target_switch`, `target_face_top`) were merged into the single
+`touchless_target` GUI option.
+
+### How the game loads a layout
+
+Read-only in Ghidra (`FUN_00aed0cc`, the `lyt` resource's reload function,
+found via its magic/version literal at 0xAED360/0xAED35C; `FUN_00c0f474` →
+`FUN_00b03d40` → `FUN_00b03030`/`FUN_00b03f90`), to confirm that inserting a
+pane record is safe and that the visible flag is what the game reads:
+
+* `FUN_00aed0cc` relocates the whole resource once into a fresh allocation
+  (no fixed layout-specific buffer): it rebases the texture table, the pane
+  table offset and the trailing table offset by the block's own address, then
+  walks the pane table rebasing every pane's name offset and, for texts, the
+  string offset. The trailing table (header 0x2C) ends up holding **one
+  pointer per root group**, filled in while walking the table (`case 2`, the
+  group record itself) — the file's own copy (zeros) is just an unrelocated
+  placeholder for those pointers, confirming "not decoded" in the format
+  table above is really "always zero, filled in at load".
+* That walk advances past each record by its **kind**'s fixed size in words:
+  sprite 0x1B, null 0xE, group 0xA, text 0x1F, boundary 0xC — matching
+  `RECORD_SIZES` in `lyt.py` (bytes = words × 4). It also has a `case 5` of
+  0x22 words (0x88 bytes) that is not any of our 5 `PaneKind` values: an
+  undecoded 6th pane kind the loader supports but that no layout of the dump
+  uses (added to "Unknown format fields", docs/roadmap.md). Nothing in this
+  walk keys off a pane's name or position, so a layout with one more sprite
+  record loads exactly like one without it.
+* `FUN_00c0f474` creates each root group's object, then calls
+  `FUN_00b03d40` once per group to build its children: it pulls a free slot
+  from the matching object pool (sprite / null / text / boundary — a group
+  has no further nesting handled here) for each record of the group's
+  subtree, so inserting a pane only costs one pool slot, shared by every
+  layout instance (the manager's pool sizes are already in [hud_code.md](hud_code.md),
+  "Group indices of the GUI manager").
+* `FUN_00b03030` (sprite) copies the position/size/scale/colour fields, then
+  builds the runtime `+0x58` flags word straight from the record: low nibble
+  from byte `+0x58`, next 3 bits from `+0x59`, and **bit 7 (0x80, "visible")
+  from `(record[+0x60] & 1) << 7`** — exactly `Pane.visible`. `FUN_00b03f90`
+  does the same for texts (and their own null). Bits 8+ of that runtime word
+  are the pane's draw-primitive index in the pool, assigned at this time, not
+  stored in the file.
+
+So the loader has no notion of "this is `ui205`" or "this sprite belongs
+here": every root group's pane tree is generic data consumed the same way by
+record kind, which is why `Layout.insert_sprite` only has to keep the tree,
+the sizes and the offsets consistent — the game does the rest.
 
 ### Coordinates
 

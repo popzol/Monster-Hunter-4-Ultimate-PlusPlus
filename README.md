@@ -66,13 +66,14 @@ gauge and the prompts over the characters also need the update's decrypted
 `--update`.
 
 For playing with the top screen only (GUI's Interface tab, "Target"):
-`--target-switch` makes L + D-pad up lock / switch the large-monster target
-like a tap on the target camera panel (with a hint in the item selector; while
-L is held the D-pad no longer moves the camera, the C-stick still does), and `--target-face` shows the target camera panel's monster faces
-on the top screen as well, left of the item selector. Both need `--rom` and
-the update. With any of these executable patches, `exefs/code.ips` is built
-from the update's executable (equipment changes included), so it is only
-valid with the update installed.
+`--touchless-target` makes L + D-pad up lock / switch the large-monster
+target like a tap on the target camera panel (with a hint in the item
+selector; while L is held the D-pad no longer moves the camera, the C-stick
+still does), and also shows the target camera panel's monster face on the top
+screen, left of the item selector. It needs `--rom` and the update. With any
+of these executable patches, `exefs/code.ips` is built from the update's
+executable (equipment changes included), so it is only valid with the update
+installed.
 
 `new_monster_icons` (**on by default**; a preset setting, or the GUI's
 Interface tab, "Icons") never shows the orange "?" monster icon: the Fatalis

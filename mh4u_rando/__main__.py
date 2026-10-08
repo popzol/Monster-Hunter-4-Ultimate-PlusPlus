@@ -37,8 +37,9 @@ def main(argv=None) -> int:
     parser.add_argument("--update", type=Path,
                         help="the update's 00000000.app, for the interface options (found in Citra/Azahar/Lime3DS "
                              "by default)")
-    parser.add_argument("--target-switch", action="store_true", help="L + D-pad up locks / switches the target")
-    parser.add_argument("--target-face", action="store_true", help="the target's face on the top screen too")
+    parser.add_argument("--touchless-target", action="store_true",
+                        help="lock on to monsters without the touch screen: L + D-pad up locks / switches the "
+                             "target, with a hint in the item selector and the target's face on the top screen")
     args = parser.parse_args(argv)
 
     settings = Settings.load(args.preset) if args.preset else Settings()
@@ -46,8 +47,7 @@ def main(argv=None) -> int:
         settings.seed = args.seed
     if args.hud_scale:
         settings.hud_scale = HudScale(args.hud_scale)
-    settings.target_switch = settings.target_switch or args.target_switch
-    settings.target_face_top = settings.target_face_top or args.target_face
+    settings.touchless_target = settings.touchless_target or args.touchless_target
     if settings.randomizes_equipment and args.arc and args.code is None:
         parser.error("the preset randomizes equipment: use --rom, or add --code to --arc")
     if settings.patches_interface_code and args.arc:

@@ -8,15 +8,11 @@ is done or discovered.
 * **Package the GUI** as an .exe with PyInstaller (the GUI itself is done:
   `python -m mh4u_rando.gui`).
 * **HUD / one-screen play** (docs/hud_layout.md, docs/hud_code.md):
-  * **Probe 21** (`tools/hud_probe.py ... --minimap --target-button
-    --target-face --hint-controls`, HUD 70 %). Probe 20: L + up switches the
-    target and the D-pad no longer moves the camera with L, but still no hint;
-    the copies inherited the template's "hidden" flag, now set visible
-    (docs/hud_layout.md, "Target switch hint"). To check:
-    * the D-pad hint shows only in the open L bar and is legible;
-    * which of the two control sprites show (if only the Y one does, the texture
-      is still not used: give the glyph a texture path of its own);
-    * then drop `--hint-controls`, update the docs and merge the branch;
+  * **Touchless target** (`Settings.touchless_target`; merged from the two
+    settings probes 1–21 tested separately): L + D-pad up switches the
+    target with its hint, and the target's face shows on the top screen.
+    Verified in probe 21, HUD at 70 %. Still to check: HUD 100 %
+    (`hint_files`-only path) and 90/80/60 %, and on a real 3DS.
   * base game (no update) support for the executable patches (signatures).
 * **Species base health**: done for the data (`generated/monster_health.json`,
   Kiranico) and used by `stats.py` for the health index; still to measure in the
@@ -92,6 +88,9 @@ is done or discovered.
 * Static header bytes 0x84 and 0x88; meta entry last byte.
 * Loot table flags 0x8000 / 0x8003 / 0x0004 (the 0x0004 tables look like
   monster-specific bonus rewards).
+* `lyt` pane kind 5 (0x88-byte record): the game's layout loader supports it
+  (docs/hud_layout.md, "How the game loads a layout") but no layout of the
+  dump uses it, so its fields are undecoded.
 
 ## Cleanup
 

@@ -135,7 +135,7 @@ def scale_readme(scale: int, with_common: bool, minimap: bool, code_patch: bool)
     ]
 
 
-def target_readme(controls: bool) -> list[str]:
+def target_readme() -> list[str]:
     return [
         "",
         "Cambio de objetivo (L + cruceta arriba):",
@@ -144,8 +144,6 @@ def target_readme(controls: bool) -> list[str]:
         "- L + X con ballesta solo cambia la munición.",
         "- Al abrir la barra de L sale el icono de la cruceta (brazo de arriba iluminado) a la izquierda de la",
         "  cara del objetivo, y desaparece al cerrarla.",
-        *(["- Prueba: encima de la barra de objetos hay dos iconos de control, siempre visibles:",
-           "  a la izquierda una Y, a la derecha la cruceta. ¿Cuáles se ven?"] if controls else []),
     ]
 
 
@@ -175,15 +173,12 @@ def main() -> None:
     parser.add_argument("--target-face", action="store_true", help="also the target's face on the top screen")
     parser.add_argument("--face-debug", action="store_true",
                         help="the target face's diagnostic build (snapshot for citra_state.py --face-dump)")
-    parser.add_argument("--hint-controls", action="store_true",
-                        help="with --target-button: two always-shown sprites above the item bar (hint.CONTROLS)")
     args = parser.parse_args()
     factor = args.scale / 100
     rom = RomFS(args.rom)
     update = RomFS(args.update) if args.update else None
     files = tint_files(rom, update, factor) if args.tint else \
-        hud_files(rom, update, factor, with_code_patch=args.minimap, target_hint=args.target_button,
-                  hint_controls=args.hint_controls)
+        hud_files(rom, update, factor, with_code_patch=args.minimap, target_hint=args.target_button)
     count = 0
     for path, data in files:
         target = args.out / "romfs" / path
@@ -213,7 +208,7 @@ def main() -> None:
     readme = tint_readme(args.scale, update is not None) if args.tint else \
         scale_readme(args.scale, update is not None, args.minimap, code_patch)
     if args.target_button and not args.tint:
-        readme += target_readme(args.hint_controls)
+        readme += target_readme()
     (args.out / "LEEME.txt").write_text("\n".join(readme) + "\n", encoding="utf-8")
     print(f"{count} files written to {args.out / 'romfs'}")
 

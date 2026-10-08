@@ -8,7 +8,7 @@ at a time.
     python tools/bisect_mod.py caps --rom game.3ds [--settings S.json --update U.app]   # armor limit tests
 
 Every variant has the same seed and adds one piece to the previous one, from the settings file:
-Q quests only | E + equipment | H + HUD size | X + L + D-pad up | F + target face | I + monster icons
+Q quests only | E + equipment | H + HUD size | T + touchless target | I + monster icons
 (the variants that would equal the previous one are skipped). --split-equipment builds the equipment
 groups apart instead (EQUIPMENT_GROUPS). `caps` builds the tests of docs/game_rules.md, "Equipment stat
 limits". Output: output/bisect/<variant>/. Never touches the ROM. The installed mod is the Citra mod
@@ -34,7 +34,7 @@ from mh4u_rando.randomizer.settings import EQUIPMENT_SWITCHES, ArmorSkillMode, S
 BISECT = ROOT / "output" / "bisect"
 BACKUP = BISECT / "backup"
 TITLE = "0004000000126100"
-VARIANTS = "QEHXFI"
+VARIANTS = "QEHTI"
 
 
 def variant_settings(full: Settings, variant: str) -> Settings:
@@ -48,10 +48,8 @@ def variant_settings(full: Settings, variant: str) -> Settings:
     if step < 2:
         s.hud_scale = HudScale.FULL
     if step < 3:
-        s.target_switch = False
+        s.touchless_target = False
     if step < 4:
-        s.target_face_top = False
-    if step < 5:
         s.new_monster_icons = False
     return s
 

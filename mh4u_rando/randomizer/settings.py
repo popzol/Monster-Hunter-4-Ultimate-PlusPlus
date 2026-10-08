@@ -187,8 +187,9 @@ class Settings:
     # Interface (game files and executable patches, not randomized)
     hud_scale: HudScale = HudScale.FULL  # each top-screen HUD element shrinks towards its corner
     new_monster_icons: bool = True       # no "?" monster icon: Fatalis and Gogmazios icons (ROM and update), Dalamadur's quests
-    target_switch: bool = False          # L + D-pad up locks / switches the large-monster target
-    target_face_top: bool = False        # the target camera panel's monster faces also on the top screen
+    # Lock on without the touch screen: L + D-pad up locks / switches the large-monster target (with a hint in the
+    # item selector) and the target camera panel's monster face is also shown on the top screen
+    touchless_target: bool = False
 
     # Debug
     debug_weak_monsters: bool = False    # lowest health and attack index for every monster
@@ -202,7 +203,7 @@ class Settings:
     def needs_update(self) -> bool:
         """Interface options that cannot work without the update's 00000000.app (the HUD size can; the monster
         icons are left out without it, with a warning)."""
-        return self.target_switch or self.target_face_top
+        return self.touchless_target
 
     @property
     def randomizes_equipment(self) -> bool:
@@ -221,6 +222,9 @@ class Settings:
             value = values[f.name]
             default = getattr(cls(), f.name)
             kwargs[f.name] = type(default)(value) if isinstance(default, Enum) else value
+        # Old presets had target_switch and target_face_top as two separate options, merged into touchless_target.
+        if values.get("target_switch") or values.get("target_face_top"):
+            kwargs["touchless_target"] = True
         return cls(**kwargs)
 
     def save(self, path: Path) -> None:

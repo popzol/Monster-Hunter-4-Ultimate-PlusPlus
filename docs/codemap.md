@@ -203,12 +203,12 @@ its public classes and functions with their signatures.
 - `scale_arc(raw: bytes, layouts: Mapping[str, AnchorSpec | Mapping[str, AnchorSpec]], factor: float) -> bytes` - The ARC with the given layouts scaled, together with every animation of the ARC that moves them.
 - `glyph_files(rom: GameFiles) -> Iterator[tuple[str, bytes]]` - (RomFS path, new ARC) of the other copies of the hint's texture (hint.GLYPH_ARCS but core_quest).
 - `hint_files(rom: GameFiles) -> Iterator[tuple[str, bytes]]` - (RomFS path, new ARC) of the quest HUD of each language with only the target switch hint (hint.py...
-- `hud_files(rom: GameFiles, update: GameFiles | None, factor: float, with_code_patch: bool=False, target_hint: bool=False, hint_controls: bool=False) -> Iterator[tuple[str, bytes]]` - (RomFS path, new ARC) of every file of the HUD size mod, for the 5 languages. `with_code_patch` a...
+- `hud_files(rom: GameFiles, update: GameFiles | None, factor: float, with_code_patch: bool=False, target_hint: bool=False) -> Iterator[tuple[str, bytes]]` - (RomFS path, new ARC) of every file of the HUD size mod, for the 5 languages. `with_code_patch` a...
 - `emulator_folders() -> list[Path]` - User folders where Citra and its forks keep their data (Windows, Linux, macOS).
 - `find_update() -> Path | None` - The update's 00000000.app installed in an emulator, if any.
 - `hud_paths(mod_dir: Path) -> list[Path]` - Every file the HUD size mod can leave in a mod folder (core ARCs, the hint's texture copies and t...
 - `remove_hud_files(mod_dir: Path) -> None`
-- `write_hud_files(mod_dir: Path, rom: GameFiles, update: GameFiles | None, factor: float, with_code_patch: bool=False, target_hint: bool=False, hint_controls: bool=False) -> list[Path]` - Write the HUD size mod into a mod folder (romfs/<lang>/data/...). Files of an earlier run are rep...
+- `write_hud_files(mod_dir: Path, rom: GameFiles, update: GameFiles | None, factor: float, with_code_patch: bool=False, target_hint: bool=False) -> list[Path]` - Write the HUD size mod into a mod folder (romfs/<lang>/data/...). Files of an earlier run are rep...
 
 ### `mh4u_rando/hud/code_patch.py` - Executable patches of the HUD size option (exefs/code.ips), for the update's code.bin.
 - class `CodePatchError(ValueError)`
@@ -223,10 +223,10 @@ its public classes and functions with their signatures.
 - `patch_target_face(code: bytes, factor: float=1.0, routine_code: bytes | None=None) -> bytes` - `code` showing the target camera panel's monster face on the top screen too.
 - `patch_interface(code: bytes, factor: float, target_switch: bool=False, target_face: bool=False) -> bytes` - Every interface patch the randomizer's settings ask for: the HUD size (below 1), L + D-pad up, th...
 
-### `mh4u_rando/hud/hint.py` - The hint of the target switch (option target_switch, L + D-pad up): a D-pad glyph with only its u...
+### `mh4u_rando/hud/hint.py` - The hint of the target switch (option touchless_target, L + D-pad up): a D-pad glyph with only it...
 - `hint_position() -> tuple[float, float]` - Layout coordinates of the glyph at 100 %: at the height of the item's icon and the face, left of the
 - `add_glyph(raw_arc: bytes) -> bytes` - The ARC with the glyph drawn into its qst00_ID.
-- `add_hint(raw_arc: bytes, controls: bool=False) -> bytes` - A core_quest.arc with the glyph in its texture qst00_ID and the hint sprite in ui205, animated like
+- `add_hint(raw_arc: bytes) -> bytes` - A core_quest.arc with the glyph in its texture qst00_ID and the hint sprite in ui205, animated like
 
 ### `mh4u_rando/hud/icons.py` - New monster icons (option new_monster_icons) for the monsters the game draws with the "?" icon.
 - class `IconError(ValueError)`
@@ -633,7 +633,7 @@ its public classes and functions with their signatures.
 - `tint_files(rom: RomFS, update: RomFS | None, factor: float)` - First probe: ui202 scaled towards the top-left corner, other candidates tinted.
 - `tint_readme(scale: int, with_common: bool) -> list[str]`
 - `scale_readme(scale: int, with_common: bool, minimap: bool, code_patch: bool) -> list[str]`
-- `target_readme(controls: bool) -> list[str]`
+- `target_readme() -> list[str]`
 - `without_hud_patch(code: bytes, original: bytes) -> bytes` - `code` with the original bytes back wherever code_patch.patch_hud writes.
 - `main() -> None`
 

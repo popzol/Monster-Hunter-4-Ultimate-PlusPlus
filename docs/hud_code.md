@@ -329,11 +329,22 @@ ZR, the Circle Pad (0xF0000000) and bits 0xF0000 in +0x8C during a quest.
 | 18 | Event log, also on changes of +0x8C / +0x30C | The D-pad rows in "Pad"; with and without L the D-pad sets the camera actions |
 | 19 | L + D-pad up: filter in the action copy of 0x2C5470 (raw D-pad bits) + FLAG | **Fails**: L + up moves the camera and does not switch; L + X no longer switches (expected). The D-pad actions are ORed into p + 0x3CC after that copy (0xB3CC64), so the filter never saw them |
 | 20 | Filter as a wrapper of 0xB3CC64 (game-layout D-pad bits hidden while L) + FLAG | **Works**: L + up switches the target and the D-pad does not move the camera while L is held. The hint still did not show (hud_layout.md, "Target switch hint") |
+| 21 | Same patch; the hint sprite inserted visible, with two always-shown diagnostic sprites above the item bar | **Works**: the hint only shows with the L bar open; both diagnostic sprites were visible. (The first in-game check had been run against a stale `core_quest.arc` still in Citra's mod folder from probe 20 — see "Debugging in Citra" below) |
 
 ## Debugging in Citra
 
 What worked to see the game's state at run time, and what did not.
 
+* **Before calling an in-game test "failed", check the installed mod folder
+  by hash against the probe's output.** Probe 21 first looked identical to
+  probe 20 in-game (no hint, no diagnostic sprites) even though the files on
+  disk had the fix: Citra's `load/mods/0004000000126100/romfs/<lang>/data/`
+  still held probe 20's `core_quest.arc` byte for byte (only that file
+  differs between the two builds; `code.ips`, `core_result.arc` and
+  `v05a00_map.arc` are shared). A stale file from an earlier probe is
+  indistinguishable in-game from the current one not working, so compare
+  file hashes (or just dates) between the mod folder and `output/probeNN`
+  before reading anything into a negative result.
 * **Citra's GDB stub** (Emulation > Configure > Debug, port 24689) with
   `arm-none-eabi-gdb` (Arm GNU Toolchain 12.2): with the stub on, Citra waits
   for a client at boot. It accepts **one connection per emulator run**: after

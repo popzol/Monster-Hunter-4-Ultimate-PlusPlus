@@ -107,12 +107,11 @@ def hint_files(rom: GameFiles) -> Iterator[tuple[str, bytes]]:
 
 
 def hud_files(rom: GameFiles, update: GameFiles | None, factor: float,
-              with_code_patch: bool = False, target_hint: bool = False,
-              hint_controls: bool = False) -> Iterator[tuple[str, bytes]]:
+              with_code_patch: bool = False, target_hint: bool = False) -> Iterator[tuple[str, bytes]]:
     """(RomFS path, new ARC) of every file of the HUD size mod, for the 5 languages. `with_code_patch` adds the
     minimap and the mount gauge: only together with code_patch.patch_hud in exefs/code.ips. `target_hint` adds
     the target switch hint to the item selector, which then shrinks with it, and the other copies of its
-    texture; `hint_controls` its diagnostic sprites (tools/hud_probe.py).
+    texture.
 
     Without `update`, the ARCs it replaces are left out (writing the base game's copy would undo the update)."""
     map_paths = [p for p in rom.walk() if p.split("/")[0] in LANGUAGES
@@ -126,7 +125,7 @@ def hud_files(rom: GameFiles, update: GameFiles | None, factor: float,
                 path = f"{lang}/data/{arc_name}"
                 raw = source.read(path)
                 if target_hint and arc_name == QUEST_ARC:
-                    raw = add_hint(raw, hint_controls)
+                    raw = add_hint(raw)
                 yield path, scale_arc(raw, layouts_of(arc_name, with_code_patch), factor)
         for path in map_paths:
             if path.startswith(lang + "/"):
@@ -171,12 +170,12 @@ def remove_hud_files(mod_dir: Path) -> None:
 
 
 def write_hud_files(mod_dir: Path, rom: GameFiles, update: GameFiles | None, factor: float,
-                    with_code_patch: bool = False, target_hint: bool = False, hint_controls: bool = False) -> list[Path]:
+                    with_code_patch: bool = False, target_hint: bool = False) -> list[Path]:
     """Write the HUD size mod into a mod folder (romfs/<lang>/data/...). Files of an earlier run are replaced.
-    See hud_files() for `with_code_patch`, `target_hint` and `hint_controls`."""
+    See hud_files() for `with_code_patch` and `target_hint`."""
     remove_hud_files(mod_dir)
     written = []
-    for path, data in hud_files(rom, update, factor, with_code_patch, target_hint, hint_controls):
+    for path, data in hud_files(rom, update, factor, with_code_patch, target_hint):
         target = Path(mod_dir) / "romfs" / path
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(data)

@@ -153,7 +153,7 @@ def write_interface_files(result: "RunResult", rom: RomFS | None, update: RomFS 
     remove_hud_files(output_dir)
     remove_icon_files(output_dir)
     resize_hud = settings.hud_scale != HudScale.FULL
-    target_hint = settings.target_switch and rom is not None  # the L + D-pad up glyph in the item selector
+    target_hint = settings.touchless_target and rom is not None  # the L + D-pad up glyph in the item selector
     if resize_hud:
         hud = dict(hud_files(rom, update, settings.hud_scale.factor, with_code_patch, target_hint))
     else:
@@ -248,8 +248,8 @@ def run(game: Path, output_dir: Path, settings: Settings,
         patched = equipment.code
         result.notices.extend(equipment.notices)
     if patch_interface_code:
-        patched = patch_interface(patched, settings.hud_scale.factor, settings.target_switch,
-                                  settings.target_face_top)
+        patched = patch_interface(patched, settings.hud_scale.factor, settings.touchless_target,
+                                  settings.touchless_target)
         if new_icons:
             patched = patch_monster_icons(patched)
         result.interface_patched = True
