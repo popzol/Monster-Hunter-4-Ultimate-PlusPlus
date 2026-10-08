@@ -130,6 +130,7 @@ its public classes and functions with their signatures.
 
 ### `mh4u_rando/exefs/starting_items.py` - Starting items (option starting_items): what a new character finds in the item box.
 - class `StartingItemsError(ValueError)`
+- `effective_starting_items(items: Sequence[Sequence[int]], expanded: bool) -> list[list[int]]` - What the new game gets: `items` (the user's list) on top of EXPANDED_ITEMS when `expanded`, where...
 - `max_quantity(item_id: int, data: GameData) -> int` - Largest quantity allowed for an item: its pouch limit (item sets fill the pouch), at most a box s...
 - `check_starting_items(items: Sequence[Sequence[int]], data: GameData) -> list[str]` - Why `items` ([item id, quantity] pairs) cannot be written; empty when they can.
 - `read_starting_items(code: bytes) -> list[list[list[int]]]` - The loadouts of `code`, each a list of [item id, quantity] of its used slots.

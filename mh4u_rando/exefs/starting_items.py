@@ -28,8 +28,28 @@ SKIPPED_ITEMS = (0, 0x790)  # the game ignores these ids in the table
 MAX_STACK = 99
 
 
+# The expanded starting inventory (option expanded_starting_inventory): [item id, quantity], the original
+# items plus a wider kit of healing, traps, bombs, ammo and coatings. Quantities are the pouch limits.
+EXPANDED_ITEMS: tuple[tuple[int, int], ...] = (
+    (8, 10), (9, 10), (10, 5), (11, 5), (12, 10), (14, 5), (16, 5), (19, 5),  # Potion... Armorskin
+    (22, 5), (23, 5), (31, 10), (27, 10), (28, 2),                            # Cool/Hot/Energy Drink, Herbal, Max Potion
+    (168, 20), (68, 1), (62, 5), (63, 10), (66, 10), (73, 1), (74, 1), (69, 8),  # Whetstone, Farcaster, bombs, traps
+    (61, 99), (162, 5), (165, 5), (176, 10),                                  # Paintball, Pickaxe, Bug Net, Honey
+    (88, 99), (91, 60), (94, 70), (126, 50), (133, 99),                       # Normal/Pierce/Pellet S Lv2, coatings
+)
+
+
 class StartingItemsError(ValueError):
     pass
+
+
+def effective_starting_items(items: Sequence[Sequence[int]], expanded: bool) -> list[list[int]]:
+    """What the new game gets: `items` (the user's list) on top of EXPANDED_ITEMS when `expanded`, where the user's
+    quantity wins for an item in both. Empty means the game's own items stay."""
+    merged = {item: quantity for item, quantity in EXPANDED_ITEMS} if expanded else {}
+    for item, quantity in items:
+        merged[item] = quantity
+    return [[item, quantity] for item, quantity in merged.items()]
 
 
 def max_quantity(item_id: int, data: GameData) -> int:

@@ -25,7 +25,7 @@ from pathlib import Path
 from .arc import parse_arc, write_arc
 from .data import GameData, load_game_data
 from .exefs import ExtractError, RomFS, is_container, load_code, make_ips
-from .exefs.starting_items import check_starting_items, patch_starting_items
+from .exefs.starting_items import check_starting_items, effective_starting_items, patch_starting_items
 from .hud import UPDATE_TITLE_ID, find_update, hud_files, remove_hud_files
 from .hud.build import hint_files
 from .hud.code_patch import patch_interface
@@ -188,7 +188,7 @@ def run(game: Path, output_dir: Path, settings: Settings,
     announce = stage or (lambda _name: None)
     announce("rom")
     data = load_game_data()
-    starting_items = settings.starting_items
+    starting_items = effective_starting_items(settings.starting_items, settings.expanded_starting_inventory)
     errors = check_starting_items(starting_items, data)
     if errors:
         raise ValueError("; ".join(errors))

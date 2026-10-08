@@ -161,6 +161,13 @@ unused slots. Rank comes from rarity: 1-3 low, 4-7 high, 8-10 G.
   found, else the ROM's: the table is the same in both). The GUI shows the
   items' English names. Table and game code: docs/equipment_data.md,
   "Starting items".
+* **Expanded starting inventory** (`expanded_starting_inventory`, off by
+  default): the new character also gets `EXPANDED_ITEMS` of
+  `exefs/starting_items.py`, 30 kinds of healing, status cures, bombs, traps,
+  a Farcaster, Normal/Pierce/Pellet S Lv2, coatings and tools, each in its
+  pouch limit. It is written as the starting items (same table, same rules): a
+  custom `starting_items` list is merged on top (its quantity wins, its other
+  items are added, 32 in total at most).
 
 ## What is never changed
 

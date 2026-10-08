@@ -101,3 +101,16 @@ def test_pipeline_writes_the_starting_items(tmp_path, monkeypatch, code_bin):
 
     with pytest.raises(ValueError, match="starting items"):
         pipeline.run(source, out, Settings(seed="ITEMS", starting_items=[[8, 99]]), code_path=code_bin_path())
+
+
+def test_expanded_inventory_is_valid_and_merges_the_users_list():
+    from mh4u_rando.exefs.starting_items import EXPANDED_ITEMS, effective_starting_items
+
+    data = load_game_data()
+    assert effective_starting_items([], False) == []
+    expanded = effective_starting_items([], True)
+    assert len(expanded) == len(EXPANDED_ITEMS) <= SLOTS
+    assert check_starting_items(expanded, data) == []
+    merged = effective_starting_items([[8, 3], [170, 1]], True)
+    assert [8, 3] in merged and [170, 1] in merged and len(merged) == len(expanded) + 1
+    assert Settings.from_dict({"expanded_starting_inventory": True}).expanded_starting_inventory

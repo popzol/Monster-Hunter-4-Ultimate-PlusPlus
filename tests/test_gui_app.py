@@ -131,6 +131,14 @@ def test_starting_items_list(window):
     assert window.current_settings().starting_items == []
 
 
+def test_expanded_starting_inventory_option(window):
+    assert window.current_settings().expanded_starting_inventory is False
+    window.widgets["expanded_starting_inventory"].set(True)
+    assert window.current_settings().expanded_starting_inventory is True
+    window.apply_settings(Settings())
+    assert window.current_settings().expanded_starting_inventory is False
+
+
 def test_full_run_from_the_window(window, tmp_path):
     if not original_quest_files():
         pytest.skip("original quests not available")

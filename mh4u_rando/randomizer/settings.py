@@ -193,6 +193,7 @@ class Settings:
 
     # New game (executable patch, not randomized)
     starting_items: list[list[int]] = field(default_factory=list)  # [item id, quantity]; empty: the original ones
+    expanded_starting_inventory: bool = False  # a wider kit of items (exefs/starting_items.py EXPANDED_ITEMS)
 
     # Debug
     debug_weak_monsters: bool = False    # lowest health and attack index for every monster
