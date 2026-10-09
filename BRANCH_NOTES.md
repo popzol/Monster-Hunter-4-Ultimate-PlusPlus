@@ -45,6 +45,14 @@ Borrar este archivo antes de fusionar con `main`.
 - Vista previa con el nombre del mapa (GUI y CLI; `GameData.map_name`).
 - Aviso de partidas pre-0.2.0 con el consejo de aplicar todos el mismo fichero arreglado.
 
+## Tercera tanda (2026-10-09)
+
+- Prueba en el juego: «Continuar partida» se colgaba y el Felyne desaparecía (rev0 y rev1). Causa
+  probable: el sorteo de modelos del Felyne daba a piezas normales modelos de DLC sin fichero en la ROM.
+  `MISSING_MODELS` en `randomizer/equipment/palico.py`; doc en `docs/game_rules.md`, «Equipment models»;
+  tests `test_palico_models_never_use_dlc_models` y `test_every_assigned_model_has_a_file` (con ROM).
+  Mods de prueba rehechos: rev0 `7D63-8629`, rev1 `5DF6-6A15`.
+
 ## Pendiente
 
 - **Probar en el juego**: re-sortear una misión de una partida empezada, instalar el mod y comprobar que la

@@ -521,6 +521,65 @@ def test_palico_full_set_moves_whole_themes(code_bin):
     assert len(shared) > 40  # most themes moved together
 
 
+def _changed_models(code_bin, settings):
+    """(kind, model) of every Felyne piece whose model the run changed."""
+    before, after = _palico(code_bin), _palico(randomize_equipment(code_bin, settings, load_game_data()).code)
+    return [(kind, p.record["model"]) for kind, pieces in after.items() for index, p in pieces.items()
+            if p.record["model"] != before[kind][index].original["model"]]
+
+
+@pytest.mark.parametrize("seed", ["DLC1", "DLC2", "PRUEBA-FIX"])
+def test_palico_models_never_use_dlc_models(code_bin, seed):
+    from mh4u_rando.randomizer import PalicoModelMode
+    from mh4u_rando.randomizer.equipment.palico import MISSING_MODELS, NO_MODEL
+    for mode in PalicoModelMode:
+        for once in (True, False):
+            settings = Settings(seed=seed, randomize_palico_models=True, palico_model_mode=mode,
+                                palico_models_use_each_once=once)
+            changed = _changed_models(code_bin, settings)
+            assert changed
+            assert not [(k, m) for k, m in changed if m in MISSING_MODELS[k] | NO_MODEL], (mode, once)
+
+
+def test_every_assigned_model_has_a_file(code_bin):
+    """With the ROM: MISSING_MODELS are the Felyne models without a file, and no run gives a piece a model
+    without a file (Felyne gear, melee weapons and armor; gun ids are not file numbers)."""
+    import re
+    from collections import defaultdict
+    from mh4u_rando.exefs.romfs import RomFS
+    from mh4u_rando.randomizer import PalicoModelMode
+    from mh4u_rando.randomizer.equipment.palico import MISSING_MODELS, NO_MODEL
+    from conftest import rom_path
+    if rom_path() is None:
+        pytest.skip("no ROM (set MH4U_ROM)")
+    files = defaultdict(set)
+    for path in RomFS(rom_path()).walk():
+        match = re.search(r"/(o_[a-z]+|pl_[mf]_[a-z]+|pl_[a-z]+)(\d+)\.arc$", path)
+        if match:
+            files[match.group(1)].add(int(match.group(2)))
+    palico_files = {"weapon": files["o_we"], "head": files["o_helm"], "body": files["o_body"]}
+    for kind, records in EquipmentTables.read(code_bin).palico.items():
+        used = {r["model"] for r in records} - NO_MODEL
+        assert used - palico_files[kind] == MISSING_MODELS[kind], kind
+
+    melee = {"great_sword": "two", "sword_and_shield": "one", "hammer": "ham", "lance": "lan", "long_sword": "swo",
+             "switch_axe": "axe", "gunlance": "gun", "dual_blades": "sou", "hunting_horn": "hue",
+             "insect_glaive": "rod", "charge_blade": "gaxe"}
+    parts = {"head": "helm", "body": "body", "arms": "arm", "waist": "wst", "legs": "leg"}
+    for seed in ("FILES1", "FILES2"):
+        for mode in PalicoModelMode:
+            settings = Settings(seed=seed, randomize_models=True, randomize_palico_models=True,
+                                palico_model_mode=mode, models_use_each_once=True)
+            tables = EquipmentTables.read(randomize_equipment(code_bin, settings, load_game_data()).code)
+            for kind, records in tables.palico.items():
+                assert {r["model"] for r in records} - NO_MODEL - palico_files[kind] <= MISSING_MODELS[kind]
+            for key, name in melee.items():
+                assert {r["model"] for r in tables.weapons[key]} - {0} <= files["pl_" + name], key
+            for key, name in parts.items():
+                for gender in "mf":
+                    assert {r["model_" + gender] for r in tables.armor[key]} - {0} <= files[f"pl_{gender}_{name}"]
+
+
 def test_recipe_ranges_are_made_valid():
     from mh4u_rando.randomizer.equipment.recipes import new_materials
     rng = random.Random(4)

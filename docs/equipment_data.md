@@ -205,6 +205,8 @@ Found with the Fandom wiki data (67 weapons, ~150 sets) — *Verified*. Names:
 `OtWeaponName`, `OtHelmName`, `OtArmorName`. Rarity is stored as shown
 (1-10). A theme shares its model number between weapon (`o_weNNN`), head
 (`o_helmNNN`) and body (`o_bodyNNN`). No upgrades and no armor skills.
+Some models have no file in the game (DLC gear; see docs/game_rules.md,
+"Equipment models"), and head model 0x3FFF means "no model".
 
 The tables are packed and start on odd addresses (the first field is a
 byte), so u16/u32 fields stay naturally aligned.

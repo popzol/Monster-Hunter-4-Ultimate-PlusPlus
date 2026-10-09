@@ -273,6 +273,20 @@ So the option cannot be switched off in a game in progress: the gear already
 crafted with it may be past the limits, and the save would then be refused
 every quest. Fixes (`mh4u_rando/fix.py`) refuse that change.
 
+## Equipment models
+
+A piece's model number names a file (`o_weNNN`, `pl_m_helmNNN`, ...). Some
+Felyne models of the tables have **no file in the game**, because the DLC gear
+that uses them brings its own: weapon 35, 45, 76, 77, 102; head 45, 77, 102;
+body 45, 76, 77, 102 (`MISSING_MODELS` in `randomizer/equipment/palico.py`;
+head 0x3FFF means no model). Until 2026-10-09 the randomizer gave them to
+ordinary pieces, and a save made that way froze on "Continue" with the Felyne
+gone — the suspected cause (pending confirmation in-game). Now these models
+stay on their own pieces. Hunter melee weapons and armor only use models with
+a file; gun and bow model numbers are not file numbers, so they only get
+models of other original pieces. Checked against the ROM by
+`test_every_assigned_model_has_a_file`.
+
 ## Maps
 
 `curated/map_rules.json`:

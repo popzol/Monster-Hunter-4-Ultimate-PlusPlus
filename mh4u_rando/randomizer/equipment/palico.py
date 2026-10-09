@@ -27,6 +27,11 @@ RESISTANCES = ("res_fire", "res_water", "res_thunder", "res_ice", "res_dragon")
 WEAPON_LIMITS = {"attack": (1, 65535), "affinity": (-100, 100), "defense": (0, 255)}
 ARMOR_LIMITS = {"defense": (1, 255), **{r: (-127, 127) for r in RESISTANCES}}
 ARMOR_KINDS = ("head", "body")
+# Models whose files (o_we / o_helm / o_body NNN) are not in the game: they come with the DLC. Giving one to
+# another piece hangs the game when it loads the Felyne (docs/game_rules.md, "Equipment models").
+MISSING_MODELS = {"weapon": frozenset({35, 45, 76, 77, 102}), "head": frozenset({45, 77, 102}),
+                  "body": frozenset({45, 76, 77, 102})}
+NO_MODEL = frozenset({0, 0x3FFF})
 
 
 @dataclass(eq=False)
@@ -145,16 +150,21 @@ def randomize_palico_armor_stats(palico, settings: Settings, rng: random.Random)
 
 # ----- models --------------------------------------------------------------------------------------------
 
+def _movable(kind: str, pieces) -> list:
+    """The pieces whose model may change: a model of the game; DLC models and "no model" stay put."""
+    return [p for p in pieces if p.original["model"] not in NO_MODEL | MISSING_MODELS[kind]]
+
+
 def _models(pieces) -> list[int]:
-    return sorted({p.original["model"] for p in pieces if p.original["model"]})
+    return sorted({p.original["model"] for p in pieces})
 
 
 def _theme_mapping(palico, kinds: tuple[str, ...], once: bool, rng: random.Random) -> None:
     """One mapping of theme numbers for `kinds`; a kind lacking the target theme gets another of its models."""
-    themes = sorted({m for kind in kinds for m in _models(palico[kind].values())})
+    themes = sorted({m for kind in kinds for m in _models(_movable(kind, palico[kind].values()))})
     mapping = _choose_targets(themes, themes, once, rng)
     for kind in kinds:
-        pieces = [p for p in palico[kind].values() if p.original["model"]]
+        pieces = _movable(kind, palico[kind].values())
         models = _models(pieces)
         own = {m: mapping[m] for m in models if mapping[m] in models}
         missing = [m for m in models if m not in own]
@@ -173,7 +183,7 @@ def randomize_palico_models(palico, settings: Settings, rng: random.Random) -> N
         _theme_mapping(palico, ARMOR_KINDS, once, rng)
     else:
         for kind, pieces in palico.items():
-            with_model = [p for p in pieces.values() if p.original["model"]]
+            with_model = _movable(kind, pieces.values())
             models = _models(with_model)
             if once:
                 mapping = _choose_targets(models, models, True, rng)
