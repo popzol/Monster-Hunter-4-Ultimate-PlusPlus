@@ -108,6 +108,11 @@ EQUIPMENT_SWITCHES = ("randomize_recipes", "randomize_weapon_stats", "randomize_
 PERSONAL_FIELDS = ("hud_scale", "new_monster_icons", "touchless_target", "starting_items",
                    "expanded_starting_inventory")
 
+# The value a gameplay setting takes when a settings file predates it, as saved by to_dict(): the one that gives
+# what the older version made. Only needed when that is not the field's default (docs/randomizer.md, "Supporting
+# fix mode in new features").
+LEGACY_VALUES: dict[str, object] = {}
+
 
 @dataclass
 class Settings:
@@ -254,13 +259,19 @@ class Settings:
         """to_dict() without the options each player chooses for themselves (PERSONAL_FIELDS)."""
         return {k: v for k, v in self.to_dict().items() if k not in PERSONAL_FIELDS}
 
+    def checksum_dict(self) -> dict:
+        """gameplay_dict() without the settings at their neutral value (LEGACY_VALUES, else the default): a
+        setting added later leaves the checksum code of the games made before it unchanged."""
+        neutral = {**Settings().to_dict(), **LEGACY_VALUES}
+        return {k: v for k, v in self.gameplay_dict().items() if k not in neutral or v != neutral[k]}
+
     @classmethod
     def from_dict(cls, values: dict) -> "Settings":
         kwargs = {}
         for f in fields(cls):
-            if f.name not in values:
+            if f.name not in values and f.name not in LEGACY_VALUES:
                 continue
-            value = values[f.name]
+            value = values[f.name] if f.name in values else LEGACY_VALUES[f.name]
             default = getattr(cls(), f.name)
             if isinstance(default, Enum):
                 value = type(default)(value)

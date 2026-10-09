@@ -108,6 +108,10 @@ executable only; each patch checks its own bytes first.
 
 * Never show the orange "?" monster icon; `new_monster_icons` is on by default.
 
+* Every new feature supports fix mode (fixing a game in progress) unless that makes no
+
+sense for it: follow `docs/randomizer.md`, "Supporting fix mode in new features".
+
 * Record newly discovered game rules and findings in `docs/`, not in code comments
 
 or temporary files; delete scratch files after an investigation.

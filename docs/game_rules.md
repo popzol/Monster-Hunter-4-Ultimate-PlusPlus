@@ -281,7 +281,8 @@ that uses them brings its own: weapon 35, 45, 76, 77, 102; head 45, 77, 102;
 body 45, 76, 77, 102 (`MISSING_MODELS` in `randomizer/equipment/palico.py`;
 head 0x3FFF means no model). Until 2026-10-09 the randomizer gave them to
 ordinary pieces, and a save made that way froze on "Continue" with the Felyne
-gone — the suspected cause (pending confirmation in-game). Now these models
+gone. *Confirmed* (2026-10-09): the same save loaded with these models kept
+in place. Now these models
 stay on their own pieces. Hunter melee weapons and armor only use models with
 a file; gun and bow model numbers are not file numbers, so they only get
 models of other original pieces. Checked against the ROM by

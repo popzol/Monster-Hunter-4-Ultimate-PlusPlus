@@ -81,7 +81,7 @@ def compute_checksum(quests: dict[str, Quest], equipment_code: bytes | None, set
     """`equipment_code`: the executable after randomize_equipment, None if the equipment is not randomized."""
     quests_sha = quests_digest(quests)
     equipment_sha = tables_digest(equipment_code) if equipment_code is not None else ""
-    combined = json.dumps({"quests": quests_sha, "equipment": equipment_sha, "settings": settings.gameplay_dict()},
+    combined = json.dumps({"quests": quests_sha, "equipment": equipment_sha, "settings": settings.checksum_dict()},
                           sort_keys=True)
     short = hashlib.sha256(combined.encode("utf-8")).hexdigest().upper()
     return Checksum(quests_sha, equipment_sha, f"{short[:4]}-{short[4:8]}")

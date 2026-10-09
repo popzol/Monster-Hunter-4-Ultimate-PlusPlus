@@ -16,9 +16,12 @@ from mh4u_rando.fix import (
 )
 from mh4u_rando.pipeline import generate, output_arc_path, run
 from mh4u_rando.randomizer import HudScale, Settings
+from mh4u_rando.randomizer.settings import LEGACY_VALUES
 from mh4u_rando.record import Checksum, Revision, RunRecord, compute_checksum, load_run, save_run
 
 from conftest import QUEST_RANDOM, ROOT, original_quest_files, rom_path
+
+GOLDEN_RUN = Path(__file__).with_name("golden_run.json")
 
 
 @pytest.fixture
@@ -103,6 +106,25 @@ def test_personal_options_do_not_change_the_checksum():
     assert compute_checksum({}, None, Settings(seed="A")) == \
         compute_checksum({}, None, Settings(seed="A", hud_scale=HudScale.P60, touchless_target=True))
     assert compute_checksum({}, None, Settings(seed="A")) != compute_checksum({}, None, Settings(seed="B"))
+
+
+def test_a_setting_added_later_keeps_the_codes_of_older_games():
+    """An older settings file lacks the settings added since: they load at their neutral value and must not
+    enter the code, or no game made before them could be fixed (docs/randomizer.md, "Supporting fix mode")."""
+    settings = Settings(seed="A", randomize_equipment=not Settings().randomize_equipment, hud_scale=HudScale.P60)
+    assert settings.checksum_dict() == {"seed": "A", "randomize_equipment": settings.randomize_equipment}
+    older = {k: v for k, v in settings.to_dict().items() if k != "randomize_supplies"}
+    assert compute_checksum({}, None, Settings.from_dict(older)) == compute_checksum({}, None, settings)
+    assert set(LEGACY_VALUES) <= set(Settings().gameplay_dict())
+
+
+def test_this_version_reproduces_the_golden_game():
+    """tests/golden_run.json is a game made with most options on (one quest rerolled). Every version must still
+    regenerate its checksum, or players could no longer fix games made with an earlier one. A change that
+    alters existing games on purpose (a bug fix) updates this file and says so in docs/randomizer.md."""
+    needs_rom()
+    settings, record = load_run(GOLDEN_RUN)
+    assert generate(rom_path(), settings).checksum == record.checksum
 
 
 def test_backup_and_restore(tmp_path):

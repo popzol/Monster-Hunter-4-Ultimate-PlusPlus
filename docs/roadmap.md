@@ -20,9 +20,6 @@ is done or discovered.
   for Luma3DS (`luma/titles/0004000000126100/` with `romfs/` and `code.ips`),
   check which options work on the console (HUD size, icons) and mark the rest
   `emulator_only` in `gui/options.py` (like `touchless_target`).
-* **Fix mode in-game check** (docs/randomizer.md, "Fixing a game in
-  progress"): reroll a quest of a game in progress, install, and check that
-  the save keeps its progress and the quest is the new one.
 * **HUD / one-screen play** (docs/hud_layout.md, docs/hud_code.md):
   * **Touchless target** (`Settings.touchless_target`; merged from the two
     settings probes 1–21 tested separately): L + D-pad up switches the

@@ -80,30 +80,30 @@ summary. Read only that section of the codemap (from that line to the next
 - L604: `mh4u_rando/randomizer/rng.py` - Deterministic random streams.
 - L609: `mh4u_rando/randomizer/selection.py` - Choose the large monsters of a lineup.
 - L616: `mh4u_rando/randomizer/settings.py` - User-facing randomizer options.
-- L642: `mh4u_rando/randomizer/stats.py` - Monster stat blocks (Quest.large_meta) for a new lineup.
-- L648: `mh4u_rando/randomizer/structure.py` - Build the wave skeleton (empty slots) of a quest before choosing monsters.
-- L652: `mh4u_rando/randomizer/supplies.py` - Supply boxes.
-- L660: `mh4u_rando/randomizer/templates.py` - Quest text templates: the retail sentences of the five languages (curated/text_templates.json).
-- L671: `mh4u_rando/randomizer/text.py` - Quest text (5 languages) for a randomized quest.
-- L682: `mh4u_rando/randomizer/validation.py` - Check a randomized quest against every known engine rule.
-- L685: `mh4u_rando/record.py` - The record of a run, saved with its settings in settings_<seed>.json: randomizer version, fix rev...
-- L696: `tools/bisect_mod.py` - Find which part of a mod breaks the game (hang, crash, refused quests): build it in steps, instal...
-- L709: `tools/build_equipment_data.py` - Build mh4u_rando/data/generated/equipment_names.json from the game's text files.
-- L712: `tools/build_gamedata.py` - Regenerate mh4u_rando/data/generated/*.json from the reference sources.
-- L723: `tools/build_hud_asm.py` - Build mh4u_rando/hud/asm/* with devkitARM (or the Arm GNU Toolchain) and compare them with the bytes
-- L727: `tools/build_monster_grammar.py` - Build mh4u_rando/data/curated/monster_grammar.json from the retail quest texts.
-- L735: `tools/citra_state.py` - Read the game's .data / .bss from a Citra save state (docs/hud_code.md, "Debugging in Citra").
-- L743: `tools/dump_inventory.py` - Summarize a MH4U RomFS dump: ARC families, internal folders and file types.
-- L748: `tools/equipment_tables.py` - Print the first records of every equipment table of a code.bin, with names.
-- L751: `tools/extract_code_bin.py` - Extract the decompressed executable from a decrypted .3ds or update .app.
-- L754: `tools/fetch_item_categories.py` - Download item categories and rarities from monsterhunterwiki.org.
-- L760: `tools/fetch_monster_health.py` - Download each monster's base health from Kiranico's MH4U database (kiranico.com/en/mh4u/monster).
-- L766: `tools/fetch_monster_materials.py` - Download which materials each large monster provides, from monsterhunterwiki.org.
-- L771: `tools/gen_codemap.py` - Write docs/codemap.md: every module of mh4u_rando/ and tools/ with its public API.
-- L777: `tools/hud_probe.py` - Build a HUD test mod for Citra (see docs/hud_layout.md).
-- L787: `tools/lmd.py` - Minimal reader for MH4U LMD text files (ARC type 0x62440501, magic "lmd\0").
-- L791: `tools/lyt_dump.py` - Print the pane tree of the GUI layouts (lyt) inside an ARC.
-- L796: `tools/make_monster_icons.py` - Make the provisional new monster icons (mh4u_rando/data/icons/em<id>.png) from icons of the game.
-- L803: `tools/music_inventory.py` - List the game's music: every stream queue (.stq) with its tracks (.mca), lengths and loops.
-- L808: `tools/music_probe.py` - Build a music test mod for Citra (see docs/music.md).
-- L818: `tools/music_replace.py` - Replace a game track with your own audio, looping seamlessly (see docs/music.md).
+- L643: `mh4u_rando/randomizer/stats.py` - Monster stat blocks (Quest.large_meta) for a new lineup.
+- L649: `mh4u_rando/randomizer/structure.py` - Build the wave skeleton (empty slots) of a quest before choosing monsters.
+- L653: `mh4u_rando/randomizer/supplies.py` - Supply boxes.
+- L661: `mh4u_rando/randomizer/templates.py` - Quest text templates: the retail sentences of the five languages (curated/text_templates.json).
+- L672: `mh4u_rando/randomizer/text.py` - Quest text (5 languages) for a randomized quest.
+- L683: `mh4u_rando/randomizer/validation.py` - Check a randomized quest against every known engine rule.
+- L686: `mh4u_rando/record.py` - The record of a run, saved with its settings in settings_<seed>.json: randomizer version, fix rev...
+- L697: `tools/bisect_mod.py` - Find which part of a mod breaks the game (hang, crash, refused quests): build it in steps, instal...
+- L710: `tools/build_equipment_data.py` - Build mh4u_rando/data/generated/equipment_names.json from the game's text files.
+- L713: `tools/build_gamedata.py` - Regenerate mh4u_rando/data/generated/*.json from the reference sources.
+- L724: `tools/build_hud_asm.py` - Build mh4u_rando/hud/asm/* with devkitARM (or the Arm GNU Toolchain) and compare them with the bytes
+- L728: `tools/build_monster_grammar.py` - Build mh4u_rando/data/curated/monster_grammar.json from the retail quest texts.
+- L736: `tools/citra_state.py` - Read the game's .data / .bss from a Citra save state (docs/hud_code.md, "Debugging in Citra").
+- L744: `tools/dump_inventory.py` - Summarize a MH4U RomFS dump: ARC families, internal folders and file types.
+- L749: `tools/equipment_tables.py` - Print the first records of every equipment table of a code.bin, with names.
+- L752: `tools/extract_code_bin.py` - Extract the decompressed executable from a decrypted .3ds or update .app.
+- L755: `tools/fetch_item_categories.py` - Download item categories and rarities from monsterhunterwiki.org.
+- L761: `tools/fetch_monster_health.py` - Download each monster's base health from Kiranico's MH4U database (kiranico.com/en/mh4u/monster).
+- L767: `tools/fetch_monster_materials.py` - Download which materials each large monster provides, from monsterhunterwiki.org.
+- L772: `tools/gen_codemap.py` - Write docs/codemap.md: every module of mh4u_rando/ and tools/ with its public API.
+- L778: `tools/hud_probe.py` - Build a HUD test mod for Citra (see docs/hud_layout.md).
+- L788: `tools/lmd.py` - Minimal reader for MH4U LMD text files (ARC type 0x62440501, magic "lmd\0").
+- L792: `tools/lyt_dump.py` - Print the pane tree of the GUI layouts (lyt) inside an ARC.
+- L797: `tools/make_monster_icons.py` - Make the provisional new monster icons (mh4u_rando/data/icons/em<id>.png) from icons of the game.
+- L804: `tools/music_inventory.py` - List the game's music: every stream queue (.stq) with its tracks (.mca), lengths and loops.
+- L809: `tools/music_probe.py` - Build a music test mod for Citra (see docs/music.md).
+- L819: `tools/music_replace.py` - Replace a game track with your own audio, looping seamlessly (see docs/music.md).

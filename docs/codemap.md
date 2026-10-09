@@ -635,6 +635,7 @@ its public classes and functions with their signatures.
   - `quest_seed(quest_id: int) -> str` - Seed of one quest's random streams: the seed itself unless the quest was rerolled.
   - `to_dict() -> dict`
   - `gameplay_dict() -> dict` - to_dict() without the options each player chooses for themselves (PERSONAL_FIELDS).
+  - `checksum_dict() -> dict` - gameplay_dict() without the settings at their neutral value (LEGACY_VALUES, else the default): a
   - `from_dict(values: dict) -> 'Settings'`
   - `save(path: Path) -> None`
   - `load(path: Path) -> 'Settings'`
