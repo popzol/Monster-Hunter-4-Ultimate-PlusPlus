@@ -5,6 +5,14 @@ is done or discovered.
 
 ## Next
 
+* **Executable extension (do this first)**: at least 10 KB more code space,
+  invisible to the player, working on Citra/Azahar and a real 3DS, online
+  untouched (no NEX reclamation). The detailed plan is
+  `docs/executable_extension_plan.md`: grow the last (data) segment by 32 KB,
+  make it executable with a bootstrap at the game's entry, and let the code
+  space manager use it automatically. Start with its Phase 1 (feasibility probe
+  in Azahar). Delete the plan file once it is done and documented in
+  `docs/code_space.md`.
 * **Quest monster list in text**: the main objective names every monster of the
   quest from the retail templates (`curated/text_templates.json`) and the quest
   board shows all their pictures. Still pending: titles and descriptions are
@@ -46,16 +54,6 @@ is done or discovered.
   quest's difficulty (see docs/game_rules.md, "Stats").
 
 ## To verify in-game
-
-* **Dead game code canary** (docs/code_space.md, "Dead game code"): build
-  `tools/canary_probe.py UPDATE --out DIR --on MOD/exefs/code.ips` (installed
-  2026-10-09 on top of the seed A02008A35C mod), boot the game fresh, play a
-  varied session (village, gathering, quests with several monsters,
-  item box, smithy, online lobby menus, save and load), save a state and run
-  `tools/citra_state.py STATE --canary`. Functions with 0 calls become
-  reclaimed regions (about 9.5 KB of code space).
-* **Target face in Thumb**: `target_face.c` is now Thumb with an ARM entry;
-  check the face and the L + D-pad switch still work (HUD 70 %, as probe 21).
 
 * **Starting kit** (`starting_kit`, docs/randomizer.md "New game"): create a
   new save with the mod; the item box holds the kit (Potion x99, Pitfall Trap
@@ -153,6 +151,11 @@ is done or discovered.
   `bgm_st_11`) and add request 0x0B to `bgm_st_19.stq`; `always_music` could
   then go. Also find what game mode byte 0xC8C = 7 / 0x0B / 0x0C is (it turns
   off several monster themes, docs/music.md).
+* **Frenzied monsters** (someday): an option to let the randomizer's monsters
+  carry the Frenzy Virus, with three chances: never, very rare (2 %) and
+  common (6 %). To research first: how a quest marks a monster as frenzied
+  (`docs/mib_format.md`, monster entry fields) and which species the game
+  allows to be frenzied (docs/game_rules.md). Must support fix mode.
 * Arena quests keep their map; decide later whether they may move.
 * Encrypted DLC quests (`Documentation/mib.js` has the Blowfish keys).
 * Equipment: class-specific weapon data (phials, shells, notes, kinsect, ammo,

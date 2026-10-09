@@ -39,7 +39,7 @@ What is free:
 
 More `code` regions can be reclaimed from game functions that are never
 called (see "Dead game code"). Their bytes are the game's, not zeros, so the
-region also records their sha256.
+region also records their sha256. None has been found so far.
 
 Run `python tools/build_code_space.py` to see what is used and what is
 free. In October 2026, 1664 of the 2172 code bytes were used (508 free), after
@@ -174,7 +174,9 @@ N more bytes are needed` and writes nothing. In order of preference:
 2. **Thumb** (see "Thumb"). It made `target_face` 31 % smaller (1264 to 876
    bytes).
 3. **Dead game code** (see "Dead game code"). Reclaim a function the game
-   never calls as a new region.
+   never calls as a new region. The October 2026 search found none: every
+   candidate turned out to be reachable. The tools stay in place for another
+   try.
 
 Growing `.text` itself is not an option (see "Why the space is limited").
 
@@ -200,6 +202,10 @@ Growing `.text` itself is not an option (see "Why the space is limited").
 
 Thumb code size does not depend on the address, because blocks are 4-aligned.
 
+The Thumb `target_face` (876 bytes, down from 1264 in ARM) was checked in Citra
+on 2026-10-09 with the seed A02008A35C mod at HUD 60 %. The face shows and
+L + D-pad up locks and switches the target, as with the ARM build.
+
 ## Dead game code
 
 A function the game never calls can become a `code` region. Finding one takes
@@ -218,8 +224,21 @@ three steps.
    * are not the target of any ARM `b` / `bl` / `blx` word of `.text`, even
      where Ghidra found no code. This removed most candidates, including the
      10 KB `FUN_002198e8`: undisassembled code calls them;
-   * have nothing outside them that points into them, and no previous
-     instruction that falls through into them.
+   * have nothing outside them that points into them;
+   * cannot be entered by **falling through** from the words before them.
+     armcc places small wrappers right before a function and lets them run
+     into it with no branch:
+     * `mov r2, r1; mov r1, r0; mov r0, r2; nop` (swapped arguments);
+     * `add r0, r0, #16; nop` (`this` adjusted for a base class);
+     * `push {r4, lr}; ...; bl X; mov r0, r4; pop {r4, lr}; nop` (call X,
+       then the function).
+
+     Ghidra often leaves these wrappers undisassembled. It may, for example,
+     take `X` for a function that never returns. So the script reads the raw
+     words backward from the entry, up to an instruction that cannot fall
+     through (`b`, `bx`, `mov pc`, `ldr pc`, `ldm` with `pc`) or a literal-pool
+     word. Every word on the way is a possible entry, and nothing may
+     reference it.
 2. **Vet by hand** (`Decompile.java`, `Range.java`). armcc keeps every
    function of an object file that is used at all, so dead C++ functions are
    common and are good candidates. Hand-written assembly is not: the video
@@ -244,24 +263,70 @@ pools. The hash is `hashlib.sha256` of those bytes of the clean update's
 file, under "Reclaimed regions". `test_executable_patches_do_not_collide_on_the_game`
 checks the hash against the real executable.
 
-### Candidates (October 2026)
+### The October 2026 search: nothing to reclaim
 
-After the static search and vetting, the canary checks these armcc C++
-functions (start, bytes up to the next function):
+The first version of `DeadFunctions.java` did not have the fall-through rule.
+It proposed 11 armcc C++ functions, 9.5 KB in total. "Bytes" below runs from
+the entry to the next function's entry, so it includes the literal pools.
 
-| Entry | Bytes | Entry | Bytes |
-|---|---|---|---|
-| 0x85901C | 2308 | 0xCCE338 | 772 |
-| 0x8FA3C8 | 1572 | 0x500B08 | 588 |
-| 0x8EB544 | 1560 | 0x504470 | 488 |
-| 0x4FB708 (+ 0x4FB958) | 1296 | 0x3B2CDC | 376 |
-| 0xBBE554 | 308 | 0x47ED30 | 260 |
+The canary ran on 2026-10-09:
+* stacked (`--on`) on the seed A02008A35C mod;
+* about an hour of play, with fights against Zinogre, Cephadrome and
+  Chameleos, and the on-screen keyboard opened;
+* counters read from the save state of slot 5.
 
-That is 9.5 KB in total. Canary result: pending (a play session in Citra).
+Afterwards each candidate turned out to have a wrapper right before it that
+falls into it ("Wrapper"), and something uses every wrapper ("Reached
+from"). **None of them is dead**, and no region was added. Without the canary,
+the six functions with 0 calls would have been reclaimed, and online play
+would have broken.
+
+| Entry | Bytes | Calls | Wrapper | Reached from | Module | What it does |
+|---|---|---|---|---|---|---|
+| 0x85901C | 2308 | 18122 | 0x859004 (calls `FUN_0095BB38` first) | vtable word 0xE684B0 | Zinogre (em048) | Per-frame effect update for two actions (ids 0x18 and 0x19, read with `FUN_0090F994`). The action's frame counter (+0x290) picks a stage (0, 2 or 3). The function eases a vec3 and a vec4 of the species' work data (probably colours) toward that stage's table entries, sets bits 0–2 of a flags word, then updates ten bones (`FUN_0095F8F4`). Probably the thunderbug charge glow. |
+| 0x8FA3C8 | 1572 | 21267 | 0x8FA3B0 (same) | vtable word 0xE6A910 | Cephadrome (em105) | Adds a per-frame value (+0x14, probably the frame step) times a constant to an angle in the species data. The sign flips with `FUN_0092E998`; the angle is clamped to [0, max]. Bends bone 0x83 by three rotations of that angle and writes the result as the bone's quaternion. |
+| 0x8EB544 | 1560 | 24449 | 0x8EB52C (same) | vtable word 0xE6A78C | Chameleos (em103) | During action 0x208, turns bone 0x98 or 0x99 toward the target. The bone depends on the side the target is on; the angle comes from a two-entry distance table. Writes the bone's quaternion. Probably an aim for the tongue or the head. |
+| 0x4FB708 | 592 | 0 | 0x4FB6F8 (swaps r0 / r1) | words 0xE75DB8, 0xE775AC | NEX (online library) | Serializer (`streamOut`) of a NEX data class. It writes a header byte, then a size-prefixed body: words, a vector of words, a vector of bytes, a nested object and a 64-bit value (probably a NEX `DateTime`, converted with `FUN_00CF4278`). |
+| 0x4FB958 | 704 | 0 | 0x4FB948 (swaps r0 / r1) | words 0xE75DBC, 0xE775B0 | NEX | The matching deserializer (`streamIn`). It stops at the first read error (flag +4). |
+| 0xCCE338 | 772 | 0 | 0xCCE330 (`this` + 16) | vtable word 0xE60580 | Math utility | Circumcircle of a triangle. It takes three `vec4` points and writes the centre and radius as `(x, y, z, r)`, intersecting the perpendicular bisectors of two edges with `FUN_001DFC34`. |
+| 0x500B08 | 588 | 0 | 0x500AF8 (swaps r0 / r1) | words 0xE76370, 0xE778B8 | NEX | Deserializer of another NEX data class: a byte, a word, a nested object, a word, a byte, a word. |
+| 0x504470 | 488 | 0 | 0x504460 (swaps r0 / r1) | words 0xE769B4, 0xE77B84 | NEX | Serializer of a third NEX data class: words, a nested object, vectors of words and bytes, two 64-bit values (`FUN_00CF4278` again). |
+| 0x3B2CDC | 376 | 19 | 0x3B2CC4 (moves the arguments up by one) | literal word 0x3B3804 | Software keyboard | Event handler of a widget with three child slots. The functions before it build the keyboard paths `system\swkbd\archive_eu\...\Qwerty`, `TenKey`, `Full` and `Common`. For an event of state 1 from one of its slots, it maps the slot and the keyboard manager's mode (0, 1 or 2) to an index 0–5, passes it to `FUN_003AE28C`, then forwards the event to its children. |
+| 0xBBE554 | 308 | 576006 | 0xBBE52C (calls three functions first) | vtable word 0xE6C31C | Monster / hunter sync (next to `PktFmt_01`, `mRouteIndex`, `mBroadcastSendSequence`) | For each of the 2 entries of one list (`FUN_0069AB5C`) and each of the 32 monsters of another (`FUN_0068FBD0`), when a flag is set and the monster is in one of the action groups `Q T U V W h {`, calls `FUN_00BBE9CC`. That function writes positions into the monster (+0xDE8 to +0xDF4). |
+| 0x47ED30 | 260 | 0 | 0x47ED2C (a lone `nop`) | `b` at 0x47F59C | System library (next to the eShop `sys.ECard*` tables, `ir:USER`, `act:u`) | Replaces a node of a circular doubly linked list with another, under the list's lock (`FUN_0010C064` / `FUN_0010C0C8`). It moves the old node's payload and unlinks it. |
+
+How the modules were found:
+
+* **Monsters.** `em###` is the monster id (`em048` is Zinogre; see
+  `docs/music.md` for `bgm_em###`). Each species' code is one block. The
+  function there that uses the string `EM048`, `EM103` or `EM105` is in the
+  same vtable as the candidate's neighbours. For example, the vtable at
+  0xE6A7F8 holds 0x8E9474 (`EM103`) and 0x8EBB5C, the function right after
+  0x8EB544. 0x846598, also in Zinogre's vtable, is Zinogre's init. Like
+  0x85901C, it ends with a call to 0x859920.
+* **NEX.** The strings used around 0x4F6000–0x4FC900 are NEX class names:
+  `HostMigrationNotifier::UpdateGatheringHost`, `PromotionReferee::*`. NEX
+  generates a `streamIn` / `streamOut` pair for every data class. These ones
+  are reached through their wrappers from tables in `.rodata`; the game
+  calls them online only. The write helper is `FUN_005146C0`; the read
+  helpers are `FUN_00DBA010` (word) and `FUN_00DB9FB0` (byte).
+
+`DeadFunctions.java` now has the fall-through rule. Run again, it lists only
+the video codec's hand-written routines (0x116A24, 0x123624, 0x11D024,
+0x11D830), which step 2 already rules out. **No armcc function of 64 bytes or
+more is unreferenced.** The 120-byte space problem was solved by Thumb instead
+("Thumb").
+
+Lessons for another try:
+* **Static proof.** It must cover the bytes before an entry, not just the
+  entry.
+* **What the canary proves.** A 0 means "not called in this session". It
+  says nothing about online code, so it is not proof on its own.
 
 ### Reclaimed regions
 
-None yet.
+None. The support (`Region.original_sha256`, `reclaim`, the tests) stays for a
+future candidate that passes the checks.
 
 ## Probes and diagnostic builds
 

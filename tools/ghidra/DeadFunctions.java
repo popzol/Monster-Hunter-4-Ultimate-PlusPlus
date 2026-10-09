@@ -5,7 +5,9 @@
 //     points to it as an offset from itself (PREL31: armcc's .init_array of static constructors), and
 //   - no word of .text encodes an ARM b / bl / blx to it, even where Ghidra found no code, and
 //   - nothing outside its range [entry, next function) refers into the range (switch tables, jumps),
-//   - and the instruction before it cannot fall through into it.
+//   - nothing can fall through into it: walking back over the raw words (armcc wrappers that run into
+//     the function are often undisassembled) to an instruction that cannot fall through or a literal,
+//     no word on the way is referenced.
 // Adjacent dead functions are merged into runs. Output: one line per run, largest first:
 //   size start end functions...
 // Args: <output file> [minimum run size, default 64]. Run with analyzeHeadless -process -noanalysis -readOnly.
@@ -21,10 +23,8 @@ import ghidra.program.model.address.Address;
 import ghidra.program.model.address.AddressIterator;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.FunctionIterator;
-import ghidra.program.model.listing.Instruction;
 import ghidra.program.model.mem.Memory;
 import ghidra.program.model.mem.MemoryBlock;
-import ghidra.program.model.symbol.FlowType;
 import ghidra.program.model.symbol.Reference;
 
 public class DeadFunctions extends GhidraScript {
@@ -156,14 +156,55 @@ public class DeadFunctions extends GhidraScript {
                 }
             }
         }
-        // The previous instruction must not fall through into the entry.
-        Instruction previous = getInstructionBefore(start);
-        if (previous != null && previous.getMaxAddress().add(1).equals(start)) {
-            FlowType flow = previous.getFlowType();
-            if (!flow.isTerminal() && !(flow.isJump() && flow.isUnConditional())) {
-                return false;
+        // Nothing may fall through into the entry. armcc puts small wrappers right before a function and
+        // lets them run into it (`mov r2, r1; mov r1, r0; mov r0, r2; nop`, `add r0, r0, #16; nop`, or a
+        // call and `pop {r4, lr}; nop`). Ghidra often leaves them undisassembled (e.g. it takes the call
+        // for a no-return one), so the raw words are read: walk back to the previous instruction that
+        // cannot fall through, or to a literal-pool word; every word on the way is a possible entry and
+        // must be unreferenced too.
+        Memory memory = currentProgram.getMemory();
+        Address at = start;
+        for (int steps = 0; ; steps++) {
+            if (steps == 64) {
+                return false;  // a long stretch of unknown words: not worth the doubt
+            }
+            Address word = at.subtract(4);
+            if (!memory.contains(word)) {
+                return true;
+            }
+            int value = memory.getInt(word);
+            if (isTerminal(value) || isLiteral(word)) {
+                return true;
+            }
+            long offset = word.getOffset();
+            if (currentProgram.getReferenceManager().getReferenceCountTo(word) > 0
+                    || Arrays.binarySearch(words, offset) >= 0 || Arrays.binarySearch(words, offset | 1) >= 0
+                    || Arrays.binarySearch(relative, offset) >= 0 || Arrays.binarySearch(branches, offset) >= 0) {
+                return false;  // a wrapper entry that something uses: the function runs through it
+            }
+            at = word;
+        }
+    }
+
+    /** An ARM instruction that never goes on to the next word: b, bx, mov pc, ldr pc, ldm with pc. */
+    private static boolean isTerminal(int w) {
+        if ((w >>> 28) != 0xE) {
+            return false;
+        }
+        return (w & 0x0F000000) == 0x0A000000          // b
+                || (w & 0x0FFFFFF0) == 0x012FFF10      // bx reg
+                || (w & 0x0FFFFFF0) == 0x01A0F000      // mov pc, reg
+                || (w & 0x0C10F000) == 0x0410F000      // ldr pc, [...]
+                || (w & 0x0E108000) == 0x08108000;     // ldm ..., {..., pc}
+    }
+
+    /** A literal-pool word: an instruction of the program loads it. */
+    private boolean isLiteral(Address word) {
+        for (Reference ref : getReferencesTo(word)) {
+            if (ref.getReferenceType().isRead() && getInstructionAt(ref.getFromAddress()) != null) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 }

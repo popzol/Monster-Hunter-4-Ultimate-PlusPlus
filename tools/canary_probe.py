@@ -33,9 +33,9 @@ from mh4u_rando.exefs.code_space import (  # noqa: E402
 )
 from build_code_space import DEFAULT_DEVKITARM, align_up, build_layout  # noqa: E402
 
-# Functions tools/ghidra/DeadFunctions.java finds unreferenced (no reference, absolute or PREL31 word,
-# raw b / bl / blx), vetted by hand: armcc C++ functions. Hand-written codec routines (0x116A24,
-# 0x11D024, 0x123624...) are left out: their dispatchers jump to computed addresses.
+# The October 2026 candidates. All of them turned out reachable through a wrapper that falls into them
+# (docs/code_space.md, "The October 2026 search"); DeadFunctions.java now rules such functions out.
+# Put the new candidates of DeadFunctions.java here before another session.
 CANDIDATES = (
     0x85901C, 0x8FA3C8, 0x8EB544, 0x4FB708, 0x4FB958, 0xCCE338,
     0x500B08, 0x504470, 0x3B2CDC, 0xBBE554, 0x47ED30,
