@@ -15,95 +15,95 @@ summary. Read only that section of the codemap (from that line to the next
 - L54: `mh4u_rando/audio/wav.py` - WAV files: read source music (with its loop points) and write decoded tracks.
 - L58: `mh4u_rando/data/__init__.py` - Game knowledge base: monsters, maps, items, quests and the rules that govern them.
 - L60: `mh4u_rando/data/gamedata.py` - Typed access to the game knowledge base.
-- L92: `mh4u_rando/data/query.py` - Print one record of the knowledge base as compact JSON.
-- L96: `mh4u_rando/data/tuning.py` - Tunable parameters of the randomizer (curated/tuning.json).
-- L101: `mh4u_rando/equipment/__init__.py` - Equipment tables of the game executable (weapons, armor, recipes, sharpness).
-- L103: `mh4u_rando/equipment/layout.py` - Where the equipment tables live in code.bin (EUR 0004000000126100).
-- L112: `mh4u_rando/equipment/records.py` - Equipment records as views over their raw bytes.
-- L133: `mh4u_rando/equipment/tables.py` - Read every equipment table from code.bin and write them back.
-- L142: `mh4u_rando/equipment/tamper.py` - Turn off the game's check of the stats of worn gear ("allow OP equipment", docs/game_rules.md).
-- L146: `mh4u_rando/exefs/__init__.py` - Access to the game ROM: its executable (ExeFS code.bin), RomFS files, and IPS patches.
-- L148: `mh4u_rando/exefs/code_bin.py` - Load the game executable from whatever file the user has.
-- L152: `mh4u_rando/exefs/extract.py` - Extract the decompressed executable (ExeFS ".code") from 3DS containers.
-- L157: `mh4u_rando/exefs/ips.py` - IPS patches ("PATCH" ... "EOF"), the format Citra loads as exefs/code.ips.
-- L162: `mh4u_rando/exefs/romfs.py` - Read single files from the RomFS of a decrypted .3ds/.cci or an NCCH (.app/.cxi), without extract...
-- L168: `mh4u_rando/exefs/starting_items.py` - Starting items (option starting_items): what a new character finds in the item box.
-- L176: `mh4u_rando/fix.py` - Fix a game in progress: change settings or reroll quests of a seed that is already being played, ...
-- L189: `mh4u_rando/gui/__init__.py` - Graphical interface (customtkinter). Start with `python -m mh4u_rando.gui`.
-- L191: `mh4u_rando/gui/__main__.py`
-- L193: `mh4u_rando/gui/app.py` - Main window.
-- L200: `mh4u_rando/gui/fixes.py` - The "Fixes" area of the fix mode: reroll every quest or single quests (Settings.quest_reroll / qu...
-- L207: `mh4u_rando/gui/i18n.py` - Interface languages.
-- L212: `mh4u_rando/gui/options.py` - Declarative description of the GUI option panels.
-- L226: `mh4u_rando/gui/preferences.py` - Small per-user GUI memory (last paths and settings), stored in the user's home folder.
-- L231: `mh4u_rando/gui/progress.py` - Semi-fake progress bar animation (no tkinter, so it can be tested headless).
-- L238: `mh4u_rando/gui/strings.py` - User-facing strings of the main window (option texts live in options.py).
-- L240: `mh4u_rando/gui/theme.py` - Colour palette and widget styling.
-- L244: `mh4u_rando/gui/widgets.py` - Widgets bound to `Settings` fields, built from the declarative options.
-- L271: `mh4u_rando/hud/__init__.py` - In-game HUD: MT Framework GUI layouts (lyt), their animations (lanl) and the HUD size option.
-- L273: `mh4u_rando/hud/build.py` - The top-screen HUD: which layouts it is made of, and the files of the HUD size mod.
-- L289: `mh4u_rando/hud/code_patch.py` - Executable patches of the HUD size option (exefs/code.ips), for the update's code.bin.
-- L302: `mh4u_rando/hud/hint.py` - The hint of the target switch (option touchless_target, L + D-pad up): a D-pad glyph with only it...
-- L307: `mh4u_rando/hud/icons.py` - New monster icons (option new_monster_icons) for the monsters the game draws with the "?" icon.
-- L320: `mh4u_rando/hud/lanl.py` - MT Framework (3DS) GUI layout animations: "lanl" files, ARC type 0x708E0028, version 5.
-- L333: `mh4u_rando/hud/lyt.py` - MT Framework (3DS) GUI layouts: "lyt" files, ARC type 0x15302EF4, version 0x70C.
-- L354: `mh4u_rando/hud/png.py` - Minimal PNG reader and writer (any non-interlaced PNG in, 8-bit RGBA out), so icons need no image...
-- L359: `mh4u_rando/hud/scale.py` - Shrink HUD layouts towards a screen corner (the HUD size option).
-- L366: `mh4u_rando/hud/tex.py` - MT Framework (3DS) textures: "TEX" files, ARC type 0x241F5DEB, version 0xA5.
-- L376: `mh4u_rando/mib/__init__.py` - Read and write MH4U quest files (.mib, stored as *.1BBFD18E inside quest ARCs).
-- L378: `mh4u_rando/mib/binary.py` - Little-endian binary reading/writing over in-memory buffers.
-- L397: `mh4u_rando/mib/enums.py` - Numeric codes stored in .mib fields that the code reasons about.
-- L401: `mh4u_rando/mib/errors.py`
-- L404: `mh4u_rando/mib/layout.py` - Binary layout of the .mib format, shared by the parser and the writer.
-- L408: `mh4u_rando/mib/model.py` - In-memory representation of a MH4U quest (.mib) file.
-- L424: `mh4u_rando/mib/parser.py` - Decode a decrypted .mib buffer into a `Quest`.
-- L429: `mh4u_rando/mib/writer.py` - Encode a `Quest` into a (decrypted) .mib buffer.
-- L433: `mh4u_rando/pipeline.py` - End-to-end run: the game ROM -> a Citra/Azahar mod folder + spoiler logs.
-- L451: `mh4u_rando/randomizer/__init__.py` - Quest randomization logic, independent of file formats and user interface.
-- L453: `mh4u_rando/randomizer/equipment/__init__.py` - Equipment randomizer: recipes, statistics and models, applied to the executable's tables.
-- L457: `mh4u_rando/randomizer/equipment/catalog.py` - Equipment as the randomizer sees it: real pieces, their rank, recipes and upgrade tree.
-- L467: `mh4u_rando/randomizer/equipment/models.py` - Equipment models (looks).
-- L472: `mh4u_rando/randomizer/equipment/palico.py` - Felyne (Palico) equipment: recipes, statistics and models.
-- L481: `mh4u_rando/randomizer/equipment/recipes.py` - New crafting recipes: N to M different monster materials of the equipment's rank,
-- L486: `mh4u_rando/randomizer/equipment/report.py` - Equipment spoiler log: what changed on every piece, from the final tables.
-- L496: `mh4u_rando/randomizer/equipment/skills.py` - Armor skills.
-- L503: `mh4u_rando/randomizer/equipment/stats.py` - Weapon and armor statistics.
-- L514: `mh4u_rando/randomizer/grammar.py` - Articles and contractions of the five quest languages (pure functions, no quest involved).
-- L528: `mh4u_rando/randomizer/maps.py` - Map choice, monster placement and map-dependent quest data.
-- L538: `mh4u_rando/randomizer/objectives.py` - Quest type, objectives and quest board pictures for a new lineup.
-- L557: `mh4u_rando/randomizer/other_monsters.py` - Small monsters and intruders (unstable monsters).
-- L565: `mh4u_rando/randomizer/plan.py` - Intermediate representation of a randomized large-monster lineup.
-- L575: `mh4u_rando/randomizer/quest_randomizer.py` - Randomize one quest.
-- L580: `mh4u_rando/randomizer/randomize_all.py` - Randomize a whole set of quests.
-- L583: `mh4u_rando/randomizer/report.py` - What the randomizer did to each quest (the spoiler log).
-- L589: `mh4u_rando/randomizer/rewards.py` - Reward boxes: several gear-crafting materials, each in its maximum stack size.
-- L596: `mh4u_rando/randomizer/rng.py` - Deterministic random streams.
-- L601: `mh4u_rando/randomizer/selection.py` - Choose the large monsters of a lineup.
-- L608: `mh4u_rando/randomizer/settings.py` - User-facing randomizer options.
-- L634: `mh4u_rando/randomizer/stats.py` - Monster stat blocks (Quest.large_meta) for a new lineup.
-- L640: `mh4u_rando/randomizer/structure.py` - Build the wave skeleton (empty slots) of a quest before choosing monsters.
-- L644: `mh4u_rando/randomizer/supplies.py` - Supply boxes.
-- L652: `mh4u_rando/randomizer/templates.py` - Quest text templates: the retail sentences of the five languages (curated/text_templates.json).
-- L663: `mh4u_rando/randomizer/text.py` - Quest text (5 languages) for a randomized quest.
-- L674: `mh4u_rando/randomizer/validation.py` - Check a randomized quest against every known engine rule.
-- L677: `mh4u_rando/record.py` - The record of a run, saved with its settings in settings_<seed>.json: randomizer version, fix rev...
-- L688: `tools/bisect_mod.py` - Find which part of a mod breaks the game (hang, crash, refused quests): build it in steps, instal...
-- L701: `tools/build_equipment_data.py` - Build mh4u_rando/data/generated/equipment_names.json from the game's text files.
-- L704: `tools/build_gamedata.py` - Regenerate mh4u_rando/data/generated/*.json from the reference sources.
-- L715: `tools/build_hud_asm.py` - Build mh4u_rando/hud/asm/* with devkitARM (or the Arm GNU Toolchain) and compare them with the bytes
-- L719: `tools/build_monster_grammar.py` - Build mh4u_rando/data/curated/monster_grammar.json from the retail quest texts.
-- L727: `tools/citra_state.py` - Read the game's .data / .bss from a Citra save state (docs/hud_code.md, "Debugging in Citra").
-- L735: `tools/dump_inventory.py` - Summarize a MH4U RomFS dump: ARC families, internal folders and file types.
-- L740: `tools/equipment_tables.py` - Print the first records of every equipment table of a code.bin, with names.
-- L743: `tools/extract_code_bin.py` - Extract the decompressed executable from a decrypted .3ds or update .app.
-- L746: `tools/fetch_item_categories.py` - Download item categories and rarities from monsterhunterwiki.org.
-- L752: `tools/fetch_monster_health.py` - Download each monster's base health from Kiranico's MH4U database (kiranico.com/en/mh4u/monster).
-- L758: `tools/fetch_monster_materials.py` - Download which materials each large monster provides, from monsterhunterwiki.org.
-- L763: `tools/gen_codemap.py` - Write docs/codemap.md: every module of mh4u_rando/ and tools/ with its public API.
-- L769: `tools/hud_probe.py` - Build a HUD test mod for Citra (see docs/hud_layout.md).
-- L779: `tools/lmd.py` - Minimal reader for MH4U LMD text files (ARC type 0x62440501, magic "lmd\0").
-- L783: `tools/lyt_dump.py` - Print the pane tree of the GUI layouts (lyt) inside an ARC.
-- L788: `tools/make_monster_icons.py` - Make the provisional new monster icons (mh4u_rando/data/icons/em<id>.png) from icons of the game.
-- L795: `tools/music_inventory.py` - List the game's music: every stream queue (.stq) with its tracks (.mca), lengths and loops.
-- L800: `tools/music_probe.py` - Build a music test mod for Citra (see docs/music.md).
-- L810: `tools/music_replace.py` - Replace a game track with your own audio, looping seamlessly (see docs/music.md).
+- L93: `mh4u_rando/data/query.py` - Print one record of the knowledge base as compact JSON.
+- L97: `mh4u_rando/data/tuning.py` - Tunable parameters of the randomizer (curated/tuning.json).
+- L102: `mh4u_rando/equipment/__init__.py` - Equipment tables of the game executable (weapons, armor, recipes, sharpness).
+- L104: `mh4u_rando/equipment/layout.py` - Where the equipment tables live in code.bin (EUR 0004000000126100).
+- L113: `mh4u_rando/equipment/records.py` - Equipment records as views over their raw bytes.
+- L134: `mh4u_rando/equipment/tables.py` - Read every equipment table from code.bin and write them back.
+- L143: `mh4u_rando/equipment/tamper.py` - Turn off the game's check of the stats of worn gear ("allow OP equipment", docs/game_rules.md).
+- L147: `mh4u_rando/exefs/__init__.py` - Access to the game ROM: its executable (ExeFS code.bin), RomFS files, and IPS patches.
+- L149: `mh4u_rando/exefs/code_bin.py` - Load the game executable from whatever file the user has.
+- L153: `mh4u_rando/exefs/extract.py` - Extract the decompressed executable (ExeFS ".code") from 3DS containers.
+- L158: `mh4u_rando/exefs/ips.py` - IPS patches ("PATCH" ... "EOF"), the format Citra loads as exefs/code.ips.
+- L163: `mh4u_rando/exefs/romfs.py` - Read single files from the RomFS of a decrypted .3ds/.cci or an NCCH (.app/.cxi), without extract...
+- L169: `mh4u_rando/exefs/starting_items.py` - Starting items (option starting_items): what a new character finds in the item box.
+- L177: `mh4u_rando/fix.py` - Fix a game in progress: change settings or reroll quests of a seed that is already being played, ...
+- L194: `mh4u_rando/gui/__init__.py` - Graphical interface (customtkinter). Start with `python -m mh4u_rando.gui`.
+- L196: `mh4u_rando/gui/__main__.py`
+- L198: `mh4u_rando/gui/app.py` - Main window.
+- L205: `mh4u_rando/gui/fixes.py` - The "Fixes" area of the fix mode: reroll every quest or single quests (Settings.quest_reroll / qu...
+- L215: `mh4u_rando/gui/i18n.py` - Interface languages.
+- L220: `mh4u_rando/gui/options.py` - Declarative description of the GUI option panels.
+- L234: `mh4u_rando/gui/preferences.py` - Small per-user GUI memory (last paths and settings), stored in the user's home folder.
+- L239: `mh4u_rando/gui/progress.py` - Semi-fake progress bar animation (no tkinter, so it can be tested headless).
+- L246: `mh4u_rando/gui/strings.py` - User-facing strings of the main window (option texts live in options.py).
+- L248: `mh4u_rando/gui/theme.py` - Colour palette and widget styling.
+- L252: `mh4u_rando/gui/widgets.py` - Widgets bound to `Settings` fields, built from the declarative options.
+- L279: `mh4u_rando/hud/__init__.py` - In-game HUD: MT Framework GUI layouts (lyt), their animations (lanl) and the HUD size option.
+- L281: `mh4u_rando/hud/build.py` - The top-screen HUD: which layouts it is made of, and the files of the HUD size mod.
+- L297: `mh4u_rando/hud/code_patch.py` - Executable patches of the HUD size option (exefs/code.ips), for the update's code.bin.
+- L310: `mh4u_rando/hud/hint.py` - The hint of the target switch (option touchless_target, L + D-pad up): a D-pad glyph with only it...
+- L315: `mh4u_rando/hud/icons.py` - New monster icons (option new_monster_icons) for the monsters the game draws with the "?" icon.
+- L328: `mh4u_rando/hud/lanl.py` - MT Framework (3DS) GUI layout animations: "lanl" files, ARC type 0x708E0028, version 5.
+- L341: `mh4u_rando/hud/lyt.py` - MT Framework (3DS) GUI layouts: "lyt" files, ARC type 0x15302EF4, version 0x70C.
+- L362: `mh4u_rando/hud/png.py` - Minimal PNG reader and writer (any non-interlaced PNG in, 8-bit RGBA out), so icons need no image...
+- L367: `mh4u_rando/hud/scale.py` - Shrink HUD layouts towards a screen corner (the HUD size option).
+- L374: `mh4u_rando/hud/tex.py` - MT Framework (3DS) textures: "TEX" files, ARC type 0x241F5DEB, version 0xA5.
+- L384: `mh4u_rando/mib/__init__.py` - Read and write MH4U quest files (.mib, stored as *.1BBFD18E inside quest ARCs).
+- L386: `mh4u_rando/mib/binary.py` - Little-endian binary reading/writing over in-memory buffers.
+- L405: `mh4u_rando/mib/enums.py` - Numeric codes stored in .mib fields that the code reasons about.
+- L409: `mh4u_rando/mib/errors.py`
+- L412: `mh4u_rando/mib/layout.py` - Binary layout of the .mib format, shared by the parser and the writer.
+- L416: `mh4u_rando/mib/model.py` - In-memory representation of a MH4U quest (.mib) file.
+- L432: `mh4u_rando/mib/parser.py` - Decode a decrypted .mib buffer into a `Quest`.
+- L437: `mh4u_rando/mib/writer.py` - Encode a `Quest` into a (decrypted) .mib buffer.
+- L441: `mh4u_rando/pipeline.py` - End-to-end run: the game ROM -> a Citra/Azahar mod folder + spoiler logs.
+- L459: `mh4u_rando/randomizer/__init__.py` - Quest randomization logic, independent of file formats and user interface.
+- L461: `mh4u_rando/randomizer/equipment/__init__.py` - Equipment randomizer: recipes, statistics and models, applied to the executable's tables.
+- L465: `mh4u_rando/randomizer/equipment/catalog.py` - Equipment as the randomizer sees it: real pieces, their rank, recipes and upgrade tree.
+- L475: `mh4u_rando/randomizer/equipment/models.py` - Equipment models (looks).
+- L480: `mh4u_rando/randomizer/equipment/palico.py` - Felyne (Palico) equipment: recipes, statistics and models.
+- L489: `mh4u_rando/randomizer/equipment/recipes.py` - New crafting recipes: N to M different monster materials of the equipment's rank,
+- L494: `mh4u_rando/randomizer/equipment/report.py` - Equipment spoiler log: what changed on every piece, from the final tables.
+- L504: `mh4u_rando/randomizer/equipment/skills.py` - Armor skills.
+- L511: `mh4u_rando/randomizer/equipment/stats.py` - Weapon and armor statistics.
+- L522: `mh4u_rando/randomizer/grammar.py` - Articles and contractions of the five quest languages (pure functions, no quest involved).
+- L536: `mh4u_rando/randomizer/maps.py` - Map choice, monster placement and map-dependent quest data.
+- L546: `mh4u_rando/randomizer/objectives.py` - Quest type, objectives and quest board pictures for a new lineup.
+- L565: `mh4u_rando/randomizer/other_monsters.py` - Small monsters and intruders (unstable monsters).
+- L573: `mh4u_rando/randomizer/plan.py` - Intermediate representation of a randomized large-monster lineup.
+- L583: `mh4u_rando/randomizer/quest_randomizer.py` - Randomize one quest.
+- L588: `mh4u_rando/randomizer/randomize_all.py` - Randomize a whole set of quests.
+- L591: `mh4u_rando/randomizer/report.py` - What the randomizer did to each quest (the spoiler log).
+- L597: `mh4u_rando/randomizer/rewards.py` - Reward boxes: several gear-crafting materials, each in its maximum stack size.
+- L604: `mh4u_rando/randomizer/rng.py` - Deterministic random streams.
+- L609: `mh4u_rando/randomizer/selection.py` - Choose the large monsters of a lineup.
+- L616: `mh4u_rando/randomizer/settings.py` - User-facing randomizer options.
+- L642: `mh4u_rando/randomizer/stats.py` - Monster stat blocks (Quest.large_meta) for a new lineup.
+- L648: `mh4u_rando/randomizer/structure.py` - Build the wave skeleton (empty slots) of a quest before choosing monsters.
+- L652: `mh4u_rando/randomizer/supplies.py` - Supply boxes.
+- L660: `mh4u_rando/randomizer/templates.py` - Quest text templates: the retail sentences of the five languages (curated/text_templates.json).
+- L671: `mh4u_rando/randomizer/text.py` - Quest text (5 languages) for a randomized quest.
+- L682: `mh4u_rando/randomizer/validation.py` - Check a randomized quest against every known engine rule.
+- L685: `mh4u_rando/record.py` - The record of a run, saved with its settings in settings_<seed>.json: randomizer version, fix rev...
+- L696: `tools/bisect_mod.py` - Find which part of a mod breaks the game (hang, crash, refused quests): build it in steps, instal...
+- L709: `tools/build_equipment_data.py` - Build mh4u_rando/data/generated/equipment_names.json from the game's text files.
+- L712: `tools/build_gamedata.py` - Regenerate mh4u_rando/data/generated/*.json from the reference sources.
+- L723: `tools/build_hud_asm.py` - Build mh4u_rando/hud/asm/* with devkitARM (or the Arm GNU Toolchain) and compare them with the bytes
+- L727: `tools/build_monster_grammar.py` - Build mh4u_rando/data/curated/monster_grammar.json from the retail quest texts.
+- L735: `tools/citra_state.py` - Read the game's .data / .bss from a Citra save state (docs/hud_code.md, "Debugging in Citra").
+- L743: `tools/dump_inventory.py` - Summarize a MH4U RomFS dump: ARC families, internal folders and file types.
+- L748: `tools/equipment_tables.py` - Print the first records of every equipment table of a code.bin, with names.
+- L751: `tools/extract_code_bin.py` - Extract the decompressed executable from a decrypted .3ds or update .app.
+- L754: `tools/fetch_item_categories.py` - Download item categories and rarities from monsterhunterwiki.org.
+- L760: `tools/fetch_monster_health.py` - Download each monster's base health from Kiranico's MH4U database (kiranico.com/en/mh4u/monster).
+- L766: `tools/fetch_monster_materials.py` - Download which materials each large monster provides, from monsterhunterwiki.org.
+- L771: `tools/gen_codemap.py` - Write docs/codemap.md: every module of mh4u_rando/ and tools/ with its public API.
+- L777: `tools/hud_probe.py` - Build a HUD test mod for Citra (see docs/hud_layout.md).
+- L787: `tools/lmd.py` - Minimal reader for MH4U LMD text files (ARC type 0x62440501, magic "lmd\0").
+- L791: `tools/lyt_dump.py` - Print the pane tree of the GUI layouts (lyt) inside an ARC.
+- L796: `tools/make_monster_icons.py` - Make the provisional new monster icons (mh4u_rando/data/icons/em<id>.png) from icons of the game.
+- L803: `tools/music_inventory.py` - List the game's music: every stream queue (.stq) with its tracks (.mca), lengths and loops.
+- L808: `tools/music_probe.py` - Build a music test mod for Citra (see docs/music.md).
+- L818: `tools/music_replace.py` - Replace a game track with your own audio, looping seamlessly (see docs/music.md).

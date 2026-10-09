@@ -217,6 +217,55 @@ def test_an_edit_turns_apply_back_into_preview(window, tmp_path):
     assert window.run_button.cget("text") == "PREVISUALIZAR"
 
 
+def test_restore_a_backup_from_the_fixes_area(window, tmp_path, monkeypatch):
+    from mh4u_rando.fix import _backup
+    from mh4u_rando.record import Checksum, RunRecord, save_run
+    mod = tmp_path / "mod"
+    (mod / "romfs").mkdir(parents=True)
+    (mod / "romfs" / "a.arc").write_bytes(b"old")
+    save_run(mod / "settings_OLD.json", Settings(seed="OLD"), RunRecord(revision=0,
+                                                                         checksum=Checksum("q", "", "AAAA-0000")))
+    _backup(mod, RunRecord(revision=0))
+    (mod / "romfs" / "a.arc").write_bytes(b"new")
+    save_run(mod / "settings_OLD.json", Settings(seed="OLD", randomize_rewards=True),
+             RunRecord(revision=1, checksum=Checksum("q", "", "BBBB-1111")))
+    window.out_var.set(str(mod))
+    window._change_mode("fix")
+    assert window.current_settings().randomize_rewards
+    panel = window.fixes_panel
+    assert "AAAA-0000" in panel.backup_menu.get()
+    panel.restore_selected()                            # askyesno says no
+    assert (mod / "romfs" / "a.arc").read_bytes() == b"new"
+    monkeypatch.setattr(gui_app.messagebox, "askyesno", lambda *a, **k: True)
+    panel.restore_selected()
+    assert (mod / "romfs" / "a.arc").read_bytes() == b"old"
+    assert not window.current_settings().randomize_rewards and window.fix_game[2].revision == 0
+    assert len(window.fixes_panel.backups) == 2          # the restored-over mod was saved too
+
+
+def test_sidebar_fits_the_minimum_height(window):
+    """Everything in the sidebar (mode and platform, files, seed or game, main button, language) is visible at the
+    window's minimum size, in both modes."""
+    width, height = gui_app.MIN_SIZE
+    window.deiconify()
+    for mode in ("randomize", "fix"):
+        window._change_mode(mode)
+        window.geometry(f"{width}x{height}")
+        window.update()
+        bar, footer = window.sidebar, window.sidebar_footer
+
+        def bottom(widget):
+            return widget.winfo_rooty() + widget.winfo_height()
+
+        # pack gives the last widgets less room when there is not enough: the footer is packed last
+        assert footer.winfo_ismapped() and footer.winfo_height() >= footer.winfo_reqheight(), mode
+        assert bottom(window.run_button) <= footer.winfo_rooty(), mode
+        assert bottom(footer) <= bottom(bar) <= window.winfo_rooty() + window.winfo_height(), mode
+        for child in bar.winfo_children():
+            if child is not footer and child.winfo_ismapped():
+                assert child.winfo_height() >= child.winfo_reqheight(), (mode, child)
+
+
 def test_full_run_from_the_window(window, tmp_path):
     if not original_quest_files():
         pytest.skip("original quests not available")

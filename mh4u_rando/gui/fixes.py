@@ -1,11 +1,13 @@
-"""The "Fixes" area of the fix mode: reroll every quest or single quests (Settings.quest_reroll / quest_rerolls)
-and the fix history of the loaded game (mh4u_rando/fix.py)."""
+"""The "Fixes" area of the fix mode: reroll every quest or single quests (Settings.quest_reroll / quest_rerolls),
+the fix history of the loaded game and the copies in backups/ (mh4u_rando/fix.py)."""
 
 import tkinter as tk
+from collections.abc import Callable
 
 import customtkinter as ctk
 
 from ..data import QuestCategory, load_game_data
+from ..fix import Backup
 from ..record import RunRecord
 from . import strings as S
 from . import theme
@@ -32,8 +34,11 @@ class _Field:
 class FixesPanel:
     """Behaves like two OptionWidgets for the window: `widgets` maps quest_reroll and quest_rerolls to adapters."""
 
-    def __init__(self, master, record: RunRecord | None, language: str):
+    def __init__(self, master, record: RunRecord | None, language: str, backups: list[Backup] = (),
+                 on_restore: Callable[[Backup], None] | None = None):
         self.language = language
+        self.backups = list(backups)
+        self.on_restore = on_restore
         self.reroll_all = tk.IntVar(value=0)
         self.rerolls: dict[int, int] = {}
         data = load_game_data()
@@ -55,6 +60,8 @@ class FixesPanel:
         self._build_reroll_all(all_card)
         history_card = self._card(2, 1, S.HISTORY, S.HISTORY_DESCRIPTION)
         self._build_history(history_card, record)
+        backups_card = self._card(3, 1, S.BACKUPS, S.BACKUPS_DESCRIPTION)
+        self._build_backups(backups_card)
 
     def _quest_name(self, quest) -> str:
         key = f" · {S.KEY_QUEST(self.language)}" if quest.is_progression_quest else ""
@@ -168,6 +175,39 @@ class FixesPanel:
             text = "\n".join(f"  {change}" for change in entry.changes) or "  -"
             ctk.CTkLabel(body, text=text, text_color=theme.TEXT_MUTED, font=theme.font(11), justify="left",
                          wraplength=330, anchor="w").pack(anchor="w", pady=(0, 4))
+
+    # ----- backups -------------------------------------------------------------
+
+    def backup_label(self, backup: Backup) -> str:
+        return S.BACKUP_LABEL.format(self.language, name=backup.name, code=backup.code or "?")
+
+    def _build_backups(self, body) -> None:
+        self.backup_menu = None
+        if not self.backups:
+            ctk.CTkLabel(body, text=S.NO_BACKUPS(self.language), text_color=theme.TEXT_MUTED,
+                         font=theme.font(12)).pack(anchor="w")
+            return
+        row = ctk.CTkFrame(body, fg_color="transparent")
+        row.pack(fill="x")
+        labels = [self.backup_label(backup) for backup in self.backups]
+        self.backup_menu = ctk.CTkOptionMenu(row, values=labels, height=28, font=theme.font(12),
+                                             dropdown_font=theme.font(12))
+        self.backup_menu.set(labels[0])
+        self.backup_menu.pack(side="left", fill="x", expand=True)
+        ctk.CTkButton(row, text=S.RESTORE(self.language), width=90, height=28, font=theme.font(12, "bold"),
+                      command=self.restore_selected).pack(side="left", padx=(6, 0))
+
+    def selected_backup(self) -> Backup | None:
+        if self.backup_menu is None:
+            return None
+        labels = [self.backup_label(backup) for backup in self.backups]
+        label = self.backup_menu.get()
+        return self.backups[labels.index(label)] if label in labels else None
+
+    def restore_selected(self) -> None:
+        backup = self.selected_backup()
+        if backup is not None and self.on_restore:
+            self.on_restore(backup)
 
     @staticmethod
     def _button(parent, text, command):

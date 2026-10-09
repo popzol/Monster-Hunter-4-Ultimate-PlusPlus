@@ -118,7 +118,11 @@ is refused rather than changing more than the fix.
 ```
 python -m mh4u_rando --rom game.3ds --out output_folder --fix --reroll-quest 10203
 python -m mh4u_rando --rom game.3ds --out friends_folder --fix --preset settings_SEED.json
+python -m mh4u_rando --out output_folder --list-backups      # copies made before each fix
+python -m mh4u_rando --out output_folder --restore rev0_20261009-120000
 ```
+
+The GUI's "Backups" card (Fixes area) restores those copies too.
 
 Details: [docs/randomizer.md](docs/randomizer.md), "Fixing a game in progress".
 

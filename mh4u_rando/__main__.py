@@ -18,6 +18,7 @@ Fixing a game in progress (mh4u_rando/fix.py): --fix applies the preset (by defa
 settings_<seed>.json of --out) to the game in --out, changing only what the settings
 change; --reroll-quest ID (repeatable) and --reroll-all draw quests again. Nothing is
 written unless the game in --out is reproduced exactly (same randomizer version).
+--list-backups and --restore NAME put back a copy a fix left in --out's backups/.
 """
 
 import argparse
@@ -26,15 +27,35 @@ from pathlib import Path
 
 from .data import load_game_data
 from .exefs.starting_items import check_starting_items, effective_starting_items
-from .fix import WARNINGS, FixError, apply, find_run, preview
+from .fix import BACKUP_DIR, WARNINGS, FixError, apply, find_run, list_backups, preview, restore
 from .pipeline import run
 from .randomizer import HudScale, Settings
 from .record import load_run
 
 
+def _backups_command(args) -> int:
+    backups = list_backups(args.out)
+    if args.list_backups:
+        for backup in backups:
+            revision = "?" if backup.revision is None else backup.revision
+            print(f"{backup.name}: {backup.date}, seed {backup.seed or '?'}, revision {revision}, "
+                  f"code {backup.code or '?'}")
+        if not backups:
+            print(f"No copies in {args.out}/{BACKUP_DIR}")
+        return 0
+    chosen = next((backup for backup in backups if backup.name == args.restore), None)
+    if chosen is None:
+        print(f"There is no copy {args.restore} in {args.out}/{BACKUP_DIR} (see --list-backups)", file=sys.stderr)
+        return 1
+    saved = restore(args.out, chosen.path)
+    print(f"Restored {chosen.name}" + (f"; the previous mod is in {saved}" if saved else ""))
+    print("Copy romfs and exefs to the emulator again and restart the game.")
+    return 0
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="mh4u_rando", description="Monster Hunter 4 Ultimate randomizer")
-    source = parser.add_mutually_exclusive_group(required=True)
+    source = parser.add_mutually_exclusive_group()
     source.add_argument("--rom", type=Path, help="decrypted game ROM (.3ds); never modified")
     source.add_argument("--arc", type=Path, help="advanced: an original quest01.arc instead of the ROM")
     parser.add_argument("--code", type=Path,
@@ -61,7 +82,16 @@ def main(argv=None) -> int:
     parser.add_argument("--reroll-quest", type=int, action="append", default=[], metavar="ID",
                         help="with --fix: draw this quest again (repeatable)")
     parser.add_argument("--reroll-all", action="store_true", help="with --fix: draw every quest again")
+    parser.add_argument("--list-backups", action="store_true",
+                        help="list the copies a fix left in --out's backups/ (no --rom needed)")
+    parser.add_argument("--restore", metavar="NAME",
+                        help="put the copy backups/NAME back into --out (the current mod is copied first)")
     args = parser.parse_args(argv)
+
+    if args.list_backups or args.restore:
+        return _backups_command(args)
+    if args.rom is None and args.arc is None:
+        parser.error("one of the arguments --rom --arc is required")
 
     if (args.reroll_quest or args.reroll_all) and not args.fix:
         parser.error("--reroll-quest and --reroll-all need --fix")
@@ -102,12 +132,17 @@ def main(argv=None) -> int:
     game = args.rom or args.arc
     if args.fix:
         try:
-            fix = preview(game, args.out, settings, record, loaded_settings, code_path=args.code)
+            data = load_game_data()
+            fix = preview(game, args.out, settings, record, loaded_settings, code_path=args.code, data=data)
             for warning in fix.warnings:
                 print(f"WARNING {WARNINGS[warning]}")
             for change in fix.changes:
                 print(f"Change: {change}")
-            print(f"Quests that change: {', '.join(str(q.quest_id) for q in fix.quests) or 'none'}")
+            print(f"Quests that change: {len(fix.quests) or 'none'}")
+            for quest in fix.quests:
+                moved = (f" (map: {data.map_name(quest.old_map)} -> {data.map_name(quest.new_map)})"
+                         if quest.old_map != quest.new_map else "")
+                print(f"  {quest.quest_id} {quest.title}{moved}")
             if fix.equipment:
                 print("Equipment that changes: " + ", ".join(f"{group} {count}" for group, count in
                                                              fix.equipment.items()))

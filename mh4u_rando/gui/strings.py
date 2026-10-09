@@ -170,6 +170,14 @@ KEY_QUEST = T("obligatoria", "required")
 HISTORY = T("Historial", "History")
 HISTORY_DESCRIPTION = T("Los arreglos aplicados a esta partida.", "The fixes applied to this game.")
 NO_HISTORY = T("Sin arreglos todavía.", "No fixes yet.")
+BACKUPS = T("Copias de seguridad", "Backups")
+BACKUPS_DESCRIPTION = T("El mod tal como estaba antes de cada arreglo (carpeta backups/). Restaurar una copia guarda "
+                        "antes el mod actual, así que también se puede deshacer.",
+                        "The mod as it was before each fix (backups/ folder). Restoring a copy saves the current "
+                        "mod first, so it can be undone too.")
+NO_BACKUPS = T("Sin copias todavía.", "No backups yet.")
+RESTORE = T("Restaurar", "Restore")
+BACKUP_LABEL = T("{name} · código {code}", "{name} · code {code}")
 FIX_NOTE = T("Los demás ajustes (misiones, equipo) también se pueden cambiar: «Previsualizar» dice qué cambia antes "
              "de tocar nada. Las opciones de «Interfaz» y «Partida nueva» son de cada jugador.",
              "The other settings (quests, equipment) can be changed too: \"Preview\" tells what changes before "
@@ -185,7 +193,7 @@ LOG_FIX_NEW = T("Revisión nueva {revision}, código {code}.", "New revision {re
 LOG_FIX_CHANGES = T("Ajustes que cambian:", "Settings that change:")
 LOG_FIX_QUESTS = T("Misiones que cambian ({count}):", "Quests that change ({count}):")
 LOG_FIX_QUEST = T("  {id} {title}: {old} → {new}", "  {id} {title}: {old} → {new}")
-LOG_FIX_MAP = T(" (otro mapa)", " (another map)")
+LOG_FIX_MAP = T(" (mapa: {old} → {new})", " (map: {old} → {new})")
 LOG_FIX_EQUIPMENT = T("Equipo que cambia: {groups}", "Equipment that changes: {groups}")
 LOG_FIX_NOTHING = T("No cambia nada respecto al mod de la carpeta.", "Nothing changes from the mod in the folder.")
 LOG_FIX_READY = T("Pulsa «Aplicar arreglo» para escribirlo (el mod actual se copia antes en backups/).",
@@ -197,9 +205,11 @@ EQUIPMENT_GROUPS = {"weapons": T("armas", "weapons"), "weapon upgrades": T("mejo
                     "sharpness": T("filos", "sharpness"), "felyne": T("Felyne", "Felyne")}
 FIX_WARNINGS = {
     "no_checksum": T("La partida de la carpeta se hizo antes de que existieran los códigos de comprobación: no se "
-                     "puede garantizar que solo cambie el arreglo.",
+                     "puede garantizar que solo cambie el arreglo. Si jugáis varios, aplicad todos el mismo "
+                     "settings_<semilla>.json arreglado: desde entonces lleva su código.",
                      "The game in the folder was made before checksums existed: it cannot be guaranteed that only "
-                     "the fix changes."),
+                     "the fix changes. If several of you play it, all apply the same fixed settings_<seed>.json: "
+                     "from then on it carries its code."),
     "no_base": T("No hay partida en la carpeta del mod: se escribe el mod completo.",
                  "There is no game in the mod folder: the whole mod is written."),
 }
@@ -238,6 +248,14 @@ CONFIRM_APPLY = T("Se va a modificar la carpeta del mod:\n{path}\n\nAntes se cop
                   "The mod folder will be changed:\n{path}\n\nThe current mod is copied to backups/ first. Close "
                   "the game in the emulator and start it again afterwards. Your save is not touched.\n\n"
                   "{warnings}Apply the fix?")
+CONFIRM_RESTORE = T("Se va a sustituir el mod de la carpeta:\n{path}\n\npor la copia {name} (revisión {revision}, "
+                    "código {code}). El mod actual se copia antes en backups/. Cierra el juego en el emulador y "
+                    "vuelve a abrirlo después.\n\n¿Restaurar la copia?",
+                    "The mod in this folder:\n{path}\n\nwill be replaced by the copy {name} (revision {revision}, "
+                    "code {code}). The current mod is copied to backups/ first. Close the game in the emulator "
+                    "and start it again afterwards.\n\nRestore the copy?")
+LOG_RESTORED = T("Copia {name} restaurada (el mod anterior está en backups/).",
+                 "Backup {name} restored (the previous mod is in backups/).")
 FIX_DONE_TITLE = T("Arreglo aplicado", "Fix applied")
 FIX_DONE_MESSAGE = T("Revisión {revision} · código {code}\n\nEnvía este archivo a quien juegue contigo; lo carga en "
                      "«Arreglar» y debe ver el mismo código:\n{file}\n\n¿Abrir la carpeta?",

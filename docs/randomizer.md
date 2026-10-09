@@ -200,17 +200,28 @@ regenerated mod keeps all progress (restart the game after installing it).
   (`PERSONAL_FIELDS`: HUD size, touchless target, monster icons, starting
   items) and the quest board pictures (they depend on the new icons, which
   need the update). Old files without the block still load as presets.
+  The personal options do change `exefs/code.ips` and some romfs files, so
+  two friends with the same code may still have different mod files.
 * **Preview** (`fix.preview`, nothing written): the mod folder's run is
   regenerated in memory and must give its checksum, or the fix is refused
   (`base_mismatch`: another randomizer version would change more than the
   fix). Then the safety rules, the new settings generated in memory, and what
-  changes: settings, quests (old and new monsters) and equipment records.
+  changes: settings, quests (old and new monsters, old and new map) and
+  equipment records.
   If the settings are exactly those of the loaded file's record (a friend's
   fix), the result must give that record's checksum (`target_mismatch`).
 * **Apply** (`fix.apply`): the mod folder (except `backups/`) is copied to
   `backups/rev<N>_<date>/` (the last 5 are kept), the run writes into it with
   the new record, and its checksum must equal the preview's; on any failure
   the backup is put back.
+* **Restore** (`fix.list_backups`, `fix.restore`; GUI card "Backups" in the
+  Fixes area, CLI `--list-backups` / `--restore NAME`): puts a copy of
+  `backups/` back. The current mod is copied to `backups/` first (the copy
+  being restored is never pruned then), so a restore can be undone.
+* **Games made before 0.2.0** have no checksum: the preview warns
+  (`no_checksum`) but cannot prove that only the fix changes. Friends who want
+  the check should all apply the same fixed `settings_<seed>.json`: from then
+  on it carries a checksum.
 * **Safety rules** (refused): changing the seed; switching "Allow OP
   equipment" off (or the equipment master switch while it is on) once it was
   on, since gear made with it may break the limits and every quest would be

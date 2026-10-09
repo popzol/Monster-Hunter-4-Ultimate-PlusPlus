@@ -191,6 +191,57 @@ def apply(fix: FixPreview, game: Path, mod_dir: Path, code_path: Path | None = N
     return result
 
 
+@dataclass
+class Backup:
+    """A copy of the mod folder made before a fix (backups/rev<N>_<date>)."""
+    path: Path
+    revision: int | None  # of the game it holds; None if it has no record
+    code: str | None
+    seed: str | None
+    date: str
+
+    @property
+    def name(self) -> str:
+        return self.path.name
+
+
+def list_backups(mod_dir: Path) -> list[Backup]:
+    """The copies in backups/, newest first."""
+    folder = mod_folder(mod_dir) / BACKUP_DIR
+    paths = sorted((path for path in folder.iterdir() if path.is_dir()), key=lambda path: path.stat().st_mtime,
+                   reverse=True) if folder.is_dir() else []
+    backups = []
+    for path in paths:
+        revision = code = seed = None
+        settings_path = find_run(path)
+        if settings_path:
+            try:
+                settings, record = load_run(settings_path)
+            except (OSError, ValueError, TypeError, KeyError):
+                pass
+            else:
+                seed = settings.seed
+                if record:
+                    revision, code = record.revision, record.checksum.code if record.checksum else None
+        date = datetime.fromtimestamp(path.stat().st_mtime).strftime("%Y-%m-%d %H:%M")
+        backups.append(Backup(path, revision, code, seed, date))
+    return backups
+
+
+def restore(mod_dir: Path, backup: Path) -> Path | None:
+    """Put a copy of backups/ back into the mod folder. The current mod is copied to backups/ first (and
+    returned), so a restore can be undone too."""
+    folder = mod_folder(mod_dir)
+    backup = Path(backup)
+    if backup.parent.resolve() != (folder / BACKUP_DIR).resolve() or not backup.is_dir():
+        raise ValueError(f"{backup} is not a copy in {folder / BACKUP_DIR}")
+    current = find_run(folder)
+    record = load_run(current)[1] if current else None
+    saved = _backup(folder, record, keep=backup)
+    _restore(folder, backup)
+    return saved
+
+
 def quest_changes(old: dict[str, Quest], new: dict[str, Quest], data: GameData) -> list[QuestChange]:
     changes = []
     for name in sorted(new):
@@ -234,8 +285,9 @@ def _format(value) -> str:
     return str(value)
 
 
-def _backup(folder: Path, record: RunRecord | None) -> Path | None:
-    """Copy the mod folder (but its backups) to backups/rev<N>_<date>; only the last KEPT_BACKUPS are kept."""
+def _backup(folder: Path, record: RunRecord | None, keep: Path | None = None) -> Path | None:
+    """Copy the mod folder (but its backups) to backups/rev<N>_<date>; only the last KEPT_BACKUPS are kept
+    (and `keep`, the copy about to be restored)."""
     items = [item for item in folder.iterdir() if item.name != BACKUP_DIR] if folder.is_dir() else []
     if not items:
         return None
@@ -253,7 +305,8 @@ def _backup(folder: Path, record: RunRecord | None) -> Path | None:
             shutil.copy2(item, target / item.name)
     old = sorted((path for path in (folder / BACKUP_DIR).iterdir() if path.is_dir()), key=lambda p: p.stat().st_mtime)
     for path in old[:-KEPT_BACKUPS]:
-        shutil.rmtree(path, ignore_errors=True)
+        if keep is None or path.resolve() != Path(keep).resolve():
+            shutil.rmtree(path, ignore_errors=True)
     return target
 
 

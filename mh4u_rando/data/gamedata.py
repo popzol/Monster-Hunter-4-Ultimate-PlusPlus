@@ -224,6 +224,10 @@ class GameData:
         info = self.monsters.get(monster_id)
         return info.name if info else f"Unknown monster #{monster_id}"
 
+    def map_name(self, map_id: int) -> str:
+        info = self.maps.get(map_id)
+        return info.name if info else f"Unknown map #{map_id}"
+
     def item_name(self, item_id: int) -> str:
         info = self.items.get(item_id)
         return info.name if info else f"Unknown item #{item_id}"

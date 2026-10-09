@@ -34,16 +34,19 @@ Borrar este archivo antes de fusionar con `main`.
   - nuevos tests de GUI.
   - Todo pasa con la ROM.
 
+## Segunda tanda (2026-10-09)
+
+- Barra lateral a 740 px: no cabía (el pie de idioma/apariencia quedaba cortado: hacían falta ~845 px en
+  Randomizar). Compactada (idioma y apariencia en una fila, márgenes menores) y comprobada por
+  `test_sidebar_fits_the_minimum_height` (mide con `winfo_*`, sin capturas). `MIN_SIZE` en `gui/app.py`.
+- Restaurar copias de `backups/`: `fix.list_backups` / `fix.restore` (guarda antes el mod actual; nunca
+  poda la copia que se restaura), tarjeta «Copias de seguridad» en ARREGLOS, CLI `--list-backups` /
+  `--restore NAME` (sin `--rom`).
+- Vista previa con el nombre del mapa (GUI y CLI; `GameData.map_name`).
+- Aviso de partidas pre-0.2.0 con el consejo de aplicar todos el mismo fichero arreglado.
+
 ## Pendiente
 
 - **Probar en el juego**: re-sortear una misión de una partida empezada, instalar el mod y comprobar que la
   partida guardada conserva el progreso y que la misión es la nueva.
-- **Revisar la barra lateral a 740 px de alto** (altura mínima subida de 680 a 740 porque se han añadido los
-  dos selectores). No se ha mirado con capturas.
-- **Modo 3DS real**:
-  - escribir el mod para Luma3DS (`luma/titles/0004000000126100/`);
-  - decidir qué opciones funcionan en consola y marcar el resto con `emulator_only`.
-- Las partidas creadas antes de 0.2.0 no tienen checksum: el arreglo avisa, pero no puede verificar la base.
-- Ideas:
-  - poder elegir en la GUI qué copia de `backups/` restaurar;
-  - mostrar el nombre del mapa en la vista previa (ahora solo dice «otro mapa»).
+- **Modo 3DS real** (rama aparte, ya en `docs/roadmap.md`).

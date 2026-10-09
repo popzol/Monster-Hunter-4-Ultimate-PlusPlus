@@ -84,6 +84,7 @@ its public classes and functions with their signatures.
   - `large_monsters() -> list[MonsterInfo]`
   - `randomizable_monsters(tier: int | None=None) -> list[MonsterInfo]`
   - `monster_name(monster_id: int) -> str`
+  - `map_name(map_id: int) -> str`
   - `item_name(item_id: int) -> str`
   - `tier_weights(quest_rank: int) -> dict[int, int]` - Tier weights for a rank, clamped to the closest defined rank.
   - `default_stats(quest_rank: int) -> dict[str, int]` - A typical stat block for a rank (used to replace invalid input stat blocks).
@@ -183,6 +184,10 @@ its public classes and functions with their signatures.
 - `describe_changes(old: Settings, new: Settings) -> list[str]` - The gameplay settings that differ, for the fix history.
 - `preview(game: Path, mod_dir: Path, target: Settings, loaded: RunRecord | None=None, loaded_settings: Settings | None=None, code_path: Path | None=None, data: GameData | None=None, progress: Callable[[int, int, QuestReport], None] | None=None) -> FixPreview` - What applying `target` to the mod folder would change. `loaded`/`loaded_settings`: the settings file
 - `apply(fix: FixPreview, game: Path, mod_dir: Path, code_path: Path | None=None, update_path: Path | None=None, progress: Callable[[int, int, QuestReport], None] | None=None, stage: Callable[[str], None] | None=None) -> RunResult` - Write the previewed fix into the mod folder, after copying it to backups/. Raises FixError (and p...
+- class `Backup` - A copy of the mod folder made before a fix (backups/rev<N>_<date>).
+  - `name() -> str`
+- `list_backups(mod_dir: Path) -> list[Backup]` - The copies in backups/, newest first.
+- `restore(mod_dir: Path, backup: Path) -> Path | None` - Put a copy of backups/ back into the mod folder. The current mod is copied to backups/ first (and
 - `quest_changes(old: dict[str, Quest], new: dict[str, Quest], data: GameData) -> list[QuestChange]`
 - `equipment_changes(old: bytes, new: bytes) -> dict[str, int]` - Equipment group -> number of records that differ between two executables.
 
@@ -203,6 +208,9 @@ its public classes and functions with their signatures.
   - `step_all(delta: int) -> None`
   - `reroll(name: str) -> bool` - Reroll the quest called `name` once more; False if there is no such quest.
   - `step(quest_id: int, delta: int) -> None`
+  - `backup_label(backup: Backup) -> str`
+  - `selected_backup() -> Backup | None`
+  - `restore_selected() -> None`
 
 ### `mh4u_rando/gui/i18n.py` - Interface languages.
 - class `T`

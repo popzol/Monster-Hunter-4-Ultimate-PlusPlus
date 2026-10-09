@@ -11,7 +11,8 @@ import pytest
 from mh4u_rando import __version__
 from mh4u_rando.arc import write_arc
 from mh4u_rando.fix import (
-    BACKUP_DIR, KEPT_BACKUPS, FixError, _backup, _restore, apply, describe_changes, find_run, preview, safety_errors,
+    BACKUP_DIR, KEPT_BACKUPS, FixError, _backup, _restore, apply, describe_changes, find_run, list_backups, preview,
+    restore, safety_errors,
 )
 from mh4u_rando.pipeline import generate, output_arc_path, run
 from mh4u_rando.randomizer import HudScale, Settings
@@ -119,6 +120,50 @@ def test_backup_and_restore(tmp_path):
         _backup(mod, RunRecord(revision=1))
     assert len(list((mod / BACKUP_DIR).iterdir())) == KEPT_BACKUPS
     assert _backup(tmp_path / "empty", None) is None
+
+
+def _mod_with_backups(tmp_path, count: int) -> Path:
+    """A mod folder at revision `count` with a copy of every earlier revision in backups/."""
+    mod = tmp_path / "mod"
+    (mod / "romfs").mkdir(parents=True)
+    for revision in range(count + 1):
+        if revision:
+            backup = _backup(mod, RunRecord(revision=revision - 1))
+            os.utime(backup, (revision * 1000, revision * 1000))  # mtime order = revision order
+        (mod / "romfs" / "a.arc").write_bytes(f"rev{revision}".encode())
+        save_run(mod / "settings_S.json", Settings(seed="S"),
+                 RunRecord(revision=revision, checksum=Checksum("q", "", f"CODE-000{revision}")))
+    return mod
+
+
+def test_list_and_restore_backups(tmp_path):
+    assert list_backups(tmp_path / "nothing") == []
+    mod = _mod_with_backups(tmp_path, 2)
+    backups = list_backups(mod)
+    assert [(b.revision, b.code, b.seed) for b in backups] == [(1, "CODE-0001", "S"), (0, "CODE-0000", "S")]
+    saved = restore(mod, backups[1].path)
+    assert (mod / "romfs" / "a.arc").read_bytes() == b"rev0" and load_run(find_run(mod))[1].revision == 0
+    assert (saved / "romfs" / "a.arc").read_bytes() == b"rev2"   # the restore can be undone
+    with pytest.raises(ValueError):
+        restore(mod, tmp_path / "elsewhere")
+
+
+def test_restoring_the_oldest_backup_keeps_it(tmp_path):
+    mod = _mod_with_backups(tmp_path, KEPT_BACKUPS)
+    assert len(list_backups(mod)) == KEPT_BACKUPS
+    restore(mod, list_backups(mod)[-1].path)  # the copy of the current mod would prune it
+    assert (mod / "romfs" / "a.arc").read_bytes() == b"rev0"
+
+
+def test_backups_from_the_command_line(tmp_path, capsys):
+    from mh4u_rando.__main__ import main
+    mod = _mod_with_backups(tmp_path, 1)
+    assert main(["--out", str(mod), "--list-backups"]) == 0
+    name = list_backups(mod)[0].name
+    assert name in capsys.readouterr().out
+    assert main(["--out", str(mod), "--restore", "no-such-copy"]) == 1
+    assert main(["--out", str(mod), "--restore", name]) == 0
+    assert (mod / "romfs" / "a.arc").read_bytes() == b"rev0"
 
 
 def test_find_run_picks_the_settings_file(tmp_path):

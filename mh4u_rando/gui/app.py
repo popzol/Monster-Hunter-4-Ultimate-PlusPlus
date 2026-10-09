@@ -37,8 +37,11 @@ import customtkinter as ctk
 
 from ..data import load_game_data
 from ..exefs import is_container
-from ..fix import FixError, FixPreview, apply as apply_fix, find_run, preview as preview_fix
-from ..pipeline import inspect_game, output_arc_path, run
+from ..fix import (
+    Backup, FixError, FixPreview, apply as apply_fix, find_run, list_backups, preview as preview_fix,
+    restore as restore_backup,
+)
+from ..pipeline import inspect_game, mod_folder, output_arc_path, run
 from ..randomizer import Settings
 from ..randomizer.rng import new_seed
 from ..randomizer.settings import PERSONAL_FIELDS
@@ -56,6 +59,7 @@ POLL_MS = 100
 ANIMATION_MS = 30
 GROUP_COLUMNS = 2
 SIDEBAR_WIDTH = 300
+MIN_SIZE = (1000, 740)  # the sidebar: mode and platform, files, seed or game, button, language (a test checks it)
 FIXES_AREA = -1  # area_index of the fixes area (fix mode)
 
 
@@ -67,7 +71,7 @@ class RandomizerApp(ctk.CTk):
         super().__init__()
         self.title(S.APP_NAME)
         self.geometry("1180x820")
-        self.minsize(1000, 740)  # the sidebar: mode and platform, files, seed or game, button, language
+        self.minsize(*MIN_SIZE)
 
         self.language = self.preferences.language if self.preferences.language in LANGUAGE_NAMES else "es"
         self.rom_var = ctk.StringVar(value=self.preferences.rom_path)
@@ -122,22 +126,22 @@ class RandomizerApp(ctk.CTk):
         gc.collect()
 
     def _build_sidebar(self):
-        bar = ctk.CTkFrame(self, width=SIDEBAR_WIDTH, fg_color=theme.SIDEBAR, corner_radius=0)
+        bar = self.sidebar = ctk.CTkFrame(self, width=SIDEBAR_WIDTH, fg_color=theme.SIDEBAR, corner_radius=0)
         bar.grid(row=0, column=0, sticky="nsw")
         bar.grid_propagate(False)
         bar.pack_propagate(False)
         pad = {"padx": 22}
 
         ctk.CTkLabel(bar, text="MH4U", text_color=theme.HEADING, font=theme.font(34, "bold")) \
-            .pack(anchor="w", pady=(26, 0), **pad)
+            .pack(anchor="w", pady=(18, 0), **pad)
         ctk.CTkLabel(bar, text="RANDOMIZER", font=theme.font(15, "bold")).pack(anchor="w", **pad)
         ctk.CTkLabel(bar, text=self.tr(S.SUBTITLE), text_color=theme.TEXT_MUTED, font=theme.font(11),
-                     wraplength=SIDEBAR_WIDTH - 44, justify="left").pack(anchor="w", pady=(4, 12), **pad)
+                     wraplength=SIDEBAR_WIDTH - 44, justify="left").pack(anchor="w", pady=(2, 8), **pad)
 
         self.mode_selector = self._segments(bar, S.MODES, self.mode, self._change_mode, S.MODE_TIP)
         self.platform_selector = self._segments(bar, S.PLATFORMS, self.platform, self._change_platform,
                                                 S.PLATFORM_TIP)
-        self.platform_selector.pack_configure(pady=(4, 14))
+        self.platform_selector.pack_configure(pady=(4, 10))
 
         self._heading(bar, S.FILES)
         self._path_field(bar, S.INPUT_ROM, S.INPUT_ROM_TIP, self.rom_var, self._browse_rom)
@@ -149,25 +153,26 @@ class RandomizerApp(ctk.CTk):
         else:
             self._build_seed_and_presets(bar)
 
-        self.run_button = ctk.CTkButton(bar, text="", height=50, font=theme.font(17, "bold"),
+        self.run_button = ctk.CTkButton(bar, text="", height=46, font=theme.font(17, "bold"),
                                         command=self._main_action)
-        self.run_button.pack(fill="x", pady=(18, 0), **pad)
+        self.run_button.pack(fill="x", pady=(14, 0), **pad)
 
-        footer = ctk.CTkFrame(bar, fg_color="transparent")
-        footer.pack(side="bottom", fill="x", pady=(0, 20), **pad)
-        ctk.CTkLabel(footer, text=self.tr(S.LANGUAGE), text_color=theme.TEXT_MUTED, font=theme.font(11)) \
-            .pack(anchor="w")
+        # Language and appearance share a row so the sidebar fits MIN_SIZE (tests/test_gui_app.py)
+        footer = self.sidebar_footer = ctk.CTkFrame(bar, fg_color="transparent")
+        footer.pack(side="bottom", fill="x", pady=(0, 14), **pad)
+        footer.grid_columnconfigure((0, 1), weight=1, uniform="footer")
+        for column, label in enumerate((S.LANGUAGE, S.APPEARANCE)):
+            ctk.CTkLabel(footer, text=self.tr(label), text_color=theme.TEXT_MUTED, font=theme.font(11)) \
+                .grid(row=0, column=column, sticky="w", padx=(0 if column == 0 else 4, 0))
         language = ctk.CTkSegmentedButton(footer, values=list(LANGUAGE_NAMES.values()),
-                                          command=self._change_language, font=theme.font())
+                                          command=self._change_language, font=theme.font(12))
         language.set(LANGUAGE_NAMES[self.language])
-        language.pack(fill="x", pady=(2, 10))
-        ctk.CTkLabel(footer, text=self.tr(S.APPEARANCE), text_color=theme.TEXT_MUTED, font=theme.font(11)) \
-            .pack(anchor="w")
+        language.grid(row=1, column=0, sticky="ew")
         modes = {self.tr(label): mode for mode, label in S.APPEARANCE_MODES.items()}
-        appearance = ctk.CTkSegmentedButton(footer, values=list(modes), font=theme.font(),
-                                            command=lambda label: self._change_appearance(modes[label]))
+        appearance = ctk.CTkOptionMenu(footer, values=list(modes), font=theme.font(12), dropdown_font=theme.font(12),
+                                       height=28, command=lambda label: self._change_appearance(modes[label]))
         appearance.set(self.tr(S.APPEARANCE_MODES[self.preferences.appearance]))
-        appearance.pack(fill="x", pady=(2, 0))
+        appearance.grid(row=1, column=1, sticky="ew", padx=(4, 0))
 
     def _segments(self, parent, labels: dict, selected: str, command, tooltip):
         """Segmented button over `labels` (key -> T); `command` gets the key."""
@@ -184,9 +189,9 @@ class RandomizerApp(ctk.CTk):
         pad = {"padx": 22}
         self._heading(bar, S.SEED)
         seed_row = ctk.CTkFrame(bar, fg_color="transparent")
-        seed_row.pack(fill="x", pady=(0, 14), **pad)
+        seed_row.pack(fill="x", pady=(0, 10), **pad)
         seed = ctk.CTkEntry(seed_row, textvariable=self.seed_var, placeholder_text=self.tr(S.SEED_PLACEHOLDER),
-                            height=34, font=theme.font())
+                            height=32, font=theme.font())
         seed.pack(side="left", fill="x", expand=True)
         tip(seed, S.SEED_TIP, self.language)
         new = self._secondary_button(seed_row, "↻", lambda: self.seed_var.set(new_seed()), width=38)
@@ -235,8 +240,8 @@ class RandomizerApp(ctk.CTk):
         title = ctk.CTkLabel(parent, text=self.tr(label), font=theme.font(12))
         title.pack(anchor="w", padx=22)
         row = ctk.CTkFrame(parent, fg_color="transparent")
-        row.pack(fill="x", padx=22, pady=(2, 10))
-        entry = ctk.CTkEntry(row, textvariable=variable, height=34, font=theme.font(12))
+        row.pack(fill="x", padx=22, pady=(2, 8))
+        entry = ctk.CTkEntry(row, textvariable=variable, height=32, font=theme.font(12))
         entry.pack(side="left", fill="x", expand=True)
         tip(entry, tooltip, self.language)
         button = self._secondary_button(row, "…", command, width=38)
@@ -289,7 +294,8 @@ class RandomizerApp(ctk.CTk):
             self.area_tabs.append(tabs)
         self.fixes_panel = None
         if self.mode == "fix":
-            self.fixes_panel = FixesPanel(parent, self.fix_game[2] if self.fix_game else None, self.language)
+            self.fixes_panel = FixesPanel(parent, self.fix_game[2] if self.fix_game else None, self.language,
+                                          list_backups(self._out_folder()), self._restore_backup)
             self.widgets.update(self.fixes_panel.widgets)
         elif self.area_index == FIXES_AREA:
             self.area_index = 0
@@ -468,6 +474,30 @@ class RandomizerApp(ctk.CTk):
             messagebox.showerror(S.APP_NAME, self.tr(S.ERROR_NO_RUN_IN_FOLDER))
             return
         self._open_game(path, self.current_settings())
+
+    def _out_folder(self) -> Path:
+        return Path(self.out_var.get().strip() or ".")
+
+    def _restore_backup(self, backup: Backup):
+        if self._busy():
+            return
+        folder = mod_folder(self._out_folder())
+        revision = "?" if backup.revision is None else backup.revision
+        if not messagebox.askyesno(self.tr(S.RESTORE), S.CONFIRM_RESTORE.format(
+                self.language, path=folder, name=backup.name, revision=revision, code=backup.code or "?")):
+            return
+        try:
+            restore_backup(folder, backup.path)
+        except (OSError, ValueError) as error:
+            messagebox.showerror(S.APP_NAME, str(error))
+            return
+        self._log(S.LOG_RESTORED.format(self.language, name=backup.name))
+        current = self.current_settings()
+        path = find_run(folder)
+        if path is None or not self._open_game(path, current):
+            self.fix_game = None
+            self.fix_preview = None
+            self._build(current)
 
     def _busy(self) -> bool:
         """Working, or showing the end of the progress bar before the result."""
@@ -748,8 +778,9 @@ class RandomizerApp(ctk.CTk):
             self._log(S.LOG_FIX_QUESTS.format(self.language, count=len(fix.quests)))
             self._log("\n".join(
                 S.LOG_FIX_QUEST.format(self.language, id=q.quest_id, title=q.title, old=lineup(q.old_waves),
-                                       new=lineup(q.new_waves)) + (self.tr(S.LOG_FIX_MAP) if q.old_map != q.new_map
-                                                                   else "")
+                                       new=lineup(q.new_waves)) + (
+                    S.LOG_FIX_MAP.format(self.language, old=data.map_name(q.old_map), new=data.map_name(q.new_map))
+                    if q.old_map != q.new_map else "")
                 for q in fix.quests))
         if fix.equipment:
             groups = ", ".join(f"{self.tr(S.EQUIPMENT_GROUPS[group])} {count}"
