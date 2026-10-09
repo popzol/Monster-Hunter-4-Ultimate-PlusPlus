@@ -44,6 +44,7 @@ research scripts), `tests/`, `docs/`.
 
 | Settings and behaviour | `docs/randomizer.md` |
 | Starting kit (new game items): edit it | `docs/randomizer.md`, "Starting kit" |
+| Skipping the intro/caravan and equipment menu in every item box | `docs/new_game_skip.md` |
 
 | Where the game's files are | `docs/game_files.md` |
 
@@ -52,6 +53,8 @@ research scripts), `tests/`, `docs/`.
 | HUD size option, GUI layouts | `docs/hud_layout.md` |
 
 | Executable patches, Ghidra, debugging in Citra | `docs/hud_code.md` |
+
+| Adding code, data or variables to the executable (free space) | `docs/code_space.md` |
 
 | Monster icons ("?" icon replacement) | `docs/monster_icons.md` |
 
@@ -87,6 +90,8 @@ python tools/build_gamedata.py          # regenerate data/generated (see docs/da
 
 python tools/build_equipment_data.py    # regenerate equipment_names.json from the dump
 
+python tools/build_code_space.py [--check]  # build and place the code added to the executable (docs/code_space.md)
+
 python -m mh4u_rando --rom game.3ds --out output_folder [--seed S] [--preset p.json]
 
 python -m mh4u_rando.gui
@@ -106,6 +111,10 @@ python -m mh4u_rando.gui
 * Executable patches (`exefs/code.ips`) are built from the ****update****'s
 
 executable only; each patch checks its own bytes first.
+
+* Never hardcode an address in the executable's free space or in `.bss`: declare a block or
+
+variable in `mh4u_rando/exefs/blocks.py` and follow `docs/code_space.md`.
 
 * Never show the orange "?" monster icon; `new_monster_icons` is on by default.
 

@@ -7,10 +7,10 @@
 @ 0xB948AC is replaced by `bl` to this function and a branch on r0:
 @     r0 != 0 if asm/dpad_filter.s saw L held + D-pad up pressed, or the original test.
 @ dpad_filter.s runs in the player's per-frame input update and leaves the
-@ request in FLAG (a free word at the end of .bss); it is consumed here, so a
+@ request in target_request (a variable in .bss); it is consumed here, so a
 @ press switches once. Only r0, r1 and r12 are used (the caller reloads r0).
 @
-@ Build: tools/build_hud_asm.py (devkitARM), linked at its patch address.
+@ Build: tools/build_code_space.py (devkitARM), which places and links it (docs/code_space.md).
 
     .arch armv6k
     .arm
@@ -18,7 +18,6 @@
 
     .equ PAD_POINTER, 0x010572E0
     .equ SETTINGS_POINTER, 0x00FB6B7C
-    .equ FLAG, 0x0111D128             @ written by dpad_filter.s
     .equ PRESSED, 0x348
     .equ SHORTCUT_BUTTON, 0x8000
 
@@ -43,7 +42,7 @@ original:
     bx      lr
 
 flag_pointer:
-    .word FLAG
+    .word target_request              @ written by dpad_filter.s
 pad_pointer:
     .word PAD_POINTER
 settings_pointer:

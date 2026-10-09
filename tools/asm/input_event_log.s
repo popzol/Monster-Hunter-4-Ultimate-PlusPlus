@@ -4,15 +4,15 @@
 @
 @ Whenever the player's held buttons (p + 0x3A0), its actions (p + 0x3CC), the pad's "raw" buttons
 @ (pad + 0x8C without the Circle Pad, 0xF0000000) or the game layout's held buttons (pad + 0x30C)
-@ change, it appends one 32-byte entry to a ring of 100 at 0x111D200, with
+@ change, it appends one 32-byte entry to a ring of 100 (RING), with
 @ p = *(*(0x108260C) + 0xE30):
 @     +0x00 call count       +0x04 p + 0x3A0 held      +0x08 p + 0x3A4 pressed
 @     +0x0C p + 0x3CC actions +0x10 pad + 0x8C "raw"   +0x14 pad + 0x30C | pad + 0x310 << 16
 @     +0x18 pad + 0x340 GUI held                       +0x1C pad + 0x348 GUI pressed
-@ 0x111D1F0 = next index, 0x111D1F4 = call count. The last values seen (the comparison) are at
-@ 0x111D130: held, actions, raw, game layout held.
-@ The ring lives in the unused tail of the last .bss page (bss ends at 0x111D128; the page at
-@ 0x111E000). Read it from a Citra save state with tools/citra_state.py --input-log.
+@ HEAD = next index, HEAD + 4 = call count. The last values seen (the comparison) are at
+@ LAST: held, actions, raw, game layout held.
+@ All of it is the debug variable input_log (mh4u_rando/exefs/blocks.py, docs/code_space.md),
+@ in the unused tail of the last .bss page. Read it from a Citra save state with tools/citra_state.py --input-log.
 @
 @ Build: python tools/hud_probe.py ROM --update UPDATE.app --minimap --target-button
 @            --target-asm tools/asm/input_event_log.s --devkitarm DIR --out DIR
@@ -24,9 +24,9 @@
     .equ PAD_POINTER, 0x010572E0
     .equ SETTINGS_POINTER, 0x00FB6B7C
     .equ PLAYER_POINTER, 0x0108260C
-    .equ HEAD, 0x0111D1F0
-    .equ RING, 0x0111D200
-    .equ LAST, 0x0111D130
+    .equ HEAD, input_log
+    .equ LAST, input_log + 0x10
+    .equ RING, input_log + 0x20
     .equ ENTRIES, 100
 
 _start:

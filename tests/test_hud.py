@@ -1,6 +1,7 @@
 import os
 import struct
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -579,33 +580,41 @@ def test_encode_bl_round_trip():
 
 
 def synthetic_update_code() -> bytes:
-    from mh4u_rando.hud.code_patch import (
-        BASE_ADDRESS, CAVE_END, ICON_CALLS, MINIMAP_CIRCLE_OFFSET, PROJECT, encode_bl,
-    )
-    code = bytearray(CAVE_END - BASE_ADDRESS)
+    from mh4u_rando.exefs.code_space import REGIONS
+    from mh4u_rando.hud.code_patch import BASE_ADDRESS, ICON_CALLS, MINIMAP_CIRCLE_OFFSET, PROJECT, encode_bl
+    code = bytearray(REGIONS["text_tail"].end - BASE_ADDRESS)
     for site in ICON_CALLS:
         code[site - BASE_ADDRESS:site - BASE_ADDRESS + 4] = encode_bl(site, PROJECT)
     struct.pack_into("<f", code, MINIMAP_CIRCLE_OFFSET[0] - BASE_ADDRESS, MINIMAP_CIRCLE_OFFSET[1])
     return bytes(code)
 
 
+def block_bytes(code: bytes, block) -> bytes:
+    from mh4u_rando.hud.code_patch import BASE_ADDRESS
+    return code[block.address - BASE_ADDRESS:block.end - BASE_ADDRESS]
+
+
 def test_patch_minimap_icons():
+    from mh4u_rando.exefs.code_space import load_layout
     from mh4u_rando.hud.code_patch import (
-        BASE_ADDRESS, CAVE, ICON_CALLS, MINIMAP_CIRCLE_OFFSET, MINIMAP_WRAPPER, WRAPPER_FLOATS, CodePatchError,
-        bl_target, patch_minimap_icons,
+        ICON_CALLS, MINIMAP_CIRCLE_OFFSET, BASE_ADDRESS, CodePatchError, bl_target, patch_minimap_icons,
     )
+    layout = load_layout()
+    wrapper = layout.block("minimap_wrapper")
     code = synthetic_update_code()
     patched = patch_minimap_icons(code, 0.7)
-    assert all(bl_target(patched, site) == CAVE for site in ICON_CALLS)
+    assert all(bl_target(patched, site) == wrapper.address for site in ICON_CALLS)
     assert 0xB97A90 in ICON_CALLS  # the visible circle of the stage map without the Map item
-    wrapper = patched[CAVE - BASE_ADDRESS:CAVE - BASE_ADDRESS + len(MINIMAP_WRAPPER)]
-    assert wrapper[:WRAPPER_FLOATS] == MINIMAP_WRAPPER[:WRAPPER_FLOATS]
-    assert struct.unpack_from("<2f", wrapper, WRAPPER_FLOATS) == pytest.approx((0.7, 0.15))
-    assert bl_target(patched, CAVE + 12) == 0x6C40E0  # the wrapper still calls the projection
+    placed = block_bytes(patched, wrapper)
+    floats = layout.symbol("minimap_wrapper", "scale") - wrapper.address
+    assert layout.symbol("minimap_wrapper", "half_rest") == wrapper.address + floats + 4
+    assert placed[:floats] == wrapper.data[:floats]
+    assert struct.unpack_from("<2f", placed, floats) == pytest.approx((0.7, 0.15))
+    assert bl_target(patched, wrapper.address + 12) == 0x6C40E0  # the wrapper still calls the projection
     circle, offset = MINIMAP_CIRCLE_OFFSET
     assert struct.unpack_from("<f", patched, circle - BASE_ADDRESS)[0] == pytest.approx(offset * 0.7)
     changed = [i for i, (a, b) in enumerate(zip(code, patched)) if a != b]
-    assert len(changed) <= len(MINIMAP_WRAPPER) + 4 * len(ICON_CALLS) + 4
+    assert len(changed) <= len(wrapper.data) + 4 * len(ICON_CALLS) + 4
     with pytest.raises(CodePatchError):
         patch_minimap_icons(patched, 0.7)  # already patched: refuses to stack
     with pytest.raises(CodePatchError):
@@ -625,8 +634,9 @@ def test_patch_minimap_icons_on_the_game():
 
 
 def test_patch_mount_gauge_and_patch_hud():
+    from mh4u_rando.exefs.code_space import load_layout
     from mh4u_rando.hud.code_patch import (
-        BASE_ADDRESS, CAVE, ICON_CALLS, MOUNT_FACE_FLOATS, CodePatchError, bl_target, patch_hud, patch_mount_gauge,
+        BASE_ADDRESS, ICON_CALLS, MOUNT_FACE_FLOATS, CodePatchError, bl_target, patch_hud, patch_mount_gauge,
     )
     code = bytearray(synthetic_update_code())
     with pytest.raises(CodePatchError):
@@ -636,7 +646,7 @@ def test_patch_mount_gauge_and_patch_hud():
     patched = patch_hud(bytes(code), 0.5)
     assert {a: struct.unpack_from("<f", patched, a - BASE_ADDRESS)[0] for a in MOUNT_FACE_FLOATS} == \
         {a: v * 0.5 for a, v in MOUNT_FACE_FLOATS.items()}
-    assert all(bl_target(patched, site) == CAVE for site in ICON_CALLS)
+    assert all(bl_target(patched, site) == load_layout().address("minimap_wrapper") for site in ICON_CALLS)
 
 
 def test_patch_hud_on_the_game():
@@ -657,43 +667,54 @@ def test_layouts_with_the_code_patch():
     assert layouts_of("core_common.arc", True) == layouts_of("core_common.arc", False)
 
 
-def test_patch_target_button():
+def synthetic_button_code() -> bytes:
     from mh4u_rando.hud.code_patch import (
-        ACTIONS_COPY, BASE_ADDRESS, CAVE_END, DPAD_ACTIONS, DPAD_FILTER, DPAD_FILTER_CODE, DPAD_HOOK, FACE_LOADER,
-        FACE_ROUTINE, TARGET_BUTTON, TARGET_FACE, TARGET_ROUTINE, TARGET_SET, TARGET_SKIP, TARGET_TEST,
-        TARGET_TEST_ORIGINAL, CodePatchError, bl_target, encode_bl, patch_hud, patch_target_button,
+        BASE_ADDRESS, DPAD_ACTIONS, DPAD_HOOK, TARGET_TEST, TARGET_TEST_ORIGINAL, encode_bl,
     )
+    code = bytearray(synthetic_update_code())
+    code[TARGET_TEST - BASE_ADDRESS:TARGET_TEST - BASE_ADDRESS + 16] = TARGET_TEST_ORIGINAL
+    code[DPAD_HOOK - BASE_ADDRESS:DPAD_HOOK - BASE_ADDRESS + 4] = encode_bl(DPAD_HOOK, DPAD_ACTIONS)
+    return bytes(code)
+
+
+def test_patch_target_button():
+    from mh4u_rando.exefs.code_space import Layout, load_layout
+    from mh4u_rando.hud.code_patch import (
+        ACTIONS_COPY, BASE_ADDRESS, DPAD_ACTIONS, DPAD_HOOK, TARGET_SET, TARGET_SKIP, TARGET_TEST,
+        CodePatchError, bl_target, encode_bl, patch_target_button,
+    )
+    layout = load_layout()
+    button, dpad = layout.block("target_button"), layout.block("dpad_filter")
     code = bytearray(synthetic_update_code())
     with pytest.raises(CodePatchError):
         patch_target_button(bytes(code))  # the original test is missing
-    code[TARGET_TEST - BASE_ADDRESS:TARGET_TEST - BASE_ADDRESS + 16] = TARGET_TEST_ORIGINAL
+    code = bytearray(synthetic_button_code())
+    code[DPAD_HOOK - BASE_ADDRESS:DPAD_HOOK - BASE_ADDRESS + 4] = bytes(4)
     with pytest.raises(CodePatchError):
         patch_target_button(bytes(code))  # the call of the D-pad actions is missing
     code[DPAD_HOOK - BASE_ADDRESS:DPAD_HOOK - BASE_ADDRESS + 4] = encode_bl(DPAD_HOOK, DPAD_ACTIONS)
     patched = patch_target_button(bytes(code))
-    assert patched[TARGET_ROUTINE - BASE_ADDRESS:TARGET_ROUTINE - BASE_ADDRESS + len(TARGET_BUTTON)] == TARGET_BUTTON
-    assert TARGET_ROUTINE + len(TARGET_BUTTON) <= FACE_LOADER
-    assert bl_target(patched, TARGET_TEST) == TARGET_ROUTINE
+    assert block_bytes(patched, button) == button.data
+    assert bl_target(patched, TARGET_TEST) == button.address
     # The D-pad actions go through the filter, which calls or jumps to the original function.
-    assert bl_target(patched, DPAD_HOOK) == DPAD_FILTER
-    assert patched[DPAD_FILTER - BASE_ADDRESS:DPAD_FILTER - BASE_ADDRESS + len(DPAD_FILTER_CODE)] == DPAD_FILTER_CODE
-    assert DPAD_FILTER + len(DPAD_FILTER_CODE) <= CAVE_END
+    assert bl_target(patched, DPAD_HOOK) == dpad.address
+    assert block_bytes(patched, dpad) == dpad.data
     assert bl_target(patched, ACTIONS_COPY) is None  # probe 19's hook is gone
-    assert FACE_ROUTINE + len(TARGET_FACE) <= DPAD_FILTER
-    flag = struct.pack("<I", 0x111D128)  # the request, in both routines
-    assert TARGET_BUTTON.endswith(flag + struct.pack("<2I", 0x10572E0, 0xFB6B7C)) and DPAD_FILTER_CODE.endswith(flag)
+    request = struct.pack("<I", layout.address("target_request"))  # the request, in both routines
+    assert button.data.endswith(request + struct.pack("<2I", 0x10572E0, 0xFB6B7C)) and dpad.data.endswith(request)
     words = struct.unpack_from("<3I", patched, TARGET_TEST + 4 - BASE_ADDRESS)
     assert words[0] == 0xE3500000                                               # cmp r0, #0
     assert words[1] >> 24 == 0x0A and TARGET_TEST + 16 + 4 * (words[1] & 0xFFFFFF) == TARGET_SKIP  # beq
     assert words[2] >> 24 == 0xEA and TARGET_TEST + 20 + 4 * (words[2] & 0xFFFFFF) == TARGET_SET   # b
     with pytest.raises(CodePatchError):
         patch_target_button(patched)  # already patched
-    diagnostic = bytes(range(1, 201))  # a larger routine in its place (hud_probe.py --target-asm)
-    patched = patch_target_button(bytes(code), diagnostic)
-    assert patched[TARGET_ROUTINE - BASE_ADDRESS:TARGET_ROUTINE - BASE_ADDRESS + len(diagnostic)] == diagnostic
-    assert bl_target(patched, TARGET_TEST) == TARGET_ROUTINE
+    # A larger diagnostic routine in its place (hud_probe.py --target-asm), without the filter.
+    diagnostic = Layout({**layout.blocks, "target_button": replace(button, data=bytes(range(1, 201)))},
+                        layout.variables)
+    patched = patch_target_button(bytes(code), diagnostic, with_filter=False)
+    assert block_bytes(patched, diagnostic.block("target_button")) == bytes(range(1, 201))
+    assert bl_target(patched, TARGET_TEST) == button.address
     assert bl_target(patched, DPAD_HOOK) == DPAD_ACTIONS  # no filter
-    assert not any(patched[DPAD_FILTER - BASE_ADDRESS:CAVE_END - BASE_ADDRESS])
 
 
 def test_patch_target_button_on_the_game():
@@ -704,16 +725,16 @@ def test_patch_target_button_on_the_game():
     patch_target_button(patch_hud(update.read_bytes(), 0.7))  # both fit in the free space together
 
 
-def synthetic_face_code() -> bytes:
+def synthetic_face_code(base: bytes = b"") -> bytes:
     """An executable with what patch_target_face checks: the instructions replaced in the layout loader,
     releaser and group show function, the quest layout list (20 path pointers + 0) and the call to the
-    target panel update."""
+    target panel update. `base`: the start of the executable (another synthetic one)."""
     from mh4u_rando.hud.code_patch import (
-        BASE_ADDRESS, CAVE_END, FACE_HOOK, FREE_HOOK, FREE_HOOK_ORIGINAL, LAYOUT_COUNT, LAYOUT_LIST, LOADER_HOOK,
+        BASE_ADDRESS, FACE_HOOK, FREE_HOOK, FREE_HOOK_ORIGINAL, LAYOUT_COUNT, LAYOUT_LIST, LOADER_HOOK,
         LOADER_HOOK_ORIGINAL, PANEL_UPDATE, SHOW_HOOK, SHOW_HOOK_ORIGINAL, encode_bl,
     )
     code = bytearray(LAYOUT_LIST + 0x100 - BASE_ADDRESS)
-    assert len(code) > CAVE_END - BASE_ADDRESS
+    code[:len(base)] = base
     for hook, original in ((LOADER_HOOK, LOADER_HOOK_ORIGINAL), (FREE_HOOK, FREE_HOOK_ORIGINAL),
                            (SHOW_HOOK, SHOW_HOOK_ORIGINAL)):
         code[hook - BASE_ADDRESS:hook - BASE_ADDRESS + 4] = original
@@ -734,45 +755,55 @@ def branch_target(code: bytes, at: int) -> int | None:
 
 
 def test_patch_target_face():
+    from mh4u_rando.exefs.code_space import Layout, load_layout
     from mh4u_rando.hud.code_patch import (
-        BASE_ADDRESS, CAVE_END, COPY_INDEX, FACE_FREE, FACE_FREE_CODE, FACE_HOOK, FACE_LOADER, FACE_LOADER_CODE,
-        FACE_PARAMS, FACE_ROUTINE, FACE_SHOW, FACE_SHOW_CODE, FREE_HOOK, HUD_REF, LAYOUT_LIST, LOADER_HOOK, SHOW_HOOK,
-        SHOW_HOOK_ORIGINAL, TARGET_FACE, CodePatchError, bl_target, face_params, patch_target_face,
+        BASE_ADDRESS, COPY_INDEX, FACE_HOOK, FREE_HOOK, HUD_REF, LAYOUT_LIST, LOADER_HOOK, SHOW_HOOK,
+        SHOW_HOOK_ORIGINAL, CodePatchError, bl_target, face_params, patch_target_face,
     )
+    layout = load_layout()
+    loader_block, free_block, show_block, face = (layout.block(name) for name in (
+        "face_loader", "face_free", "face_show", "target_face"))
     code = synthetic_face_code()
     patched = patch_target_face(code, 0.7)
-    assert bl_target(patched, LOADER_HOOK) == FACE_LOADER and bl_target(patched, FREE_HOOK) == FACE_FREE
-    loader = patched[FACE_LOADER - BASE_ADDRESS:FACE_LOADER - BASE_ADDRESS + len(FACE_LOADER_CODE)]
-    assert loader == FACE_LOADER_CODE and FACE_LOADER + len(FACE_LOADER_CODE) <= FACE_FREE
+    assert bl_target(patched, LOADER_HOOK) == loader_block.address
+    assert bl_target(patched, FREE_HOOK) == free_block.address
+    loader = block_bytes(patched, loader_block)
+    assert loader == loader_block.data
     literals = struct.unpack_from("<2I", loader, len(loader) - 8)
     assert literals == (LAYOUT_LIST + 12 * 4, 0xEFE1E8)  # ui601's path; the replaced instruction's literal
-    assert bl_target(patched, FACE_LOADER + 12) == FACE_FREE  # a leftover copy is released first
-    free = patched[FACE_FREE - BASE_ADDRESS:FACE_FREE - BASE_ADDRESS + len(FACE_FREE_CODE)]
-    assert free == FACE_FREE_CODE and FACE_FREE + len(FACE_FREE_CODE) <= FACE_SHOW
+    assert bl_target(patched, loader_block.address + 12) == free_block.address  # a leftover copy is released first
+    free = block_bytes(patched, free_block)
+    assert free == free_block.data
     mov_copy_index = 0xE3A00D17  # mov rN, #0x5C0 (0x17 rotated right by 26), with N in bits 12-15
     assert COPY_INDEX == 0x5C0
     assert struct.pack("<I", mov_copy_index | 2 << 12) in loader and struct.pack("<I", mov_copy_index | 5 << 12) in free
     # FUN_00ae53e0 jumps to face_show.s, which ends with the replaced instruction and a jump back.
-    show = patched[FACE_SHOW - BASE_ADDRESS:FACE_SHOW - BASE_ADDRESS + len(FACE_SHOW_CODE)]
-    assert show == FACE_SHOW_CODE and FACE_SHOW + len(FACE_SHOW_CODE) <= FACE_PARAMS
-    assert branch_target(patched, SHOW_HOOK) == FACE_SHOW
-    back = [at for at in range(FACE_SHOW, FACE_SHOW + len(show), 4) if branch_target(patched, at) == SHOW_HOOK + 4]
+    show = block_bytes(patched, show_block)
+    assert show == show_block.data
+    assert branch_target(patched, SHOW_HOOK) == show_block.address
+    back = [at for at in range(show_block.address, show_block.end, 4) if branch_target(patched, at) == SHOW_HOOK + 4]
     assert len(back) == 1 and patched[back[0] - 4 - BASE_ADDRESS:back[0] - BASE_ADDRESS] == SHOW_HOOK_ORIGINAL
     assert struct.pack("<I", 0x1085650) in show  # the ui601 binder
     assert struct.pack("<I", HUD_REF) in show    # the HUD's health bar
     assert patched[LAYOUT_LIST - BASE_ADDRESS:] == code[LAYOUT_LIST - BASE_ADDRESS:]  # the list is untouched
-    assert struct.unpack_from("<3f", patched, FACE_PARAMS - BASE_ADDRESS) == pytest.approx(face_params(0.7))
-    assert patched[FACE_ROUTINE - BASE_ADDRESS:FACE_ROUTINE - BASE_ADDRESS + len(TARGET_FACE)] == TARGET_FACE
-    assert bl_target(patched, FACE_HOOK) == FACE_ROUTINE
+    params = layout.address("face_params")
+    assert struct.unpack_from("<3f", patched, params - BASE_ADDRESS) == pytest.approx(face_params(0.7))
+    assert block_bytes(patched, face) == face.data
+    assert struct.pack("<I", params) in face.data  # the routine reads the placement
+    assert bl_target(patched, FACE_HOOK) == face.address
     with pytest.raises(CodePatchError):
         patch_target_face(patched)  # already patched
     with pytest.raises(CodePatchError):
         patch_target_face(bytes(len(code)))  # not the update's executable
-    debug = bytes(range(256)) * 5  # the diagnostic build: up to CAVE_END
+    # The diagnostic build (hud_probe.py --face-debug) is another layout's target_face block.
+    routine = (bytes(range(1, 256)) * 8)[:len(face.data)]
+    debug = Layout({**layout.blocks, "target_face": replace(face, data=routine)}, layout.variables)
     patched = patch_target_face(code, 0.7, debug)
-    assert patched[FACE_ROUTINE - BASE_ADDRESS:FACE_ROUTINE - BASE_ADDRESS + len(debug)] == debug
+    assert block_bytes(patched, debug.block("target_face")) == routine
+    # A block that overlaps another one in a hand-made layout is refused, not written over it.
+    bigger = Layout({**layout.blocks, "target_face": replace(face, data=bytes([1]) * 0x87C)}, layout.variables)
     with pytest.raises(CodePatchError):
-        patch_target_face(code, 0.7, bytes(CAVE_END - FACE_ROUTINE + 4))
+        patch_target_face(code, 0.7, bigger)
 
 
 def test_face_params_follow_the_hud_size():
@@ -789,42 +820,34 @@ def test_face_params_follow_the_hud_size():
 
 
 def test_patch_target_face_on_the_game():
+    from mh4u_rando.exefs.code_space import load_layout
     from mh4u_rando.hud.code_patch import (
-        FACE_FREE, FACE_LOADER, FACE_ROUTINE, FACE_SHOW, FREE_HOOK, LOADER_HOOK, PANEL_UPDATE, SHOW_HOOK, bl_target,
-        patch_hud, patch_target_button, patch_target_face,
+        FREE_HOOK, LOADER_HOOK, PANEL_UPDATE, SHOW_HOOK, bl_target, patch_hud, patch_target_button, patch_target_face,
     )
     update = ROOT / "Documentation" / "exefs" / "code_update.bin"
     if not update.is_file():
         pytest.skip("no Documentation/exefs/code_update.bin")
+    layout = load_layout()
+    loader, free = layout.address("face_loader"), layout.address("face_free")
     code = update.read_bytes()
     patched = patch_target_face(patch_target_button(patch_hud(code, 0.7)), 0.7)  # all fit together
-    assert bl_target(patched, LOADER_HOOK) == FACE_LOADER and bl_target(patched, FREE_HOOK) == FACE_FREE
-    calls = [bl_target(patched, FACE_LOADER + 4 * i) for i in range(40)]
-    assert {0x2B51C0, 0xC0F474, FACE_FREE} <= set(calls)       # loads ui601 and creates its groups
-    assert 0xB044F4 in [bl_target(patched, FACE_FREE + 4 * i) for i in range(14)]  # releases them
-    assert branch_target(patched, SHOW_HOOK) == FACE_SHOW                     # hides them with the panel
-    assert PANEL_UPDATE in [bl_target(patched, FACE_ROUTINE + 4 * i) for i in range(5)]
+    assert bl_target(patched, LOADER_HOOK) == loader and bl_target(patched, FREE_HOOK) == free
+    calls = [bl_target(patched, loader + 4 * i) for i in range(40)]
+    assert {0x2B51C0, 0xC0F474, free} <= set(calls)       # loads ui601 and creates its groups
+    assert 0xB044F4 in [bl_target(patched, free + 4 * i) for i in range(14)]  # releases them
+    assert branch_target(patched, SHOW_HOOK) == layout.address("face_show")  # hides them with the panel
+    face = layout.address("target_face")
+    # The ARM entry calls the panel update through a register (long_call): its address is in the entry's literals.
+    assert PANEL_UPDATE in struct.unpack_from("<8I", patched, face - 0x100000)
     patch_hud(patch_target_face(code), 0.7)  # in any order
-
-
-def test_embedded_code_matches_the_sources():
-    """The bytes in code_patch.py are the build of mh4u_rando/hud/asm (needs devkitARM)."""
-    sys.path.insert(0, str(ROOT / "tools"))
-    from build_hud_asm import ASM, DEFAULT_DEVKITARM, SOURCES, assemble
-    if not (DEFAULT_DEVKITARM / "arm-none-eabi-gcc.exe").is_file() and \
-            not (DEFAULT_DEVKITARM / "arm-none-eabi-gcc").is_file():
-        pytest.skip("no devkitARM")
-    for source, (address, embedded, name) in SOURCES.items():
-        assert assemble(ASM / source, address, DEFAULT_DEVKITARM) == embedded, name
 
 
 def test_pipeline_with_every_interface_option(tmp_path):
     """code.ips from the update's executable: equipment, HUD size, L + D-pad up and the target face together."""
     from conftest import rom_path
     from mh4u_rando.exefs import apply_ips, load_code
-    from mh4u_rando.hud.code_patch import (
-        CAVE, DPAD_FILTER, DPAD_HOOK, FACE_HOOK, FACE_ROUTINE, ICON_CALLS, TARGET_ROUTINE, TARGET_TEST, bl_target,
-    )
+    from mh4u_rando.exefs.code_space import load_layout
+    from mh4u_rando.hud.code_patch import DPAD_HOOK, FACE_HOOK, ICON_CALLS, TARGET_TEST, bl_target
     from mh4u_rando.pipeline import run
     from mh4u_rando.randomizer import HudScale, Settings
     rom = rom_path()
@@ -835,9 +858,11 @@ def test_pipeline_with_every_interface_option(tmp_path):
     assert result.interface_patched and result.equipment_report is not None
     original = load_code(UPDATE_APP)
     patched = apply_ips(original, result.ips_path.read_bytes())
-    assert all(bl_target(patched, site) == CAVE for site in ICON_CALLS)
-    assert bl_target(patched, TARGET_TEST) == TARGET_ROUTINE and bl_target(patched, FACE_HOOK) == FACE_ROUTINE
-    assert bl_target(patched, DPAD_HOOK) == DPAD_FILTER
+    layout = load_layout()
+    assert all(bl_target(patched, site) == layout.address("minimap_wrapper") for site in ICON_CALLS)
+    assert bl_target(patched, TARGET_TEST) == layout.address("target_button")
+    assert bl_target(patched, FACE_HOOK) == layout.address("target_face")
+    assert bl_target(patched, DPAD_HOOK) == layout.address("dpad_filter")
     assert patched != original
     from mh4u_rando.hud.hint import NAME
     for lang in ("eng", "spa"):  # the L + D-pad up hint, shrunk with the rest of the item selector

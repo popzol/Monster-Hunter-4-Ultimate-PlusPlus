@@ -290,7 +290,7 @@ What a new character gets (option `starting_kit`, `mh4u_rando/exefs/starting_ite
   the retail slots, so quantities can be 99 (the pouch limit only matters for
   item sets).
 * The free space at the end of `.text` has no room for a separate table
-  (docs/hud_code.md), hence the use of the empty slots.
+  (docs/code_space.md), hence the use of the empty slots.
 
 ## Not found / not decoded
 

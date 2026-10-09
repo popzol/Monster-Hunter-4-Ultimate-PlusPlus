@@ -8,9 +8,10 @@
 @     v' = s * v             ->   z' = s * z - (W/2) * (1 - s)
 @ W is the map size, an int at stage + 0x150 (what FUN_006c5678 returns).
 @ The call sites of the icon functions are redirected here (bl); the two
-@ floats at the end are written by mh4u_rando/hud/code_patch.py.
+@ floats at the end (labels scale and half_rest) are written by
+@ mh4u_rando/hud/code_patch.py.
 @
-@ Build: tools/build_hud_asm.py (devkitARM), linked at the patch address.
+@ Build: tools/build_code_space.py (devkitARM), which places and links it (docs/code_space.md).
 
     .arch armv6k
     .fpu vfp

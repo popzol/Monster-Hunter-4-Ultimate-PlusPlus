@@ -45,9 +45,10 @@ Paths differ per machine; `<user>` is the Windows user folder.
 * **devkitARM** (`C:\devkitPro\devkitARM\bin`) or the **Arm GNU Toolchain**
   (`winget install Arm.ArmGnuToolchain`; pass its `bin` folder with
   `--devkitarm`): `arm-none-eabi-as`, `ld`, `objcopy`, `objdump`, `gdb`.
-  `tools/build_hud_asm.py` assembles `mh4u_rando/hud/asm/*.s` at their patch
-  addresses and checks the bytes embedded in `code_patch.py` (the randomizer
-  itself never needs an assembler). Quick disassembly without Ghidra:
+  `tools/build_code_space.py` builds `mh4u_rando/hud/asm/*`, places them in
+  the free space and writes the layout the randomizer uses
+  ([code_space.md](code_space.md); the randomizer itself never needs an
+  assembler). Quick disassembly without Ghidra:
   `arm-none-eabi-objdump -D -b binary -m arm --adjust-vma=0x100000
   --start-address=A --stop-address=B code_update.bin`.
 * **Run-time inspection**: `tools/hud_probe.py --target-asm` (diagnostic
@@ -64,24 +65,18 @@ Paths differ per machine; `<user>` is the Windows user folder.
 | `.data` / `.bss` | 0xEC0000 | 0xEC0000, data 0x1C1B84 + bss 0x9B5A4 |
 | **Free space at the end of `.text`** (zeros, executable) | 0xF14 bytes at 0xDEC0EC | **0x87C bytes at 0xDEC784** |
 
-Free space used in the update:
-
-| Address | Size | Contents |
-|---|---|---|
-| 0xDEC784 | 0x5C | `asm/minimap_wrapper.s` |
-| 0xDEC7E0 | 0x70 | `asm/target_button.s` (diagnostic routines take its place; they collide with the target face) |
-| 0xDEC850 | 0xA4 | Target face: `asm/face_loader.s` (loads the second `ui601`) |
-| 0xDEC8F4 | 0x38 | Target face: `asm/face_free.s` (releases it) |
-| 0xDEC92C | 0xF8 | Target face: `asm/face_show.s` (shows / hides it with the touch panel and the HUD) |
-| 0xDECA24 | 0x0C | Target face: position x, y and scale (`code_patch.face_params`) |
-| 0xDECA30 | 0x4F0 | `asm/target_face.c` (ends at 0xDECF20) |
-| 0xDECF20 | 0x20 | free |
-| 0xDECF40 | 0x88 | `asm/dpad_filter.s` (`DPAD_FILTER`; the diagnostic build of `target_face.c`, 0x594 bytes, takes its place and the free bytes in probes) |
-| 0xDECFC8 | 0x38 | free |
-
-Each patch checks and fills only its own range (`code_patch.py`: `CAVE`,
-`TARGET_ROUTINE`, `FACE_LOADER` … `FACE_END` = `CAVE_END`), so they can be
-applied in any order and next to other changes.
+The free space (end of `.text`, and the unused tail of `.bss` for
+variables) is owned by the code space manager: blocks are declared in
+`mh4u_rando/exefs/blocks.py` and placed automatically, so their addresses are
+not fixed and are not listed here. See [code_space.md](code_space.md);
+`python tools/build_code_space.py` prints the current layout. The blocks of
+these patches: `minimap_wrapper`, `target_button` and `dpad_filter` (with the
+variable `target_request`), `face_loader`, `face_free`, `face_show`,
+`face_params` and `target_face`. Each patch places and hooks only its own
+blocks, so they can be applied in any order and next to other changes. In
+the text below, "the routine" means the block. Where an address of the free
+space appears in an old probe's notes, it was the hand-picked layout used
+before the manager.
 
 Citra and Luma apply `code.ips` to the executable that runs — the update's
 when it is installed. Code addresses differ between base and update, so the
@@ -179,7 +174,7 @@ was not needed.
   map's top edge and the icons' origin are not known to differ).
 * **Patch** (`code_patch.patch_minimap_icons`): the eight "absolute" call
   sites `bl 0x6C40E0` (the circle's included, probe 16) become
-  `bl 0xDEC784`, a wrapper that calls the
+  `bl minimap_wrapper`, a wrapper that calls the
   projection and then maps it like the map data: `x' = s·x + (W/2)(1−s)`,
   `z' = s·z − (W/2)(1−s)`, i.e. `u' = 1 − s(1−u)`, `v' = s·v` — towards the
   top-right corner, whatever each function's constants. The icons' size comes
@@ -297,12 +292,12 @@ ZR, the Circle Pad (0xF0000000) and bits 0xF0000 in +0x8C during a quest.
   (`*(0x13F230())`) = 0. Probe 7 measured it running every quest frame.
 * **Patch** (`code_patch.patch_target_button`) has two parts:
   * **Target test.** The four instructions of the test at 0xB948AC become
-    `bl 0xDEC7E0; cmp r0, #0; beq 0xB948E4; b 0xB948D8`. The routine
-    (`asm/target_button.s`) returns non-zero when the word **FLAG**
-    (0x111D128, in the free tail of `.bss`) is set, and clears it. Otherwise it
+    `bl target_button; cmp r0, #0; beq 0xB948E4; b 0xB948D8`. The routine
+    (`asm/target_button.s`) returns non-zero when the variable
+    **target_request** (in the free tail of `.bss`) is set, and clears it. Otherwise it
     runs the original test.
   * **D-pad filter.** The call of the D-pad / C-stick actions at 0xB1D0B0
-    (`bl 0xB3CC64`) becomes `bl 0xDECF40`, `asm/dpad_filter.s`, a wrapper.
+    (`bl 0xB3CC64`) becomes `bl dpad_filter`, `asm/dpad_filter.s`, a wrapper.
     For the local hunter in item mode (action 11, or L held: p + 0x3A0 has
     0x8), it sets FLAG = p + 0x3A4 & 0x2000 (D-pad up pressed this frame),
     hides the D-pad bits (0x3C00) of p + 0x3A0 / p + 0x3A4 while 0xB3CC64 runs
@@ -371,7 +366,8 @@ What worked to see the game's state at run time, and what did not.
   (`use_gdbstub` in `%APPDATA%\Citra\config\qt-config.ini`, CRLF, no BOM).
 * **Save states as memory dumps** (what worked): a diagnostic routine writes
   counters or an event log into the **unused tail of the last `.bss` page**
-  (0x111D128–0x111E000: mapped, zero, used by nothing), the tester plays and
+  (mapped, zero, used by nothing; a debug variable of the code space
+  manager, [code_space.md](code_space.md)), the tester plays and
   saves a state (Emulation > Save state, slot 2), and `tools/citra_state.py`
   reads `.data` / `.bss` from the `.cst` (zstd after a 0x100-byte header; the
   live `.data` is found by content, `.text` lives elsewhere). Never *load* a
@@ -515,7 +511,7 @@ entry 0 is the clock).
 
 ### The patch
 
-* **Second instance** (`asm/face_loader.s`, at 0xDEC850): the instruction at
+* **Second instance** (`asm/face_loader.s`): the instruction at
   0xC10430 (in `FUN_00c1017c`, after the stage map) becomes `bl` to a routine
   that releases a leftover copy, repeats the loader's sequence for `ui601`
   (`0x2B51C0` file, the resource's vtable `+0x38`, `0xC0F474(gui, 0,
@@ -523,10 +519,10 @@ entry 0 is the clock).
   layout of the game keeps its index and the quest list is not modified. The
   game keeps driving the first (touch) instance through the binder; the copy
   is never touched by it.
-* **Release** (`asm/face_free.s`, at 0xDEC8F4): the `ldr r0, [r0, #0x100]` at
+* **Release** (`asm/face_free.s`): the `ldr r0, [r0, #0x100]` at
   0xC0F11C, at the start of `FUN_00c0f110`, becomes `bl` to a routine that
   frees slots 1472–1474 with `FUN_00b044f4` and returns the manager in r0.
-* **Visibility** (`asm/face_show.s`, at 0xDEC92C): the first instruction of
+* **Visibility** (`asm/face_show.s`): the first instruction of
   `FUN_00ae53e0` (`push {r4, r5, r6}`, 0xAE53E0) becomes `b` to a routine
   that looks at the calls that change a group's visibility, then runs the
   original function (a trampoline: the replaced instruction and
@@ -543,8 +539,8 @@ entry 0 is the clock).
     them again with the HUD.
 * **Mirror** (`asm/target_face.c`, 1264 bytes, C compiled with
   arm-none-eabi-gcc for ARM mode, VFP, linked with `target_face.ld` by
-  `tools/build_hud_asm.py`): the per-frame call `bl 0xB94854` at **0xB82B50**
-  (in `FUN_00b826bc`) becomes `bl 0xDECA30`, which runs `0xB94854` and then
+  `tools/build_code_space.py`): the per-frame call `bl 0xB94854` at **0xB82B50**
+  (in `FUN_00b826bc`) becomes `bl target_face`, which runs `0xB94854` and then
   takes the copies (slot 1472 + i, if they have the same name hash):
   * the copy of `panel01` is always hidden; the copy of `panel00` is shown
     while either touch panel and the health bar are, the copy of `target00`
@@ -628,8 +624,8 @@ circle without the Map item is about 1 px low. All three fixed for probe 17.
 ### Debugging the target face
 
 `tools/hud_probe.py ... --target-face --face-debug` builds `target_face.c`
-with `FACE_DEBUG`: every frame it also writes 8 words at 0x111D200 (the
-unused tail of `.bss`), read from a save state with `tools/citra_state.py
+with `FACE_DEBUG`: every frame it also writes 8 words into the debug
+variable `face_dump` (in the unused tail of `.bss`), read from a save state with `tools/citra_state.py
 STATE.cst --face-dump`: "FACE", a frame counter, the target
 (`*(0x105729C) + 0xED5`), visibility bits (face shown, the three touch
 groups, their copies, the health bar), the face source (children of the

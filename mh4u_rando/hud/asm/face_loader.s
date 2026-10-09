@@ -17,8 +17,7 @@
 @ resource handle, [sp + 8] language byte. r0-r3 and r12 are free; r4 is set
 @ by the caller right after; r7 receives the replaced literal.
 @
-@ Build: tools/build_hud_asm.py (devkitARM), linked at its patch address;
-@ FACE_FREE is passed with --defsym.
+@ Build: tools/build_code_space.py (devkitARM), which places and links it (docs/code_space.md).
 
     .arch armv6k
     .arm
@@ -34,7 +33,7 @@ _start:
     push    {r4, r6, r7, lr}
     sub     sp, sp, #8
     mov     r0, r6
-    bl      FACE_FREE
+    bl      face_free
     mov     r0, #0
     str     r0, [sp]                  @ 5th argument
     ldr     r2, ui601_path

@@ -11,7 +11,7 @@
 @
 @ In: r0 = gui. Out: r0 = *(gui + 0x100). r1-r3 and r12 are free there.
 @
-@ Build: tools/build_hud_asm.py (devkitARM), linked at its patch address.
+@ Build: tools/build_code_space.py (devkitARM), which places and links it (docs/code_space.md).
 
     .arch armv6k
     .arm

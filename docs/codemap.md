@@ -146,9 +146,35 @@ its public classes and functions with their signatures.
 
 ### `mh4u_rando/exefs/__init__.py` - Access to the game ROM: its executable (ExeFS code.bin), RomFS files, and IPS patches.
 
+### `mh4u_rando/exefs/blocks.py` - What goes in the executable's free space (docs/code_space.md): every block and variable, declared...
+- class `BlockSpec` - Code (`source`: a path under mh4u_rando/; .s assembled, .c compiled and linked with the .ld of the
+- class `VariableSpec` - Memory in .bss, zero when the game starts. `debug` variables are only used by diagnostic builds:
+
 ### `mh4u_rando/exefs/code_bin.py` - Load the game executable from whatever file the user has.
 - `is_container(path: Path) -> bool` - True for a .3ds/.cci (NCSD) or .app/.cxi (NCCH), as opposed to a loose game file.
 - `load_code(path: Path) -> bytes` - Decompressed, verified code.bin from a code.bin, a decrypted .3ds or an update's .app.
+
+### `mh4u_rando/exefs/code_space.py` - Free space of the update's executable: where added code, data and variables go (docs/code_space.md).
+- class `Region` - Free space: `kind` "code" is executable and stored in code.bin (zeros in the update's file);
+  - `size() -> int`
+- class `CodeSpaceError(ValueError)`
+- `encode_branch(at: int, target: int, link: bool=False, cond: int=COND_ALWAYS) -> bytes` - ARM `b`/`bl` (with a condition) placed at address `at`.
+- `encode_bl(at: int, target: int) -> bytes` - ARM `bl target` placed at address `at`.
+- `bl_target(code: bytes, at: int) -> int | None` - Target of the ARM `bl` (always) at `at`, or None if there is none.
+- class `Block` - Code or data placed in a "code" region; `symbols` are its labels, as offsets from `address`.
+  - `end() -> int`
+- class `Variable` - Memory in a "bss" region. Debug variables (diagnostic builds only) may share space with each other.
+- class `Layout` - Where every block and variable is (built by tools/build_code_space.py).
+  - `block(name: str) -> Block`
+  - `address(name: str) -> int` - Address of a block, or of a variable.
+  - `symbol(block: str, symbol: str) -> int` - Address of the label `symbol` of `block` (e.g. a constant the patcher fills in).
+  - `place(code: bytearray, name: str, data: bytes | None=None) -> None` - Write block `name` into `code` (the whole executable), or `data` instead of its bytes (the
+  - `hook(code: bytearray, at: int, target: str | int, *, original: bytes | None=None, calls: int | None=None, link: bool=True, cond: int=COND_ALWAYS) -> None` - Replace the instruction at `at` with `b`/`bl` to block `target` (or an address). The current
+  - `used(region: str) -> int` - Bytes of `region` taken by blocks or variables (debug variables included).
+  - `to_json() -> dict`
+  - `from_json(data: dict) -> 'Layout'`
+- `reclaim(code: bytearray, region: Region) -> None` - Zero a region of dead game code while it holds exactly the game's bytes (the first block placed
+- `load_layout(path: Path=LAYOUT_PATH) -> Layout` - The layout the randomizer uses (generated/code_space.json).
 
 ### `mh4u_rando/exefs/extract.py` - Extract the decompressed executable (ExeFS ".code") from 3DS containers.
 - class `ExtractError(ValueError)`
@@ -288,16 +314,12 @@ its public classes and functions with their signatures.
 - `write_hud_files(mod_dir: Path, rom: GameFiles, update: GameFiles | None, factor: float, with_code_patch: bool=False, target_hint: bool=False) -> list[Path]` - Write the HUD size mod into a mod folder (romfs/<lang>/data/...). Files of an earlier run are rep...
 
 ### `mh4u_rando/hud/code_patch.py` - Executable patches of the HUD size option (exefs/code.ips), for the update's code.bin.
-- class `CodePatchError(ValueError)`
-- `encode_branch(at: int, target: int, link: bool=False, cond: int=COND_ALWAYS) -> bytes` - ARM `b`/`bl` (with a condition) placed at address `at`.
-- `encode_bl(at: int, target: int) -> bytes` - ARM `bl target` placed at address `at`.
-- `bl_target(code: bytes, at: int) -> int | None`
-- `patch_minimap_icons(code: bytes, factor: float) -> bytes` - `code` with the minimap icons (and the visible circle without the Map item) scaled by `factor`
+- `patch_minimap_icons(code: bytes, factor: float, layout: Layout | None=None) -> bytes` - `code` with the minimap icons (and the visible circle without the Map item) scaled by `factor`
 - `patch_mount_gauge(code: bytes, factor: float) -> bytes` - `code` with the mount gauge's monster face moving along a bar scaled by `factor`.
-- `patch_hud(code: bytes, factor: float) -> bytes` - Every executable patch of the HUD size option.
-- `patch_target_button(code: bytes, routine_code: bytes | None=None) -> bytes` - `code` where L + D-pad up switches the large-monster target, like a tap on the target camera
+- `patch_hud(code: bytes, factor: float, layout: Layout | None=None) -> bytes` - Every executable patch of the HUD size option.
+- `patch_target_button(code: bytes, layout: Layout | None=None, with_filter: bool=True) -> bytes` - `code` where L + D-pad up switches the large-monster target, like a tap on the target camera
 - `face_params(factor: float) -> tuple[float, float, float]` - Top-screen position (layout coordinates) and scale of the target face for a HUD `factor`.
-- `patch_target_face(code: bytes, factor: float=1.0, routine_code: bytes | None=None) -> bytes` - `code` showing the target camera panel's monster face on the top screen too.
+- `patch_target_face(code: bytes, factor: float=1.0, layout: Layout | None=None) -> bytes` - `code` showing the target camera panel's monster face on the top screen too.
 - `patch_interface(code: bytes, factor: float, target_switch: bool=False, target_face: bool=False) -> bytes` - Every interface patch the randomizer's settings ask for: the HUD size (below 1), L + D-pad up, th...
 
 ### `mh4u_rando/hud/hint.py` - The hint of the target switch (option touchless_target, L + D-pad up): a D-pad glyph with only it...
@@ -700,6 +722,24 @@ its public classes and functions with their signatures.
 - `restore(args) -> None`
 - `main() -> None`
 
+### `tools/build_code_space.py` - Build every block of mh4u_rando/exefs/blocks.py, place it in the executable's free space and write
+- `has_toolchain(bin_dir: Path=DEFAULT_DEVKITARM) -> bool`
+- `source_path(spec: BlockSpec) -> Path | None`
+- `source_hashes() -> dict[str, str]` - sha256 of every block's source (and its .ld), with line endings normalized.
+- class `Toolchain`
+  - `run(tool: str, *args) -> str`
+  - `compile(name: str, source: Path, defines: tuple[str, ...]=(), thumb: bool=False) -> Path`
+  - `undefined(obj: Path) -> list[str]`
+  - `link(name: str, source: Path, obj: Path, address: int, symbols: dict[str, int]) -> tuple[bytes, dict[str, int]]` - Machine code of `obj` linked at `address`, and its labels as offsets.
+- `align_up(value: int, alignment: int) -> int`
+- `block_regions(spec: BlockSpec) -> list[str]` - The code regions a block may go in, in the order they are tried.
+- `pack_blocks(specs: list[BlockSpec], sizes: dict[str, int]) -> dict[str, tuple[str, int]]` - First fit, largest first, into the block's regions in REGIONS order: block -> (region, address).
+- `pack_variables() -> dict[str, Variable]` - Variables from the start of their region; debug ones after them, all at the same place.
+- `build_layout(bin_dir: Path=DEFAULT_DEVKITARM, variants: dict[str, tuple[Path, tuple[str, ...]]] | None=None, only: set[str] | None=None, extra: tuple[BlockSpec, ...]=()) -> Layout` - Build and place every block. `variants`: block -> (source, C macros) built instead of its own sou...
+- `layout_json(layout: Layout) -> dict`
+- `report(layout: Layout) -> str`
+- `main() -> None`
+
 ### `tools/build_equipment_data.py` - Build mh4u_rando/data/generated/equipment_names.json from the game's text files.
 - `main() -> None`
 
@@ -714,10 +754,6 @@ its public classes and functions with their signatures.
 - `write_json(name: str, data) -> None`
 - `main() -> None`
 
-### `tools/build_hud_asm.py` - Build mh4u_rando/hud/asm/* with devkitARM (or the Arm GNU Toolchain) and compare them with the bytes
-- `assemble(source: Path, address: int, bin_dir: Path, defines: tuple[str, ...]=()) -> bytes` - Machine code of `source` (.s, or .c with its .ld and the macros `defines`) linked at `address`.
-- `main() -> None`
-
 ### `tools/build_monster_grammar.py` - Build mh4u_rando/data/curated/monster_grammar.json from the retail quest texts.
 - `monster_patterns(data)` - language -> (regex, {name: [monster ids]}). Longest names first so "Seltas Queen" beats "Seltas".
 - `collect(data, quests)`
@@ -726,12 +762,18 @@ its public classes and functions with their signatures.
 - `sub_quest_ratios(quests) -> None`
 - `main() -> None`
 
+### `tools/canary_probe.py` - Build a canary mod for Citra: counts the calls to game functions believed dead (docs/code_space.md,
+- `patch_canary(code: bytes, layout: Layout) -> bytes` - `code` with a counting stub in front of every candidate.
+- `after_blocks(layout: Layout)` - The code regions shrunk to the space `layout`'s blocks leave free, while building the canary.
+- `main() -> None`
+
 ### `tools/citra_state.py` - Read the game's .data / .bss from a Citra save state (docs/hud_code.md, "Debugging in Citra").
 - `load_state(path: Path) -> bytes`
 - class `DataView` - The live process's .data / .bss inside a decompressed save state.
   - `u32(address: int) -> int`
 - `print_input_log(view: DataView) -> None`
 - `print_face_dump(view: DataView) -> None`
+- `print_canary(view: DataView) -> None`
 - `main() -> None`
 
 ### `tools/dump_inventory.py` - Summarize a MH4U RomFS dump: ARC families, internal folders and file types.
@@ -776,6 +818,7 @@ its public classes and functions with their signatures.
 - `scale_readme(scale: int, with_common: bool, minimap: bool, code_patch: bool) -> list[str]`
 - `target_readme() -> list[str]`
 - `without_hud_patch(code: bytes, original: bytes) -> bytes` - `code` with the original bytes back wherever code_patch.patch_hud writes.
+- `probe_layout(args)` - The layout of a diagnostic build (built here, needs the compiler), or None for the randomizer's.
 - `main() -> None`
 
 ### `tools/lmd.py` - Minimal reader for MH4U LMD text files (ARC type 0x62440501, magic "lmd\0").

@@ -21,8 +21,7 @@
 @ FUN_00ae53e0 is a leaf (r0 group, r1 visible; it pushes r4-r6 only), so
 @ `body` (the replaced instruction + a branch back) can be called like it.
 @
-@ Build: tools/build_hud_asm.py (devkitARM), linked at its patch address;
-@ FACE_SHOW_BODY (0xAE53E4) is passed with --defsym.
+@ Build: tools/build_code_space.py (devkitARM), which places and links it (docs/code_space.md).
 
     .arch armv6k
     .arm
@@ -81,7 +80,7 @@ done:
     pop     {r0, r1, r4, r5, r6, lr}
 body:
     push    {r4, r5, r6}              @ the replaced instruction
-    b       FACE_SHOW_BODY
+    b       group_show_body
 
 @ The copy at slot COPY_INDEX + r4 gets visibility r5 (r0-r3, r6, r12 used).
 set_copy:

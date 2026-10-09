@@ -2,7 +2,7 @@
 
     python tools/citra_state.py STATE.cst [--code Documentation/exefs/code_update.bin]
                                 [--words ADDRESS [COUNT]]... [--input-log]
-                                [--face-dump]
+                                [--face-dump] [--canary]
 
 A save state (%APPDATA%/Citra/states/<title>.<slot>.cst) is a 0x100-byte header and a zstd stream
 holding the whole emulated memory. .data and .bss are found by content: a static .data table of
@@ -14,6 +14,7 @@ elsewhere and is not mapped by this tool.
 --input-log decodes the ring written by tools/asm/input_event_log.s.
 --face-dump decodes the snapshot of the target face's diagnostic build (tools/hud_probe.py
 --face-debug): what is visible, the copies' and the face source's pointers.
+--canary prints the calls counted by tools/canary_probe.py for each candidate dead function.
 
 Needs `pip install zstandard` (development only).
 """
@@ -23,18 +24,22 @@ import struct
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from mh4u_rando.exefs.code_space import load_layout  # noqa: E402
+
 HEADER = 0x100
 BASE_ADDRESS = 0x100000
 DATA = 0xEC0000
 ANCHOR = 0xFB8140          # static .data table, 0x90 bytes, read only by FUN_006949d4
 ANCHOR_SIZE = 0x90
 PAD_POINTER = 0x10572E0    # .bss, non-zero once the game runs
-INPUT_LOG_HEAD = 0x111D1F0
-INPUT_LOG_RING = 0x111D200
+# Debug variables of the code space layout (mh4u_rando/exefs/blocks.py, docs/code_space.md).
+INPUT_LOG_HEAD = load_layout().address("input_log")  # tools/asm/input_event_log.s: HEAD
+INPUT_LOG_RING = INPUT_LOG_HEAD + 0x20               # RING
 INPUT_LOG_ENTRIES = 100
 # Target face snapshot (mh4u_rando/hud/asm/target_face.c, FACE_DEBUG), 8 words; word 3 holds
 # visibility bits (FACE_BITS). Probes 13-16 had pane trees after it (see docs/hud_code.md).
-FACE_DUMP = 0x111D200
+FACE_DUMP = load_layout().address("face_dump")
 FACE_MAGIC = 0x45434146
 FACE_BITS = ("face shown", "touch panel00", "touch panel01", "touch target00", "copy panel00", "copy panel01",
              "copy target00", "HUD health bar")
@@ -96,6 +101,14 @@ def print_face_dump(view: DataView) -> None:
     print("visible: " + (", ".join(shown) or "nothing"))
 
 
+def print_canary(view: DataView) -> None:
+    from canary_probe import CANDIDATES
+    hits = load_layout().address("canary_hits")
+    for n, entry in enumerate(CANDIDATES):
+        calls = view.u32(hits + 4 * n)
+        print(f"{entry:#x}  {calls:8}  {'never called' if calls == 0 else 'CALLED: not dead'}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("state", type=Path)
@@ -104,6 +117,7 @@ def main() -> None:
     parser.add_argument("--words", nargs="+", action="append", default=[], metavar="ADDRESS [COUNT]")
     parser.add_argument("--input-log", action="store_true")
     parser.add_argument("--face-dump", action="store_true")
+    parser.add_argument("--canary", action="store_true")
     args = parser.parse_args()
     view = DataView(load_state(args.state), args.code.read_bytes())
     print(f"live .data at state offset {view.base:#x}")
@@ -115,6 +129,8 @@ def main() -> None:
         print_input_log(view)
     if args.face_dump:
         print_face_dump(view)
+    if args.canary:
+        print_canary(view)
 
 
 if __name__ == "__main__":

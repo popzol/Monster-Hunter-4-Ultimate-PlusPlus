@@ -11,10 +11,10 @@
 @ Its call at 0xB1D0B0 is replaced by `bl` to this wrapper (r0 = the hunter).
 @ For the local hunter in item mode (action 11 or L held, game bit 0x8), the
 @ D-pad bits are hidden from FUN_00b3cc64, so only the C-stick sets actions,
-@ and FLAG = D-pad up pressed this frame (else 0), which asm/target_button.s
+@ and target_request = D-pad up pressed this frame (else 0), which asm/target_button.s
 @ consumes. The button words are restored afterwards.
 @
-@ Build: tools/build_hud_asm.py (devkitARM), linked at its patch address.
+@ Build: tools/build_code_space.py (devkitARM), which places and links it (docs/code_space.md).
 
     .arch armv6k
     .arm
@@ -22,7 +22,6 @@
 
     .equ DPAD_ACTIONS, 0x00B3CC64     @ FUN_00b3cc64(hunter)
     .equ SETTINGS_POINTER, 0x00FB6B7C
-    .equ FLAG, 0x0111D128             @ read by target_button.s
     .equ PLAYER, 0xE30                @ p = *(hunter + 0xE30)
     .equ HUNTER_INDEX, 0x33           @ p + 0x33 == *(settings) + 0x2F: the local hunter
     .equ HELD, 0x3A0
@@ -71,4 +70,4 @@ plain:
 settings_pointer:
     .word SETTINGS_POINTER
 flag_pointer:
-    .word FLAG
+    .word target_request              @ read by target_button.s

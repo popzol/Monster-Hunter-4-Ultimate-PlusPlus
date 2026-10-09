@@ -27,10 +27,11 @@
  * +0x10 position (centre), +0x28 scale, +0x30 texture region, +0x40 corner colours, +0x58 flags.
  * Null data: +0x00 position, +0x10 scale.
  *
- * FACE_DEBUG (tools/hud_probe.py --face-debug) also writes a snapshot every frame into the unused
- * tail of .bss, read with tools/citra_state.py --face-dump.
+ * FACE_DEBUG (tools/hud_probe.py --face-debug) also writes a snapshot every frame into the variable
+ * face_dump (.bss), read with tools/citra_state.py --face-dump.
  *
- * Build: tools/build_hud_asm.py (arm-none-eabi-gcc, linked at FACE_ROUTINE with target_face.ld).
+ * Build: tools/build_code_space.py (arm-none-eabi-gcc, linked with target_face.ld where it places
+ * the block; docs/code_space.md).
  */
 
 typedef unsigned int u32;
@@ -46,11 +47,17 @@ struct params {
     float x, y;                         /* top-screen group position (layout coordinates) */
     float scale;                        /* size relative to the touch screen */
 };
-extern const struct params face_params; /* code_patch.FACE_PARAMS, passed by build_hud_asm.py */
+extern const struct params face_params; /* the face_params block, filled by code_patch.py */
 
-void panel_update(void);                /* FUN_00b94854 */
-void group_show(u32 group, u32 visible); /* FUN_00ae53e0 */
-void pane_redraw(u32 group, u32 pane);  /* FUN_00ae6bcc */
+/* Compiled as Thumb (exefs/blocks.py): game functions are ARM code at absolute addresses, so they are
+ * called through a register (long_call: ldr + blx), which switches to ARM. */
+#define GAME __attribute__((long_call))
+GAME void panel_update(void);                /* FUN_00b94854 */
+GAME void group_show(u32 group, u32 visible); /* FUN_00ae53e0 */
+GAME void pane_redraw(u32 group, u32 pane);  /* FUN_00ae6bcc */
+/* Thumb-1 (ARMv6K) has no VFP: functions that compute with floats are ARM. So is the entry, which
+ * the game calls with an ARM bl. */
+#define ARM __attribute__((target("arm"), noinline))
 
 #define W(p, off) (*(u32 *)((p) + (off)))
 #define F(p, off) (*(float *)((p) + (off)))
@@ -91,7 +98,7 @@ static void copy_sprite(u32 dst, u32 src)
     W(dst, 0x58) = (W(dst, 0x58) & ~0x80u) | (W(src, 0x58) & 0x80u);
 }
 
-static void scale_pair(u32 dst, u32 src, u32 offset)
+ARM static void scale_pair(u32 dst, u32 src, u32 offset)
 {
     F(dst, offset) = F(src, offset) * face_params.scale;
     F(dst, offset + 4) = F(src, offset + 4) * face_params.scale;
@@ -174,12 +181,13 @@ static int known(u32 null_pane)
 }
 
 #ifdef FACE_DEBUG
-/* Snapshot (docs/hud_code.md, "Debugging the target face"), in the unused tail of .bss, 8 words:
+/* Snapshot (docs/hud_code.md, "Debugging the target face"), in the variable face_dump, 8 words:
  * "FACE", frame counter, target, visibility bits (bit 0 face shown, bits 1-3 touch panel00,
  * panel01, target00, bits 4-6 their copies, bit 7 the HUD's health bar), the face's source (the
  * chosen touch null's first child), the copies of panel00, panel01 and target00. The probes of
  * dumps of pane data used in probes 13-16 no longer fit. */
-#define DUMP ((u32 *)0x0111D200)
+extern u32 face_dump[8];         /* a debug variable (exefs/blocks.py) */
+#define DUMP face_dump
 
 static void snapshot(const u32 *copies, u32 face, u32 face_visible)
 {
@@ -198,9 +206,8 @@ static void snapshot(const u32 *copies, u32 face, u32 face_visible)
 }
 #endif
 
-__attribute__((section(".text.entry"))) void target_face(void)
+__attribute__((noinline)) static void update(void)
 {
-    panel_update();
     u32 gui = GUI;
     u32 manager = gui ? W(gui, 0x100) : 0;
     if (!manager)
@@ -238,4 +245,11 @@ __attribute__((section(".text.entry"))) void target_face(void)
 #ifdef FACE_DEBUG
     snapshot(copies, face, face_visible);
 #endif
+}
+
+/* Replaces the game's call to the panel update (an ARM bl), so it is ARM; the rest is Thumb. */
+ARM __attribute__((section(".text.entry"))) void target_face(void)
+{
+    panel_update();
+    update();
 }

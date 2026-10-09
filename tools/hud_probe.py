@@ -13,10 +13,13 @@ code.ips (e.g. the randomizer's equipment patch) in it. --tint: the first probe
 instead (main HUD scaled, other candidate layouts tinted to identify them).
 --target-button adds the L + D-pad up target switch (and its hint); --target-asm assembles another
 routine in its place (a diagnostic one such as tools/asm/input_event_log.s,
-read back with tools/citra_state.py; needs devkitARM or the Arm GNU Toolchain).
+read back with tools/citra_state.py; needs devkitARM or the Arm GNU Toolchain; without the D-pad
+filter if it does not fit).
 --target-face shows the target panel's monster faces on the top screen too;
 --face-debug builds its diagnostic version instead, which writes a snapshot
-every frame (read with tools/citra_state.py --face-dump; needs the compiler).
+every frame (read with tools/citra_state.py --face-dump; needs the compiler; it is larger, so the
+D-pad filter is left out if it does not fit). Diagnostic builds get their own layout of the free space
+(tools/build_code_space.py, build_layout; docs/code_space.md), so they never overwrite other blocks.
 Writes DIR/romfs/..., DIR/exefs/code.ips and DIR/LEEME.txt; copy romfs and exefs
 into load/mods/0004000000126100/.
 """
@@ -30,11 +33,13 @@ from mh4u_rando.arc import parse_arc, write_arc  # noqa: E402
 from mh4u_rando.exefs import RomFS, apply_ips, load_code, make_ips  # noqa: E402
 from mh4u_rando.hud import LANGUAGES, LYT_TYPE_HASH, Anchor, hud_files, parse_lyt, scale_arc  # noqa: E402
 from mh4u_rando.hud.build import MAP_ARC, short_name  # noqa: E402
+from mh4u_rando.exefs.blocks import BLOCKS  # noqa: E402
+from mh4u_rando.exefs.code_space import REGIONS, CodeSpaceError  # noqa: E402
 from mh4u_rando.hud.code_patch import (  # noqa: E402
-    ACTIONS_COPY, BASE_ADDRESS, CAVE, CAVE_END, DPAD_HOOK, FACE_HOOK, FACE_ROUTINE, FREE_HOOK, ICON_CALLS, LOADER_HOOK, MINIMAP_CIRCLE_OFFSET, MOUNT_FACE_FLOATS, SHOW_HOOK,
-    TARGET_BUTTON, TARGET_ROUTINE, TARGET_TEST, patch_hud, patch_target_button, patch_target_face,
+    ACTIONS_COPY, BASE_ADDRESS, DPAD_HOOK, FACE_HOOK, FREE_HOOK, ICON_CALLS, LOADER_HOOK, MINIMAP_CIRCLE_OFFSET,
+    MOUNT_FACE_FLOATS, SHOW_HOOK, TARGET_TEST, patch_hud, patch_target_button, patch_target_face,
 )
-from build_hud_asm import ASM, DEFAULT_DEVKITARM, assemble  # noqa: E402
+from build_code_space import DEFAULT_DEVKITARM, PACKAGE, build_layout  # noqa: E402
 
 TINTS = {
     "core_quest.arc": {"ui203": ("rojo", (255, 40, 40)), "ui204": ("verde", (40, 220, 40)),
@@ -150,12 +155,28 @@ def target_readme() -> list[str]:
 def without_hud_patch(code: bytes, original: bytes) -> bytes:
     """`code` with the original bytes back wherever code_patch.patch_hud writes."""
     out = bytearray(code)
-    spans = [(CAVE, CAVE_END)] + [(site, site + 4) for site in ICON_CALLS] + \
+    spans = [(r.start, r.end) for r in REGIONS.values() if r.kind == "code"] + [(site, site + 4) for site in ICON_CALLS] + \
         [(address, address + 4) for address in MOUNT_FACE_FLOATS] + [(MINIMAP_CIRCLE_OFFSET[0], MINIMAP_CIRCLE_OFFSET[0] + 4), (TARGET_TEST, TARGET_TEST + 16), (ACTIONS_COPY, ACTIONS_COPY + 4)] + \
         [(hook, hook + 4) for hook in (LOADER_HOOK, FREE_HOOK, SHOW_HOOK, FACE_HOOK, DPAD_HOOK)]
     for start, end in spans:
         out[start - BASE_ADDRESS:end - BASE_ADDRESS] = original[start - BASE_ADDRESS:end - BASE_ADDRESS]
     return bytes(out)
+
+
+def probe_layout(args):
+    """The layout of a diagnostic build (built here, needs the compiler), or None for the randomizer's.
+    Diagnostic builds are larger: when one does not fit, the D-pad filter is left out of its layout."""
+    variants = {}
+    if args.target_button and args.target_asm:
+        variants["target_button"] = (args.target_asm.resolve(), ())
+    if args.target_face and args.face_debug:
+        variants["target_face"] = (PACKAGE / "hud" / "asm" / "target_face.c", ("FACE_DEBUG",))
+    if not variants:
+        return None
+    try:
+        return build_layout(args.devkitarm, variants)
+    except CodeSpaceError:
+        return build_layout(args.devkitarm, variants, {spec.name for spec in BLOCKS} - {"dpad_filter"})
 
 
 def main() -> None:
@@ -192,17 +213,13 @@ def main() -> None:
         code = without_hud_patch(code, original)  # the merged patch may come from an earlier probe
         ips = args.out / "exefs" / "code.ips"
         ips.parent.mkdir(parents=True, exist_ok=True)
-        code = patch_hud(code, factor)
+        layout = probe_layout(args)
+        code = patch_hud(code, factor, layout)
+        with_filter = layout is None or "dpad_filter" in layout.blocks
         if args.target_button:
-            routine = assemble(args.target_asm, TARGET_ROUTINE, args.devkitarm) if args.target_asm else None
-            if routine is None and args.target_face and args.face_debug:
-                routine = TARGET_BUTTON  # the diagnostic face leaves no room for the D-pad filter: no L + up
-            code = patch_target_button(code, routine)
-        if args.target_face and args.face_debug:
-            routine = assemble(ASM / "target_face.c", FACE_ROUTINE, args.devkitarm, ("FACE_DEBUG",))
-            code = patch_target_face(code, factor, routine)
-        elif args.target_face:
-            code = patch_target_face(code, factor)
+            code = patch_target_button(code, layout, with_filter)
+        if args.target_face:
+            code = patch_target_face(code, factor, layout)
         ips.write_bytes(make_ips(original, code))
         print(f"HUD executable patch written to {ips}")
     readme = tint_readme(args.scale, update is not None) if args.tint else \

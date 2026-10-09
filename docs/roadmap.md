@@ -48,8 +48,9 @@ is done or discovered.
 ## To verify in-game
 
 * **Dead game code canary** (docs/code_space.md, "Dead game code"): build
-  `tools/canary_probe.py UPDATE --out DIR`, install its `exefs/code.ips` alone,
-  play a varied session (village, gathering, quests with several monsters,
+  `tools/canary_probe.py UPDATE --out DIR --on MOD/exefs/code.ips` (installed
+  2026-10-09 on top of the seed A02008A35C mod), boot the game fresh, play a
+  varied session (village, gathering, quests with several monsters,
   item box, smithy, online lobby menus, save and load), save a state and run
   `tools/citra_state.py STATE --canary`. Functions with 0 calls become
   reclaimed regions (about 9.5 KB of code space).
@@ -126,6 +127,11 @@ is done or discovered.
 
 ## Ideas / smaller items
 
+* **Skip the new-game intro and caravan; manage equipment in every item box**
+  (`docs/new_game_skip.md`): research-only proposal, nothing implemented yet.
+  Identify the required save flags and start-scene logic, then locate the item
+  box menu restriction; verify Hall progression and online behavior before
+  deciding on the GUI options.
 * **Music shuffle** (docs/music.md): point the stream entries
   of `battle/bgm_bat.stq` at other tracks so monsters get other themes (never
   remap a request: it leaves a stream unused, which hung every quest; two
