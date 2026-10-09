@@ -189,8 +189,8 @@ The kit is `mh4u_rando/data/curated/starting_kit.txt`, read by
    item's id; when two items share a name it picks one.
 3. Rules: keep it sorted by id; each item once; usable items only (not id 0 or
    0x790); quantity 1-99; the kit plus the retail items it does not list can be
-   at most 48 (`KIT_SLOTS`: slots 16-31 of the 3 loadouts). Check that an
-   `account_item` (Ration, EZ items) stays in the box in game.
+   at most 48 (`KIT_SLOTS`: slots 16-31 of the 3 loadouts). Not `account_item`s
+   (Ration, EZ items): the game does not show them in the box, leaving a blank slot.
 4. Run `python -m pytest tests/test_starting_items.py` (it checks the file,
    the order and that every `# id` matches its name).
 5. If the kind of items changes, update the option's description in

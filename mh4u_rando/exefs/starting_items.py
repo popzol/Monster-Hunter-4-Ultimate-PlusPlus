@@ -108,7 +108,7 @@ def check_starting_items(items: Sequence[Sequence[int]], data: GameData) -> list
             continue
         item_id, quantity = entry
         info = data.items.get(item_id)
-        if item_id in SKIPPED_ITEMS or info is None or not info.usable:
+        if item_id in SKIPPED_ITEMS or info is None or not info.usable or info.category == "account_item":
             errors.append(f"starting kit: item {item_id} cannot be given")
             continue
         if item_id in seen:

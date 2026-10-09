@@ -603,11 +603,11 @@ NEW_GAME_SECTIONS: tuple[Section, ...] = (
             Option("starting_kit", T("Kit inicial", "Starting kit"),
                    T("Al crear una partida nueva, la caja de objetos trae un kit fijo, el mismo para todos: "
                      "pociones, megapociones, bebidas frías y calientes, piedras de afilar, bolas de pintura, "
-                     "trampas, bombas tranquilizantes, drogas, filetes, raciones y herramientas de la mejor "
+                     "trampas, bombas tranquilizantes, drogas, filetes, carne cruda y herramientas de la mejor "
                      "calidad, la mayoría ×99, además de los objetos originales. Los sets de objetos no cambian.",
                      "When you create a new game, the item box holds a fixed kit, the same for everyone: "
                      "potions, mega potions, cool and hot drinks, whetstones, paintballs, traps, tranq bombs, "
-                     "drugs, steaks, rations and the best gathering tools, most of them ×99, plus the original "
+                     "drugs, steaks, raw meat and the best gathering tools, most of them ×99, plus the original "
                      "items. The item sets do not change.")),
         ), T("Solo afecta a las partidas que se creen con el mod puesto; las existentes no cambian. Modifica el "
              "ejecutable de la actualización (exefs/code.ips): sin la actualización se avisa y la partida nueva "

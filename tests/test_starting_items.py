@@ -102,8 +102,9 @@ def test_check_starting_items():
     assert check_starting_items([[8, 100]], data)
     assert check_starting_items([[8, 0]], data)
     assert check_starting_items([[8, 1], [8, 2]], data)  # listed twice
+    assert check_starting_items([[771, 1]], data)  # Ration: an account_item, blank in the box
     assert check_starting_items([[8]], data)
-    many = [i.item_id for i in data.items.values() if i.usable and i.item_id != 0x790][:KIT_SLOTS + 1]
+    many = [i.item_id for i in data.items.values() if i.usable and i.item_id != 0x790 and i.category != "account_item"][:KIT_SLOTS + 1]
     assert check_starting_items([[i, 1] for i in many], data)
 
 

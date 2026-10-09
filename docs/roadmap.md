@@ -14,9 +14,16 @@ is done or discovered.
   when first encountered because they try to start an encounter cutscene
   that assumes a different map. Investigate removing the cutscene check/call
   for randomized placements.
+* **"Hunt all" quests complete after the last kill only** (found in play, not
+  yet investigated): in some "hunt all" quests it is enough to kill the last
+  monster, even when it comes in a double wave, so another monster can still
+  be alive when the quest completes. Check how the randomizer sets the
+  objective/wave kill conditions for these quests (docs/game_rules.md,
+  objectives and waves) and which quests it happens in.
 * **Package the GUI** as an .exe with PyInstaller (the GUI itself is done:
   `python -m mh4u_rando.gui`).
-* **Real 3DS platform** (GUI "3DS", shown as "coming soon"): write the mod
+* **Real 3DS platform** (do it LAST, at the end of development, once the other
+  features are done; GUI "3DS", shown as "coming soon"): write the mod
   for Luma3DS (`luma/titles/0004000000126100/` with `romfs/` and `code.ips`),
   check which options work on the console (HUD size, icons) and mark the rest
   `emulator_only` in `gui/options.py` (like `touchless_target`).
@@ -40,9 +47,18 @@ is done or discovered.
 
 ## To verify in-game
 
+* **Dead game code canary** (docs/code_space.md, "Dead game code"): build
+  `tools/canary_probe.py UPDATE --out DIR`, install its `exefs/code.ips` alone,
+  play a varied session (village, gathering, quests with several monsters,
+  item box, smithy, online lobby menus, save and load), save a state and run
+  `tools/citra_state.py STATE --canary`. Functions with 0 calls become
+  reclaimed regions (about 9.5 KB of code space).
+* **Target face in Thumb**: `target_face.c` is now Thumb with an ARM entry;
+  check the face and the L + D-pad switch still work (HUD 70 %, as probe 21).
+
 * **Starting kit** (`starting_kit`, docs/randomizer.md "New game"): create a
   new save with the mod; the item box holds the kit (Potion x99, Pitfall Trap
-  x10, Ration x99...) and the retail extras (Energy Drink, Iron Pickaxe, Bug
+  x10, Raw Meat x99...) and the retail extras (Energy Drink, Iron Pickaxe, Bug
   Net, Normal S Lv2, Power Coating), and item sets 1-3 are the retail ones
   (loading set 1 fills the pouch from the box).
 

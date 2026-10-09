@@ -15,6 +15,7 @@ Armorskin x10          # 19
 Cool Drink x99         # 22
 Hot Drink x99          # 23
 Max Potion x5          # 28
+Raw Meat x99           # 44
 Well-done Steak x10    # 49
 Paintball x99          # 61
 Tranq Bomb x20         # 69
@@ -24,4 +25,3 @@ Mega Fishing Fly x99   # 156
 Mega Pickaxe x99       # 163
 Mega Bug Net x99       # 166
 Whetstone x99          # 168
-Ration x99             # 771
