@@ -844,6 +844,6 @@ def test_pipeline_with_every_interface_option(tmp_path):
         quest_hud = parse_arc((tmp_path / "romfs" / lang / "data" / "core_quest.arc").read_bytes())
         assert any(e.type_hash == LYT_TYPE_HASH and e.name.endswith("ui205") and NAME.encode() in e.data
                    for e in quest_hud.entries)
-    result = run(rom, tmp_path, Settings(seed="interface", new_monster_icons=False))  # all off: everything goes
+    result = run(rom, tmp_path, Settings(seed="interface", new_monster_icons=False, starting_kit=False))  # all off
     assert result.ips_path is None and not (tmp_path / "exefs" / "code.ips").exists()
     assert not result.hud_paths and not any((tmp_path / "romfs").rglob("core_*.arc"))

@@ -69,7 +69,8 @@ def test_pipeline_writes_a_mod_folder_with_the_equipment_patch(tmp_path):
     source.parent.mkdir()
     source.write_bytes(write_arc(build_original_arc()))
     out = tmp_path / "out"
-    settings = Settings(seed="MOD", randomize_recipes=True, randomize_weapon_stats=True, randomize_armor_stats=True, randomize_models=True)
+    settings = Settings(seed="MOD", randomize_recipes=True, randomize_weapon_stats=True, randomize_armor_stats=True,
+                        randomize_models=True, starting_kit=False)
 
     result = run(source, out, settings, code_path=code_path)
 
@@ -80,7 +81,7 @@ def test_pipeline_writes_a_mod_folder_with_the_equipment_patch(tmp_path):
     assert apply_ips(code, result.ips_path.read_bytes()) == expected
     assert (out / "equipment_MOD.txt").exists() and (out / "equipment_MOD.json").exists()
 
-    run(source, out, Settings(seed="MOD"))
+    run(source, out, Settings(seed="MOD", starting_kit=False))
     assert not (out / "exefs" / "code.ips").exists()  # a stale patch would still be applied by the emulator
 
 

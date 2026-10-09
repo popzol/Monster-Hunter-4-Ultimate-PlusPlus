@@ -27,6 +27,8 @@ data/
     text_templates.json the sentences the randomizer writes in quest texts, per language
     small_monster_rules.json  interchangeable small monster groups
     supply_pool.json    consumables for supply boxes, with max capacity
+    starting_kit.txt    the new game's item box kit, one "<name> x<quantity>  # <id>" per line
+                        (docs/randomizer.md, "Starting kit")
     monster_icons.json  new icon cell of the monsters shown with "?" (new_monster_icons)
   icons/                em<id>.png, 36x36 images of those icons, replaceable (docs/monster_icons.md)
     tuning.json         every arbitrary probability/parameter, with its description

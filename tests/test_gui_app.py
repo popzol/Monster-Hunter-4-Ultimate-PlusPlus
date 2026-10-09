@@ -118,44 +118,13 @@ def test_range_keeps_n_not_above_m(window):
     assert low.entry.cget("state") == "disabled" and high.entry.cget("state") == "disabled"
 
 
-def test_starting_items_list(window):
-    from mh4u_rando.exefs.starting_items import SLOTS
-    items = window.widgets["starting_items"]
-    assert items.get() == []
-    items.add()
-    items.add()
-    assert items.get()[0] == [8, 1]  # Potion first
-    second = items.get()[1][0]
-    assert second != 8
-    assert not items.choose(1, items.names[8])          # already in another row
-    assert not items.choose(1, "no such item")
-    assert items.choose(1, items.names[61])             # Paintball
-    items.set_quantity(1, "500")
-    items.set_quantity(0, "")
-    assert items.get() == [[8, 1], [61, 99]]            # clamped to the pouch limit, at least 1
-    items.move(1, -1)
-    assert items.get() == [[61, 99], [8, 1]]
-    items.move(0, -1)                                   # already first
-    items.remove(1)
-    assert items.get() == [[61, 99]]
-    window.apply_settings(Settings(starting_items=[[88, 99], [8, 10]]))
-    assert window.current_settings().starting_items == [[88, 99], [8, 10]]
-    window._change_language("English")
-    assert window.current_settings().starting_items == [[88, 99], [8, 10]]
-    items = window.widgets["starting_items"]
-    for _ in range(SLOTS):
-        items.add()
-    assert len(items.get()) == SLOTS and items.add_button.cget("state") == "disabled"
-    items.clear_button.invoke()
-    assert window.current_settings().starting_items == []
-
-
-def test_expanded_starting_inventory_option(window):
-    assert window.current_settings().expanded_starting_inventory is False
-    window.widgets["expanded_starting_inventory"].set(True)
-    assert window.current_settings().expanded_starting_inventory is True
+def test_starting_kit_option(window):
+    assert window.current_settings().starting_kit is True  # on by default
+    assert "starting_items" not in window.widgets  # the kit is the developer's, not editable
+    window.widgets["starting_kit"].set(False)
+    assert window.current_settings().starting_kit is False
     window.apply_settings(Settings())
-    assert window.current_settings().expanded_starting_inventory is False
+    assert window.current_settings().starting_kit is True
 
 
 def test_console_platform_is_not_available_yet(window):

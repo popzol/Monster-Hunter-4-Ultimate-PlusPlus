@@ -34,8 +34,9 @@ def test_defaults_are_vanilla_and_shown_first():
     defaults = Settings()
     # Limit randomness, or never show the "?" monster icon: on by default.
     # The master switches (randomize_quests / randomize_equipment) are on: with their options off nothing changes.
+    # The starting kit is on: every new game gets the same items (the developer's kit).
     restrictions = {"always_music", "one_monster_per_wave_on_arenas", "new_monster_icons", "randomize_quests",
-                    "randomize_equipment"}
+                    "randomize_equipment", "starting_kit"}
     for option in all_options():
         value = getattr(defaults, option.field)
         if option.choices:

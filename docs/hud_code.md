@@ -75,7 +75,9 @@ Free space used in the update:
 | 0xDEC92C | 0xF8 | Target face: `asm/face_show.s` (shows / hides it with the touch panel and the HUD) |
 | 0xDECA24 | 0x0C | Target face: position x, y and scale (`code_patch.face_params`) |
 | 0xDECA30 | 0x4F0 | `asm/target_face.c` (ends at 0xDECF20) |
-| 0xDECF20 | 0xE0 | free (the diagnostic build of `target_face.c`, 0x594 bytes, takes its place in probes) |
+| 0xDECF20 | 0x20 | free |
+| 0xDECF40 | 0x88 | `asm/dpad_filter.s` (`DPAD_FILTER`; the diagnostic build of `target_face.c`, 0x594 bytes, takes its place and the free bytes in probes) |
+| 0xDECFC8 | 0x38 | free |
 
 Each patch checks and fills only its own range (`code_patch.py`: `CAVE`,
 `TARGET_ROUTINE`, `FACE_LOADER` … `FACE_END` = `CAVE_END`), so they can be

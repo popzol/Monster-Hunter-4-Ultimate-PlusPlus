@@ -1,0 +1,27 @@
+# Starting kit: what every new character finds in the item box (option starting_kit).
+# How to edit it: docs/randomizer.md, "Starting kit".
+#
+# One item per line: <English item name> x<quantity>   # <item id>
+# Find names and ids with: python -m mh4u_rando.data.query item <name>
+# Keep it sorted by id. Quantities 1-99 (box stacks; the pouch limit does not apply).
+# The retail starting items not listed here (Energy Drink, Iron Pickaxe, Bug Net,
+# Normal S Lv2, Power Coating) are added to the box too, in their retail quantity;
+# kit + those can be at most 48 items. Item sets 1-3 stay the retail ones.
+# Check it with: python -m pytest tests/test_starting_items.py
+Potion x99             # 8
+Mega Potion x99        # 9
+Demondrug x10          # 16
+Armorskin x10          # 19
+Cool Drink x99         # 22
+Hot Drink x99          # 23
+Max Potion x5          # 28
+Well-done Steak x10    # 49
+Paintball x99          # 61
+Tranq Bomb x20         # 69
+Pitfall Trap x10       # 73
+Shock Trap x10         # 74
+Mega Fishing Fly x99   # 156
+Mega Pickaxe x99       # 163
+Mega Bug Net x99       # 166
+Whetstone x99          # 168
+Ration x99             # 771

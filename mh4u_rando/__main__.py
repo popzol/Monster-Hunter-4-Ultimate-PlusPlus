@@ -8,7 +8,8 @@ up lock / switch the target, --target-face shows the target's face on the top
 screen too (all need --rom and the update's 00000000.app, found in
 Citra/Azahar/Lime3DS or given with --update; without it the HUD size only
 changes data files).
-The new game's items (starting_items, expanded_starting_inventory) are set in the preset only.
+New games get the developer's starting kit in the item box (needs the update; --no-starting-kit: the
+original items).
 --no-quests / --no-equipment leave the quests / the equipment untouched.
 Advanced: --arc quest01.arc (instead of --rom) plus --code code.bin|game.3ds|update.app.
 The output folder is a mod folder: copy its contents into Citra's
@@ -26,7 +27,6 @@ import sys
 from pathlib import Path
 
 from .data import load_game_data
-from .exefs.starting_items import check_starting_items, effective_starting_items
 from .fix import BACKUP_DIR, WARNINGS, FixError, apply, find_run, list_backups, preview, restore
 from .pipeline import run
 from .randomizer import HudScale, Settings
@@ -86,6 +86,8 @@ def main(argv=None) -> int:
                         help="list the copies a fix left in --out's backups/ (no --rom needed)")
     parser.add_argument("--restore", metavar="NAME",
                         help="put the copy backups/NAME back into --out (the current mod is copied first)")
+    parser.add_argument("--no-starting-kit", action="store_true",
+                        help="new games get the original items, not the starting kit (over the preset)")
     args = parser.parse_args(argv)
 
     if args.list_backups or args.restore:
@@ -106,6 +108,8 @@ def main(argv=None) -> int:
         settings.randomize_quests = False
     if args.no_equipment:
         settings.randomize_equipment = False
+    if args.no_starting_kit:
+        settings.starting_kit = False
     if args.seed:
         settings.seed = args.seed
     if args.hud_scale:
@@ -119,12 +123,6 @@ def main(argv=None) -> int:
         parser.error("the preset randomizes equipment: use --rom, or add --code to --arc")
     if settings.patches_interface_code and args.arc:
         parser.error("the interface options (HUD size, target) need --rom")
-    starting_items = effective_starting_items(settings.starting_items, settings.expanded_starting_inventory)
-    if starting_items and args.arc and args.code is None:
-        parser.error("the preset sets starting items: use --rom, or add --code to --arc")
-    errors = check_starting_items(starting_items, load_game_data())
-    if errors:
-        parser.error("; ".join(errors))
 
     def progress(done, total, report):
         print(f"\r[{done}/{total}] {report.title or report.quest_id}"[:79].ljust(79), end="", flush=True)

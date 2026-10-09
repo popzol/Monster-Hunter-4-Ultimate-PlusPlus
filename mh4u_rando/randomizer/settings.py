@@ -105,8 +105,7 @@ EQUIPMENT_SWITCHES = ("randomize_recipes", "randomize_weapon_stats", "randomize_
 # Options each player chooses for themselves: they change neither quests nor equipment, so two friends playing the
 # same seed may differ in them (they are left out of the fix checksum, mh4u_rando/fix.py). The monster icons only
 # change quest board pictures, which the checksum ignores.
-PERSONAL_FIELDS = ("hud_scale", "new_monster_icons", "touchless_target", "starting_items",
-                   "expanded_starting_inventory")
+PERSONAL_FIELDS = ("hud_scale", "new_monster_icons", "touchless_target", "starting_kit")
 
 # The value a gameplay setting takes when a settings file predates it, as saved by to_dict(): the one that gives
 # what the older version made. Only needed when that is not the field's default (docs/randomizer.md, "Supporting
@@ -211,8 +210,7 @@ class Settings:
     touchless_target: bool = False
 
     # New game (executable patch, not randomized)
-    starting_items: list[list[int]] = field(default_factory=list)  # [item id, quantity]; empty: the original ones
-    expanded_starting_inventory: bool = False  # a wider kit of items (exefs/starting_items.py EXPANDED_ITEMS)
+    starting_kit: bool = True  # the developer's kit in the item box (data/curated/starting_kit.txt); needs the update
 
     # Debug
     debug_weak_monsters: bool = False    # lowest health and attack index for every monster
@@ -275,8 +273,6 @@ class Settings:
             default = getattr(cls(), f.name)
             if isinstance(default, Enum):
                 value = type(default)(value)
-            elif isinstance(default, list):
-                value = [[int(item), int(quantity)] for item, quantity in value]
             elif isinstance(default, dict):
                 value = {int(quest): int(count) for quest, count in value.items() if int(count)}
             kwargs[f.name] = value

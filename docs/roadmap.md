@@ -40,10 +40,11 @@ is done or discovered.
 
 ## To verify in-game
 
-* **Starting items** (`starting_items`, docs/randomizer.md "New game"): create
-  a new save with the mod and a custom list (include ammo and an item above 10,
-  e.g. Paintball x30); check the item box contents and order, item set 1 (and
-  that sets 2-3 are empty) and that loading the set fills the pouch.
+* **Starting kit** (`starting_kit`, docs/randomizer.md "New game"): create a
+  new save with the mod; the item box holds the kit (Potion x99, Pitfall Trap
+  x10, Ration x99...) and the retail extras (Energy Drink, Iron Pickaxe, Bug
+  Net, Normal S Lv2, Power Coating), and item sets 1-3 are the retail ones
+  (loading set 1 fills the pouch from the box).
 
 * **Gunner supplies and sorted boxes**: with `randomize_supplies` +
   `gunner_supplies`, the supply box holds ammo / coatings that can be picked

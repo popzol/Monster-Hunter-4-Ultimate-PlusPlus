@@ -245,7 +245,7 @@ Armor record (16 bytes, head and body):
 
 ## Starting items
 
-What a new character gets (option `starting_items`, `mh4u_rando/exefs/starting_items.py`).
+What a new character gets (option `starting_kit`, `mh4u_rando/exefs/starting_items.py`).
 **Verified** with Ghidra on the update; the 0x180 bytes are identical in the base game.
 
 * Table at offset **0xED0798** (VA 0xFD0798, `.rodata`): 3 loadouts of 32
@@ -267,10 +267,30 @@ What a new character gets (option `starting_items`, `mh4u_rando/exefs/starting_i
     union of the loadouts; the weapon class plays no part.
   * **FUN_00c1d4c4** (VA 0xC1D608 reads the table) copies loadout *n* (0x80
     bytes) into the first 0x80 bytes of **item set** *n* + 1 (24 sets of 0x9C
-    bytes, each with a name from a text table).
-* The option writes the user's list into loadout 0 from slot 0 and zeroes
-  loadouts 1-2 (otherwise their ammo would still be given). Quantities are
-  limited to the item's pouch limit (item sets fill the pouch) and 99.
+    bytes, each with a name from a text table). It runs once per save, behind a
+    flag (save + 0x5C + 0x14E73 in FUN_00c1f50c), from FUN_00c1f50c or
+    FUN_00c1ed40.
+  * FUN_00c1f50c first clears the save (FUN_002ff080, a memset of 0x15204
+    bytes from save + 0x5C), so the item sets start zeroed.
+* Update's code (**verified** with Ghidra; the base game's code is elsewhere):
+  * FUN_00c1f50c: `ldr r0, [0xC1F8CC]` loads the table address from its own
+    literal (0xFD0798), adds `loadout << 7`, walks 32 slots (`cmp r9, #0x20`
+    at 0xC1F854) and 3 loadouts (`cmp r0, #3` at 0xC1F868). For each item it
+    adds the slot's quantity (FUN_00c1df50) unless the box already holds that
+    many (counting up to 999).
+  * FUN_00c1d4c4: `ldr r2, [0xC1D784]` (a separate literal, also 0xFD0798),
+    `add r1, r2, r1, lsl #7`, `mov r2, #0x80` at 0xC1D610, `bl FUN_002ff22c`
+    (memcpy).
+* The option (starting kit) keeps slots 0-15 retail and writes the kit, then
+  the retail items it lacks, into slots 16-31 of loadouts 0, 1, 2 (48 slots).
+  Three patches, each checked first (`CODE_PATCHES`): the box literal
+  0xC1F8CC becomes 0xFD07D8 (slot 16), its slot count becomes 16 (`cmp r9,
+  #0x10`) with the 0x80 stride unchanged, and the item set copy becomes 0x40
+  bytes (`mov r2, #0x40`). The box gets only the kit slots, the item sets only
+  the retail slots, so quantities can be 99 (the pouch limit only matters for
+  item sets).
+* The free space at the end of `.text` has no room for a separate table
+  (docs/hud_code.md), hence the use of the empty slots.
 
 ## Not found / not decoded
 

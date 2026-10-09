@@ -103,18 +103,6 @@ SET_ALL = T("Todos", "All")
 SET_ALL_TIP = T("Pone todas las opciones de este grupo en el mismo valor.",
                 "Sets every option of this group to the same value.")
 MIXED = T("Mixto", "Mixed")
-ADD_ITEM = T("+ Añadir objeto", "+ Add item")
-CLEAR_ITEMS = T("Originales", "Original")
-CLEAR_ITEMS_TIP = T("Vacía la lista: la partida nueva trae los objetos del juego original.",
-                    "Empties the list: a new game gets the original game's items.")
-NO_ITEMS = T("Lista vacía: objetos originales.", "Empty list: the original items.")
-ITEM_COUNT = T("{count} de {limit} objetos", "{count} of {limit} items")
-ITEM_UP = T("Subir", "Move up")
-ITEM_DOWN = T("Bajar", "Move down")
-ITEM_REMOVE = T("Quitar", "Remove")
-ITEM_SEARCH_TIP = T("Escribe para filtrar por nombre (en inglés) y elige uno de la lista.",
-                    "Type to filter by name and pick one from the list.")
-
 PLATFORMS ={"emulator": T("Emulador", "Emulator"), "console": T("3DS", "3DS")}
 PLATFORM_TIP = T("Emulador: Citra, Azahar o Lime3DS. 3DS: una consola real con Luma3DS (próximamente; no tendrá "
                  "algunas opciones, como fijar monstruos sin pantalla táctil).",

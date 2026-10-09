@@ -68,8 +68,8 @@ def test_quest_seed_changes_only_with_rerolls():
 
 
 def test_gameplay_dict_leaves_out_personal_options():
-    values = Settings(hud_scale=HudScale.P70, touchless_target=True, starting_items=[[8, 1]]).gameplay_dict()
-    assert {"hud_scale", "touchless_target", "starting_items", "new_monster_icons"}.isdisjoint(values)
+    values = Settings(hud_scale=HudScale.P70, touchless_target=True, starting_kit=False).gameplay_dict()
+    assert {"hud_scale", "touchless_target", "starting_kit", "new_monster_icons"}.isdisjoint(values)
     assert "randomize_monsters" in values and "quest_rerolls" in values
 
 

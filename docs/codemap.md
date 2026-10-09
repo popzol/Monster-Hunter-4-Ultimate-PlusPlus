@@ -166,13 +166,15 @@ its public classes and functions with their signatures.
   - `read(path: str) -> bytes`
   - `walk(dir_offset: int=0, prefix: str='')` - Every file path of the RomFS.
 
-### `mh4u_rando/exefs/starting_items.py` - Starting items (option starting_items): what a new character finds in the item box.
+### `mh4u_rando/exefs/starting_items.py` - Starting kit (option starting_kit): what a new character finds in the item box.
 - class `StartingItemsError(ValueError)`
-- `effective_starting_items(items: Sequence[Sequence[int]], expanded: bool) -> list[list[int]]` - What the new game gets: `items` (the user's list) on top of EXPANDED_ITEMS when `expanded`, where...
-- `max_quantity(item_id: int, data: GameData) -> int` - Largest quantity allowed for an item: its pouch limit (item sets fill the pouch), at most a box s...
+- `load_starting_kit(data: GameData, path: Path=STARTING_KIT_PATH) -> list[list[int]]` - The kit of `path` as [item id, quantity] pairs. Each line is "<English item name> x<quantity>", w...
+- `box_items(kit: Sequence[Sequence[int]], code: bytes) -> list[list[int]]` - What the box gets: `kit`, then the retail starting items of `code` (unpatched) that it does not l...
 - `check_starting_items(items: Sequence[Sequence[int]], data: GameData) -> list[str]` - Why `items` ([item id, quantity] pairs) cannot be written; empty when they can.
 - `read_starting_items(code: bytes) -> list[list[list[int]]]` - The loadouts of `code`, each a list of [item id, quantity] of its used slots.
-- `patch_starting_items(code: bytes, items: Sequence[Sequence[int]]) -> bytes` - `code` (base game or update) with `items` as the only starting items, in loadout 0 from its first...
+- `read_kit(code: bytes) -> list[list[int]]` - The used kit slots (16-31 of each loadout) of `code`, in the order the box filler reads them.
+- `supports_starting_kit(code: bytes) -> bool` - `code` is the update's executable with the retail table and box / item set code.
+- `patch_starting_items(code: bytes, items: Sequence[Sequence[int]]) -> bytes` - `code` (the update's) with `items` as the box's starting items and the item sets kept retail.
 
 ### `mh4u_rando/fix.py` - Fix a game in progress: change settings or reroll quests of a seed that is already being played, ...
 - class `FixError(ValueError)` - A fix that would not be safe or would not be identical for everyone; nothing was changed.
@@ -265,15 +267,6 @@ its public classes and functions with their signatures.
   - `normalize(changed: RangeEnd) -> None` - Clamp both numbers to the limits; if N > M, move the number that was not just edited.
 - class `SetAllWidget` - Drop-down that sets every compact option of a group to the same value ("Mixed" while they differ).
   - `refresh() -> None`
-  - `set_enabled(enabled: bool) -> None`
-- class `ItemListWidget` - A list of [item id, quantity] (starting_items): one row per item with a drop-down filtered by wha...
-  - `get() -> list[list[int]]`
-  - `set(value) -> None`
-  - `add() -> None`
-  - `remove(index: int) -> None`
-  - `move(index: int, delta: int) -> None`
-  - `choose(index: int, name: str) -> bool` - Put the item called `name` in row `index`; False (row unchanged) if unknown or in another row.
-  - `set_quantity(index: int, text: str) -> None`
   - `set_enabled(enabled: bool) -> None`
 
 ### `mh4u_rando/hud/__init__.py` - In-game HUD: MT Framework GUI layouts (lyt), their animations (lanl) and the HUD size option.

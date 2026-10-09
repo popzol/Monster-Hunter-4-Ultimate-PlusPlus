@@ -43,6 +43,7 @@ research scripts), `tests/`, `docs/`.
 | Knowledge base files and how to maintain them | `docs/data.md` |
 
 | Settings and behaviour | `docs/randomizer.md` |
+| Starting kit (new game items): edit it | `docs/randomizer.md`, "Starting kit" |
 
 | Where the game's files are | `docs/game_files.md` |
 

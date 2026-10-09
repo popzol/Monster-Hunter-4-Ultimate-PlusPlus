@@ -160,24 +160,42 @@ unused slots. Rank comes from rarity: 1-3 low, 4-7 high, 8-10 G.
 
 ## New game
 
-* **Starting items** (`starting_items`, GUI tab "New game"; from the CLI, in a
-  `--preset` file): a list of `[item id, quantity]`, at most 32, each item once,
-  usable items only (no id 0 / 0x790), quantity between 1 and the item's pouch
-  limit (99 at most). Empty (the default) keeps the original items. A new
-  character finds them in the item box, in that order; they also become item
-  set 1, and item sets 2-3 are left empty (retail sets 2-3 were the gunner
-  versions with Normal S Lv2 / Power Coating). Saves created before the mod are
-  not affected. Patched in `exefs/code.ips` (the update's executable if it is
-  found, else the ROM's: the table is the same in both). The GUI shows the
-  items' English names. Table and game code: docs/equipment_data.md,
+* **Starting kit** (`starting_kit`, on by default; GUI tab "New game", CLI
+  `--no-starting-kit` to turn it off): a new character finds the developer's
+  kit, the same for everyone, in the item box, followed by the retail starting
+  items the kit does not list (Energy Drink, Iron Pickaxe, Bug Net, Normal S
+  Lv2, Power Coating). Quantities go up to 99 (box stacks; the pouch limit does
+  not apply). Item sets 1-3 stay the retail ones. Saves created before the mod
+  are not affected. Players cannot edit the kit: old presets' `starting_items`
+  and `expanded_starting_inventory` are ignored. Patched in `exefs/code.ips`,
+  in the update's executable only (from the update, or `--code` if it is the
+  update's); without it the kit is left out with a notice and new games get
+  the original items. Table, game code and patch: docs/equipment_data.md,
   "Starting items".
-* **Expanded starting inventory** (`expanded_starting_inventory`, off by
-  default): the new character also gets `EXPANDED_ITEMS` of
-  `exefs/starting_items.py`, 30 kinds of healing, status cures, bombs, traps,
-  a Farcaster, Normal/Pierce/Pellet S Lv2, coatings and tools, each in its
-  pouch limit. It is written as the starting items (same table, same rules): a
-  custom `starting_items` list is merged on top (its quantity wins, its other
-  items are added, 32 in total at most).
+
+## Starting kit (editing it)
+
+The kit is `mh4u_rando/data/curated/starting_kit.txt`, read by
+`load_starting_kit` (`exefs/starting_items.py`). To change it:
+
+1. Edit the file: one item per line, `<English item name> x<quantity>`, then
+   `# <item id>`. Blank lines and lines starting with `#` are ignored.
+   ```
+   Potion x99             # 8
+   Mega Potion x99        # 9
+   ```
+2. Find names and ids with `python -m mh4u_rando.data.query item <name>` (the
+   name must match `name` exactly, ignoring case). The `# id` must be that
+   item's id; when two items share a name it picks one.
+3. Rules: keep it sorted by id; each item once; usable items only (not id 0 or
+   0x790); quantity 1-99; the kit plus the retail items it does not list can be
+   at most 48 (`KIT_SLOTS`: slots 16-31 of the 3 loadouts). Check that an
+   `account_item` (Ration, EZ items) stays in the box in game.
+4. Run `python -m pytest tests/test_starting_items.py` (it checks the file,
+   the order and that every `# id` matches its name).
+5. If the kind of items changes, update the option's description in
+   `gui/options.py` (`starting_kit`, both languages) and add the check to
+   docs/roadmap.md, "To verify in-game".
 
 ## Fixing a game in progress
 
@@ -199,7 +217,7 @@ regenerated mod keeps all progress (restart the game after installing it).
   settings that are not at their neutral value (`Settings.checksum_dict`), to
   compare by eye. Left out: the options each player chooses
   (`PERSONAL_FIELDS`: HUD size, touchless target, monster icons, starting
-  items) and the quest board pictures (they depend on the new icons, which
+  kit) and the quest board pictures (they depend on the new icons, which
   need the update). Old files without the block still load as presets.
   The personal options do change `exefs/code.ips` and some romfs files, so
   two friends with the same code may still have different mod files.

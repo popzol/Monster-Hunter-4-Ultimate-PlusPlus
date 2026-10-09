@@ -25,7 +25,9 @@ from pathlib import Path
 from .arc import parse_arc, write_arc
 from .data import GameData, load_game_data
 from .exefs import ExtractError, RomFS, is_container, load_code, make_ips
-from .exefs.starting_items import check_starting_items, effective_starting_items, patch_starting_items
+from .exefs.starting_items import (
+    box_items, check_starting_items, load_starting_kit, patch_starting_items, supports_starting_kit,
+)
 from .hud import UPDATE_TITLE_ID, find_update, hud_files, remove_hud_files
 from .hud.build import hint_files
 from .hud.code_patch import patch_interface
@@ -211,16 +213,13 @@ def run(game: Path, output_dir: Path, settings: Settings,
     equipment tables are the same). Without the update the HUD size only changes data files (the minimap,
     the mount gauge and the prompts over the characters keep their size); the target options require it; the
     monster icons (on by default) are left out with a notice, only their quest picture fixes being kept.
-    The starting items patch the update's executable if there is one, else the ROM's (same table in both).
-    `stage` is told when each of STAGES starts (for progress displays). The settings file gets `record` (a new
-    one, revision 0, by default) with the run's checksum."""
+    The starting kit (on by default) patches the update's executable (or `code_path`'s, if it is the update's);
+    without it the kit is left out with a notice. `stage` is told when each of STAGES starts (for progress
+    displays). The settings file gets `record` (a new one, revision 0, by default) with the run's checksum."""
     announce = stage or (lambda _name: None)
     announce("rom")
     data = load_game_data()
-    starting_items = effective_starting_items(settings.starting_items, settings.expanded_starting_inventory)
-    errors = check_starting_items(starting_items, data)
-    if errors:
-        raise ValueError("; ".join(errors))
+    kit = load_starting_kit(data) if settings.starting_kit else []
     update = update_used = None
     want_icons = settings.new_monster_icons and is_container(game)
     if want_icons:
@@ -228,7 +227,7 @@ def run(game: Path, output_dir: Path, settings: Settings,
     if settings.patches_interface_code:
         if not is_container(game):
             raise ValueError("the interface options need the game ROM")
-    if settings.patches_interface_code or want_icons or settings.allows_op_equipment or starting_items:
+    if settings.patches_interface_code or want_icons or settings.allows_op_equipment or kit:
         update, update_used = open_update(update_path)
         if update is None and settings.needs_update:
             raise ValueError("the target options need the update's 00000000.app (installed in "
@@ -240,13 +239,23 @@ def run(game: Path, output_dir: Path, settings: Settings,
                        "keep the \"?\" icon")
     patch_interface_code = update_used is not None and (settings.patches_interface_code or new_icons)
     code = None
-    if update_used is not None and (patch_interface_code or settings.allows_op_equipment or starting_items):
-        # The update's executable is the one that runs; allow_op_equipment patches code that only it has.
+    if update_used is not None and (patch_interface_code or settings.allows_op_equipment or kit):
+        # The update's executable is the one that runs; allow_op_equipment and the kit patch code only it has.
         code = load_code(update_used)  # fail before any work if the executable is unsupported
-    elif settings.randomizes_equipment or starting_items:
+    elif settings.randomizes_equipment or (kit and code_path is not None):
         if code_path is None and not is_container(game):
-            raise ValueError("equipment randomization and the starting items need the game ROM (or its code.bin)")
+            raise ValueError("equipment randomization needs the game ROM (or its code.bin)")
         code = load_code(code_path or game)
+    starting_items = []
+    if kit and code is not None and supports_starting_kit(code):
+        starting_items = box_items(kit, code)
+        errors = check_starting_items(starting_items, data)
+        if errors:
+            raise ValueError("; ".join(errors))
+    elif kit:
+        notices.append("starting kit: without the update's 00000000.app new games get the original items")
+    if not (starting_items or patch_interface_code or settings.randomizes_equipment):
+        code = None  # only loaded to look for the kit's code
     arc, entries, quests = read_quests(game)
     input_check = check_input(quests, data)
 
