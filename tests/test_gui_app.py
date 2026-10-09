@@ -4,7 +4,7 @@ import time
 
 import pytest
 
-from mh4u_rando.randomizer import Frequency, ModelMode, Settings, StatMode, StructureMode
+from mh4u_rando.randomizer import Frequency, HudScale, ModelMode, Settings, StatMode, StructureMode
 
 tk = pytest.importorskip("tkinter")
 pytest.importorskip("customtkinter")
@@ -156,6 +156,65 @@ def test_expanded_starting_inventory_option(window):
     assert window.current_settings().expanded_starting_inventory is True
     window.apply_settings(Settings())
     assert window.current_settings().expanded_starting_inventory is False
+
+
+def test_console_platform_is_not_available_yet(window):
+    window._change_platform("console")
+    assert window.run_button.cget("state") == "disabled"
+    assert window.widgets["touchless_target"]._controls[0].cget("state") == "disabled"
+    window._main_action()  # does nothing
+    assert window.worker is None
+    window._change_platform("emulator")
+    assert window.run_button.cget("state") == "normal"
+    assert window.widgets["touchless_target"]._controls[0].cget("state") == "normal"
+
+
+def test_fix_mode_loads_the_game_of_the_output_folder(window, tmp_path):
+    from mh4u_rando.record import Checksum, RunRecord, save_run
+    out = tmp_path / "mod"
+    out.mkdir()
+    game = Settings(seed="FIXME", randomize_monsters=True, quest_rerolls={10101: 2})
+    save_run(out / "settings_FIXME.json", game, RunRecord("0.2.0", 1, Checksum("a" * 64, "", "ABCD-1234")))
+    window.out_var.set(str(out))
+    window.widgets["hud_scale"].set(HudScale.P70)       # this player's own option
+    window._change_mode("fix")
+    assert window.mode == "fix" and window.area_index == gui_app.FIXES_AREA
+    settings = window.current_settings()
+    assert settings.seed == "FIXME" and settings.randomize_monsters and settings.quest_rerolls == {10101: 2}
+    assert settings.hud_scale is HudScale.P70
+    assert "ABCD-1234" in window.game_label.cget("text")
+    assert window.run_button.cget("text") == "PREVISUALIZAR"
+
+    panel = window.fixes_panel
+    other = next(quest_id for quest_id in panel.names if quest_id != 10101)
+    assert panel.reroll(panel.names[other]) and not panel.reroll("no such quest")
+    panel.step_all(1)
+    assert window.current_settings().quest_rerolls == {10101: 2, other: 1}
+    assert window.current_settings().quest_reroll == 1
+    panel.step(10101, -5)
+    assert window.current_settings().quest_rerolls == {other: 1}
+
+    window._change_language("English")                  # rebuilds: the fixes survive
+    assert window.current_settings().quest_rerolls == {other: 1}
+    window._change_mode("randomize")
+    settings = window.current_settings()
+    assert "quest_reroll" not in window.widgets and settings.quest_rerolls == {} and settings.quest_reroll == 0
+
+
+def test_an_edit_turns_apply_back_into_preview(window, tmp_path):
+    from mh4u_rando.fix import FixPreview
+    from mh4u_rando.record import RunRecord, save_run
+    save_run(tmp_path / "settings_EDIT.json", Settings(seed="EDIT"), RunRecord())
+    window.out_var.set(str(tmp_path))
+    window._change_mode("fix")
+    settings = window.current_settings()
+    window.fix_preview = FixPreview(settings, RunRecord(), None, False)
+    window.fix_preview_key = window._preview_key(settings)
+    window._set_running(False)
+    assert window.run_button.cget("text") == "APLICAR ARREGLO"
+    window.widgets["randomize_rewards"].set(True)
+    window._set_running(False)
+    assert window.run_button.cget("text") == "PREVISUALIZAR"
 
 
 def test_full_run_from_the_window(window, tmp_path):

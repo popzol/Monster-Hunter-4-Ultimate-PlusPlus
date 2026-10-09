@@ -123,7 +123,7 @@ class _NoValidLineup(Exception):
 def _rng(ctx: RandomizerContext, quest: Quest, purpose: str):
     # Attempt 0 uses the plain streams so results do not depend on retries elsewhere.
     suffix = f"#{ctx.attempt}" if ctx.attempt else ""
-    return stream(ctx.settings.seed, quest.quest_id, purpose + suffix)
+    return stream(ctx.settings.quest_seed(quest.quest_id), quest.quest_id, purpose + suffix)
 
 
 def _wave_ids(quest: Quest) -> list[list[int]]:

@@ -102,6 +102,12 @@ EQUIPMENT_SWITCHES = ("randomize_recipes", "randomize_weapon_stats", "randomize_
                       "randomize_palico_recipes", "randomize_palico_weapon_stats", "randomize_palico_armor_stats",
                       "randomize_palico_models")
 
+# Options each player chooses for themselves: they change neither quests nor equipment, so two friends playing the
+# same seed may differ in them (they are left out of the fix checksum, mh4u_rando/fix.py). The monster icons only
+# change quest board pictures, which the checksum ignores.
+PERSONAL_FIELDS = ("hud_scale", "new_monster_icons", "touchless_target", "starting_items",
+                   "expanded_starting_inventory")
+
 
 @dataclass
 class Settings:
@@ -206,6 +212,11 @@ class Settings:
     # Debug
     debug_weak_monsters: bool = False    # lowest health and attack index for every monster
 
+    # Fixes of a game in progress (mh4u_rando/fix.py): quests drawn again with another sub-seed; equipment and the
+    # quests not rerolled stay the same
+    quest_reroll: int = 0                # every quest
+    quest_rerolls: dict[int, int] = field(default_factory=dict)  # quest id -> times that quest was rerolled
+
     @property
     def patches_interface_code(self) -> bool:
         """The interface options that patch the executable and the update's files (mh4u_rando/hud)."""
@@ -227,8 +238,21 @@ class Settings:
         """allow_op_equipment, unless the equipment master switch is off."""
         return self.randomize_equipment and self.allow_op_equipment
 
+    def quest_seed(self, quest_id: int) -> str:
+        """Seed of one quest's random streams: the seed itself unless the quest was rerolled."""
+        own = self.quest_rerolls.get(quest_id, 0)
+        if not self.quest_reroll and not own:
+            return self.seed
+        return f"{self.seed}~{self.quest_reroll}.{own}"
+
     def to_dict(self) -> dict:
-        return {k: (v.value if isinstance(v, Enum) else v) for k, v in asdict(self).items()}
+        values = {k: (v.value if isinstance(v, Enum) else v) for k, v in asdict(self).items()}
+        values["quest_rerolls"] = {str(k): v for k, v in sorted(self.quest_rerolls.items())}
+        return values
+
+    def gameplay_dict(self) -> dict:
+        """to_dict() without the options each player chooses for themselves (PERSONAL_FIELDS)."""
+        return {k: v for k, v in self.to_dict().items() if k not in PERSONAL_FIELDS}
 
     @classmethod
     def from_dict(cls, values: dict) -> "Settings":
@@ -242,6 +266,8 @@ class Settings:
                 value = type(default)(value)
             elif isinstance(default, list):
                 value = [[int(item), int(quantity)] for item, quantity in value]
+            elif isinstance(default, dict):
+                value = {int(quest): int(count) for quest, count in value.items() if int(count)}
             kwargs[f.name] = value
         # Old presets had target_switch and target_face_top as two separate options, merged into touchless_target.
         if values.get("target_switch") or values.get("target_face_top"):

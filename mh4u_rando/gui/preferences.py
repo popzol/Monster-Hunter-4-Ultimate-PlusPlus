@@ -15,6 +15,8 @@ class Preferences:
     last_settings: dict = field(default_factory=dict)
     language: str = "es"
     appearance: str = "dark"   # system | light | dark
+    platform: str = "emulator"  # emulator | console (real 3DS, not available yet)
+    mode: str = "randomize"     # randomize | fix (a game in progress, mh4u_rando/fix.py)
 
     @classmethod
     def load(cls) -> "Preferences":

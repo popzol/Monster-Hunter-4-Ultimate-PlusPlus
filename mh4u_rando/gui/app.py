@@ -4,17 +4,22 @@ Layout, in the spirit of the Universal Pokemon Randomizer:
 
     +-----------+------------------------------------------+
     | sidebar   | [ Quests | Equipment ]   (areas)          |
-    | files     | [ category | category | ... ]  (sections) |
-    | seed      |   cards of options in two columns         |
+    | mode      | [ category | category | ... ]  (sections) |
+    | files     |   cards of options in two columns         |
+    | seed      |                                           |
     | presets   +------------------------------------------+
     | RANDOMIZE | activity: progress, status, log           |
     | language  |                                           |
     +-----------+------------------------------------------+
 
 Every category is two clicks away at most. The only input is the game ROM:
-quest01.arc and the executable are read from it. Changing the language rebuilds every
-widget while keeping the current settings and the selected tabs. Randomization runs in a background thread and reports back
-through a queue polled by the Tk event loop.
+quest01.arc and the executable are read from it. Changing the language, the platform or the mode rebuilds every
+widget while keeping the current settings and the selected tabs. Randomization runs in a background thread and
+reports back through a queue polled by the Tk event loop.
+
+Platforms: emulator, and the real 3DS (shown, not available yet). Modes: randomize (a new game) and fix (a game in
+progress, mh4u_rando/fix.py): the seed and presets give way to the loaded game, a "Fixes" area comes first, and the
+main button previews the fix before it can apply it; any edit makes it a preview again.
 """
 
 import gc
@@ -30,12 +35,17 @@ from tkinter import filedialog, messagebox
 
 import customtkinter as ctk
 
+from ..data import load_game_data
 from ..exefs import is_container
+from ..fix import FixError, FixPreview, apply as apply_fix, find_run, preview as preview_fix
 from ..pipeline import inspect_game, output_arc_path, run
 from ..randomizer import Settings
 from ..randomizer.rng import new_seed
+from ..randomizer.settings import PERSONAL_FIELDS
+from ..record import RunRecord, load_run
 from . import strings as S
 from . import theme
+from .fixes import FixesPanel
 from .i18n import LANGUAGE_NAMES
 from .options import AREAS, all_options, area_options
 from .preferences import Preferences
@@ -46,6 +56,7 @@ POLL_MS = 100
 ANIMATION_MS = 30
 GROUP_COLUMNS = 2
 SIDEBAR_WIDTH = 300
+FIXES_AREA = -1  # area_index of the fixes area (fix mode)
 
 
 class RandomizerApp(ctk.CTk):
@@ -55,8 +66,8 @@ class RandomizerApp(ctk.CTk):
         ctk.set_appearance_mode(self.preferences.appearance)
         super().__init__()
         self.title(S.APP_NAME)
-        self.geometry("1180x800")
-        self.minsize(1000, 680)
+        self.geometry("1180x820")
+        self.minsize(1000, 740)  # the sidebar: mode and platform, files, seed or game, button, language
 
         self.language = self.preferences.language if self.preferences.language in LANGUAGE_NAMES else "es"
         self.rom_var = ctk.StringVar(value=self.preferences.rom_path)
@@ -71,8 +82,17 @@ class RandomizerApp(ctk.CTk):
         self.animator: ProgressAnimator | None = None
         self.finished_result = None
         self.section_index = [0] * len(AREAS)
+        self.platform = self.preferences.platform if self.preferences.platform in S.PLATFORMS else "emulator"
+        self.mode = "randomize"  # fix mode needs a game loaded: always start in randomize mode
+        self.work_kind = "randomize"  # what the worker thread is doing: randomize | preview | apply
+        self.fix_game: tuple[Path, Settings, RunRecord | None] | None = None  # loaded settings file
+        self.fix_preview: FixPreview | None = None
+        self.fix_preview_key = None  # settings and paths the preview was made for
+        self.fixes_panel: FixesPanel | None = None
 
         self._build(Settings.from_dict(self.preferences.last_settings))
+        if self.preferences.mode == "fix":
+            self._change_mode("fix")
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         self.after(POLL_MS, self._poll_events)
 
@@ -112,13 +132,56 @@ class RandomizerApp(ctk.CTk):
             .pack(anchor="w", pady=(26, 0), **pad)
         ctk.CTkLabel(bar, text="RANDOMIZER", font=theme.font(15, "bold")).pack(anchor="w", **pad)
         ctk.CTkLabel(bar, text=self.tr(S.SUBTITLE), text_color=theme.TEXT_MUTED, font=theme.font(11),
-                     wraplength=SIDEBAR_WIDTH - 44, justify="left").pack(anchor="w", pady=(4, 18), **pad)
+                     wraplength=SIDEBAR_WIDTH - 44, justify="left").pack(anchor="w", pady=(4, 12), **pad)
+
+        self.mode_selector = self._segments(bar, S.MODES, self.mode, self._change_mode, S.MODE_TIP)
+        self.platform_selector = self._segments(bar, S.PLATFORMS, self.platform, self._change_platform,
+                                                S.PLATFORM_TIP)
+        self.platform_selector.pack_configure(pady=(4, 14))
 
         self._heading(bar, S.FILES)
         self._path_field(bar, S.INPUT_ROM, S.INPUT_ROM_TIP, self.rom_var, self._browse_rom)
         self._path_field(bar, S.INPUT_UPDATE, S.INPUT_UPDATE_TIP, self.update_var, self._browse_update)
         self._path_field(bar, S.OUTPUT_DIR, S.OUTPUT_DIR_TIP, self.out_var, self._browse_output)
 
+        if self.mode == "fix":
+            self._build_game_card(bar)
+        else:
+            self._build_seed_and_presets(bar)
+
+        self.run_button = ctk.CTkButton(bar, text="", height=50, font=theme.font(17, "bold"),
+                                        command=self._main_action)
+        self.run_button.pack(fill="x", pady=(18, 0), **pad)
+
+        footer = ctk.CTkFrame(bar, fg_color="transparent")
+        footer.pack(side="bottom", fill="x", pady=(0, 20), **pad)
+        ctk.CTkLabel(footer, text=self.tr(S.LANGUAGE), text_color=theme.TEXT_MUTED, font=theme.font(11)) \
+            .pack(anchor="w")
+        language = ctk.CTkSegmentedButton(footer, values=list(LANGUAGE_NAMES.values()),
+                                          command=self._change_language, font=theme.font())
+        language.set(LANGUAGE_NAMES[self.language])
+        language.pack(fill="x", pady=(2, 10))
+        ctk.CTkLabel(footer, text=self.tr(S.APPEARANCE), text_color=theme.TEXT_MUTED, font=theme.font(11)) \
+            .pack(anchor="w")
+        modes = {self.tr(label): mode for mode, label in S.APPEARANCE_MODES.items()}
+        appearance = ctk.CTkSegmentedButton(footer, values=list(modes), font=theme.font(),
+                                            command=lambda label: self._change_appearance(modes[label]))
+        appearance.set(self.tr(S.APPEARANCE_MODES[self.preferences.appearance]))
+        appearance.pack(fill="x", pady=(2, 0))
+
+    def _segments(self, parent, labels: dict, selected: str, command, tooltip):
+        """Segmented button over `labels` (key -> T); `command` gets the key."""
+        names = {self.tr(label): key for key, label in labels.items()}
+        segments = ctk.CTkSegmentedButton(parent, values=list(names), font=theme.font(),
+                                          command=lambda name: command(names[name]))
+        segments.set(self.tr(labels[selected]))
+        segments.pack(fill="x", padx=22)
+        for button in segments._buttons_dict.values():  # the segmented button itself does not support bind
+            tip(button, tooltip, self.language)
+        return segments
+
+    def _build_seed_and_presets(self, bar):
+        pad = {"padx": 22}
         self._heading(bar, S.SEED)
         seed_row = ctk.CTkFrame(bar, fg_color="transparent")
         seed_row.pack(fill="x", pady=(0, 14), **pad)
@@ -140,25 +203,29 @@ class RandomizerApp(ctk.CTk):
             self._secondary_button(presets, self.tr(label), command) \
                 .grid(row=0, column=column, sticky="ew", padx=(0 if column == 0 else 3, 0))
 
-        self.run_button = ctk.CTkButton(bar, text=self.tr(S.RANDOMIZE), height=50, font=theme.font(17, "bold"),
-                                        command=self._start)
-        self.run_button.pack(fill="x", pady=(24, 0), **pad)
-
-        footer = ctk.CTkFrame(bar, fg_color="transparent")
-        footer.pack(side="bottom", fill="x", pady=(0, 20), **pad)
-        ctk.CTkLabel(footer, text=self.tr(S.LANGUAGE), text_color=theme.TEXT_MUTED, font=theme.font(11)) \
-            .pack(anchor="w")
-        language = ctk.CTkSegmentedButton(footer, values=list(LANGUAGE_NAMES.values()),
-                                          command=self._change_language, font=theme.font())
-        language.set(LANGUAGE_NAMES[self.language])
-        language.pack(fill="x", pady=(2, 10))
-        ctk.CTkLabel(footer, text=self.tr(S.APPEARANCE), text_color=theme.TEXT_MUTED, font=theme.font(11)) \
-            .pack(anchor="w")
-        modes = {self.tr(label): mode for mode, label in S.APPEARANCE_MODES.items()}
-        appearance = ctk.CTkSegmentedButton(footer, values=list(modes), font=theme.font(),
-                                            command=lambda label: self._change_appearance(modes[label]))
-        appearance.set(self.tr(S.APPEARANCE_MODES[self.preferences.appearance]))
-        appearance.pack(fill="x", pady=(2, 0))
+    def _build_game_card(self, bar):
+        """Fix mode: the loaded game (seed, revision, checksum) instead of the seed and the presets."""
+        pad = {"padx": 22}
+        self._heading(bar, S.GAME)
+        if self.fix_game:
+            _, settings, record = self.fix_game
+            text = S.GAME_INFO.format(self.language, seed=settings.seed, revision=record.revision if record else 0,
+                                      code=record.checksum.code if record and record.checksum
+                                      else self.tr(S.NO_CODE),
+                                      version=(record.version if record else "") or "?")
+        else:
+            text = self.tr(S.NO_GAME)
+        self.game_label = ctk.CTkLabel(bar, text=text, justify="left", anchor="w", font=theme.font(12),
+                                       text_color=theme.TEXT if self.fix_game else theme.TEXT_MUTED)
+        self.game_label.pack(fill="x", pady=(0, 6), **pad)
+        buttons = ctk.CTkFrame(bar, fg_color="transparent")
+        buttons.pack(fill="x", **pad)
+        for column, (label, tooltip, command) in enumerate(((S.LOAD_GAME, S.LOAD_GAME_TIP, self._browse_game),
+                                                            (S.FROM_MOD, S.FROM_MOD_TIP, self._load_game_from_mod))):
+            buttons.grid_columnconfigure(column, weight=1)
+            button = self._secondary_button(buttons, self.tr(label), command)
+            button.grid(row=0, column=column, sticky="ew", padx=(0 if column == 0 else 3, 0))
+            tip(button, tooltip, self.language)
 
     def _heading(self, parent, text):
         ctk.CTkLabel(parent, text=self.tr(text), text_color=theme.HEADING, font=theme.font(11, "bold")) \
@@ -185,9 +252,11 @@ class RandomizerApp(ctk.CTk):
 
     def _build_tabs(self, parent):
         area_names = [self.tr(area.title).upper() for area in AREAS]
-        self.area_selector = ctk.CTkSegmentedButton(parent, values=area_names, height=40,
-                                                    font=theme.font(15, "bold"),
-                                                    command=lambda name: self._show_area(area_names.index(name)))
+        self.fixes_name = self.tr(S.FIXES).upper()
+        values = ([self.fixes_name] if self.mode == "fix" else []) + area_names
+        self.area_selector = ctk.CTkSegmentedButton(
+            parent, values=values, height=40, font=theme.font(15, "bold"),
+            command=lambda name: self._show_area(FIXES_AREA if name == self.fixes_name else area_names.index(name)))
         self.area_selector.grid(row=0, column=0, sticky="ew", pady=(0, 4))
         self.area_tabs = []
         self.area_masters = []
@@ -218,11 +287,23 @@ class RandomizerApp(ctk.CTk):
                               padx=6, pady=6)
             tabs.set(self.tr(area.sections[self.section_index[area_index]].title))
             self.area_tabs.append(tabs)
+        self.fixes_panel = None
+        if self.mode == "fix":
+            self.fixes_panel = FixesPanel(parent, self.fix_game[2] if self.fix_game else None, self.language)
+            self.widgets.update(self.fixes_panel.widgets)
+        elif self.area_index == FIXES_AREA:
+            self.area_index = 0
         self._show_area(self.area_index)
 
     def _show_area(self, index: int):
+        """Show AREAS[index], or the fixes area (FIXES_AREA, fix mode only)."""
         self.area_index = index
-        self.area_selector.set(self.tr(AREAS[index].title).upper())
+        self.area_selector.set(self.fixes_name if index == FIXES_AREA else self.tr(AREAS[index].title).upper())
+        if self.fixes_panel:
+            if index == FIXES_AREA:
+                self.fixes_panel.frame.grid(row=2, column=0, sticky="nsew")
+            else:
+                self.fixes_panel.frame.grid_remove()
         for i, tabs in enumerate(self.area_tabs):
             master = self.area_masters[i]
             if i == index:
@@ -247,7 +328,8 @@ class RandomizerApp(ctk.CTk):
         self.progress = ctk.CTkProgressBar(card, height=10)
         self.progress.set(0)
         self.progress.pack(fill="x", padx=16)
-        self.status = ctk.CTkLabel(card, text=self.tr(S.READY), anchor="w", text_color=theme.TEXT_MUTED,
+        idle = S.CONSOLE_SOON if self.platform == "console" else S.READY_FIX if self.mode == "fix" else S.READY
+        self.status = ctk.CTkLabel(card, text=self.tr(idle), anchor="w", text_color=theme.TEXT_MUTED,
                                    font=theme.font(12))
         self.status.pack(fill="x", padx=16, pady=(4, 2))
         self.log = ctk.CTkTextbox(card, height=96, font=theme.font(12), wrap="word")
@@ -257,10 +339,16 @@ class RandomizerApp(ctk.CTk):
 
     def _wire_requirements(self):
         """Grey out options whose master switch is off (or whose master choice is the first, "don't change"),
-        and every option of an area whose own master switch (Area.master) is off."""
+        every option of an area whose own master switch (Area.master) is off, and the emulator-only options on
+        the 3DS platform."""
         options = {option.field: option for option in all_options()}
         # widget -> the settings fields that must all be "on" for it to be enabled
         needs: list[tuple[object, tuple[str, ...]]] = []
+        if self.platform == "console":
+            for option in options.values():
+                if option.emulator_only:
+                    self.widgets[option.field].set_enabled(False)
+            options = {field: option for field, option in options.items() if not option.emulator_only}
         area_master = {}
         for area in AREAS:
             if area.master:
@@ -310,6 +398,81 @@ class RandomizerApp(ctk.CTk):
         self.preferences.save()
         ctk.set_appearance_mode(mode)
 
+    # ----- platform and mode ----------------------------------------------------
+
+    def _change_platform(self, platform: str):
+        if platform != self.platform and not self._busy():
+            self.platform = platform
+            self.preferences.platform = platform
+            self.preferences.save()
+            self._build(self.current_settings())
+        else:
+            self.platform_selector.set(self.tr(S.PLATFORMS[self.platform]))
+
+    def _change_mode(self, mode: str):
+        """Fix mode starts from the loaded game (or the output folder's), keeping this player's own options."""
+        if mode == self.mode or self._busy():
+            self.mode_selector.set(self.tr(S.MODES[self.mode]))
+            return
+        current = self.current_settings()
+        self.mode = mode
+        self.preferences.mode = mode
+        self.preferences.save()
+        self.fix_preview = None
+        if mode == "fix":
+            self.area_index = FIXES_AREA
+            if self.fix_game is None:
+                path = find_run(Path(self.out_var.get().strip() or "."))
+                if path:
+                    self._open_game(path, current, rebuild=False)
+            settings = self._game_settings(current) if self.fix_game else current
+        else:
+            settings = current
+            settings.quest_reroll, settings.quest_rerolls = 0, {}
+        self._build(settings)
+
+    def _game_settings(self, current: Settings) -> Settings:
+        """The loaded game's settings with this player's own options (PERSONAL_FIELDS)."""
+        settings = Settings.from_dict(self.fix_game[1].to_dict())
+        for name in PERSONAL_FIELDS:
+            setattr(settings, name, getattr(current, name))
+        return settings
+
+    def _open_game(self, path: Path, current: Settings, rebuild: bool = True) -> bool:
+        try:
+            settings, record = load_run(path)
+        except (OSError, ValueError, TypeError, KeyError) as error:
+            messagebox.showerror(S.APP_NAME, S.ERROR_PRESET.format(self.language, error=error))
+            return False
+        self.fix_game = (Path(path), settings, record)
+        self.fix_preview = None
+        self._log(S.LOG_GAME_LOADED.format(self.language, path=path))
+        if rebuild:
+            self._build(self._game_settings(current))
+        return True
+
+    def _browse_game(self):
+        if self._busy():
+            return
+        folder = Path(self.out_var.get().strip() or ".")
+        path = filedialog.askopenfilename(initialdir=str(folder) if folder.is_dir() else None,
+                                          filetypes=[(self.tr(S.PRESET_FILES), "*.json")])
+        if path:
+            self._open_game(Path(path), self.current_settings())
+
+    def _load_game_from_mod(self):
+        if self._busy():
+            return
+        path = find_run(Path(self.out_var.get().strip() or "."))
+        if path is None:
+            messagebox.showerror(S.APP_NAME, self.tr(S.ERROR_NO_RUN_IN_FOLDER))
+            return
+        self._open_game(path, self.current_settings())
+
+    def _busy(self) -> bool:
+        """Working, or showing the end of the progress bar before the result."""
+        return (self.worker is not None and self.worker.is_alive()) or self.animator is not None
+
     # ----- settings -----------------------------------------------------------
 
     def current_settings(self) -> Settings:
@@ -325,8 +488,11 @@ class RandomizerApp(ctk.CTk):
         path = filedialog.askopenfilename(filetypes=[(self.tr(S.PRESET_FILES), "*.json")])
         if path:
             try:
-                self.apply_settings(Settings.load(Path(path)))
+                settings = Settings.load(Path(path))
+                self.apply_settings(settings)
                 self._log(S.LOG_PRESET_LOADED.format(self.language, path=path))
+                if settings.quest_reroll or settings.quest_rerolls:
+                    self._log(self.tr(S.LOG_PRESET_HAS_FIXES))
             except (OSError, ValueError, TypeError) as error:
                 messagebox.showerror(S.APP_NAME, S.ERROR_PRESET.format(self.language, error=error))
 
@@ -355,62 +521,132 @@ class RandomizerApp(ctk.CTk):
 
     # ----- running ------------------------------------------------------------
 
-    def _start(self):
-        if self.worker and self.worker.is_alive():
+    def _main_action(self):
+        if self._busy() or self.platform == "console":
             return
+        if self.mode == "randomize":
+            self._start()
+        elif self._preview_is_current():
+            self._apply_fix()
+        else:
+            self._start_preview()
+
+    def _checked_inputs(self, settings: Settings) -> tuple[Path, Path, Path | None] | None:
+        """ROM, output folder and update, or None after telling the user what is wrong."""
         rom_text, out_text = self.rom_var.get().strip(), self.out_var.get().strip()
         rom, out = Path(rom_text), Path(out_text)
         if not rom_text or not rom.is_file():
             messagebox.showerror(S.APP_NAME, self.tr(S.ERROR_NO_ROM))
-            return
+            return None
         if not out_text:
             messagebox.showerror(S.APP_NAME, self.tr(S.ERROR_NO_OUTPUT))
-            return
+            return None
         if output_arc_path(out).resolve() == rom.resolve():
             messagebox.showerror(S.APP_NAME, self.tr(S.ERROR_SAME_FILE))
-            return
+            return None
         try:
             check = inspect_game(rom)
         except Exception as error:
             messagebox.showerror(S.APP_NAME, S.ERROR_READ_ROM.format(self.language, error=error))
-            return
+            return None
         if check.looks_modified and not messagebox.askyesno(
                 S.APP_NAME, S.MODIFIED_INPUT.format(self.language, count=len(check.modified_quests),
                                                     total=check.quest_count), icon="warning"):
-            return
-
-        settings = self.current_settings()
+            return None
         if settings.randomizes_equipment and not is_container(rom):
             messagebox.showerror(S.APP_NAME, self.tr(S.ERROR_EQUIPMENT_NEEDS_ROM))
-            return
+            return None
         if settings.patches_interface_code and not is_container(rom):
             messagebox.showerror(S.APP_NAME, self.tr(S.ERROR_HUD_NEEDS_ROM))
-            return
+            return None
         update_text = self.update_var.get().strip()
         update = Path(update_text) if update_text else None
         if update is not None and not update.is_file():
             messagebox.showerror(S.APP_NAME, S.ERROR_NO_UPDATE.format(self.language, path=update))
+            return None
+        return rom, out, update
+
+    def _start(self):
+        if self._busy():
             return
+        settings = self.current_settings()
+        inputs = self._checked_inputs(settings)
+        if inputs is None:
+            return
+        rom, out, update = inputs
         if not settings.seed:
             settings.seed = new_seed()
             self.seed_var.set(settings.seed)
+        self._begin("randomize", settings, S.LOG_START.format(self.language, name=rom.name, seed=settings.seed),
+                    lambda: run(rom, out, settings, progress=self._post_progress, stage=self._post_stage,
+                                update_path=update))
+
+    def _start_preview(self):
+        if self.fix_game is None:
+            messagebox.showerror(S.APP_NAME, self.tr(S.ERROR_NO_GAME))
+            return
+        settings = self.current_settings()
+        inputs = self._checked_inputs(settings)
+        if inputs is None:
+            return
+        rom, out, _update = inputs
+        _, loaded_settings, record = self.fix_game
+        self.fix_preview = None
+        self.fix_preview_key = self._preview_key(settings)
+
+        def work():
+            self._post_stage("rom")
+            self._post_stage("quests")
+            return preview_fix(rom, out, settings, record, loaded_settings, progress=self._post_progress)
+
+        self._begin("preview", settings, S.LOG_FIX_START.format(self.language, seed=settings.seed), work)
+
+    def _apply_fix(self):
+        fix = self.fix_preview
+        settings = self.current_settings()
+        inputs = self._checked_inputs(settings)
+        if inputs is None:
+            return
+        rom, out, update = inputs
+        warnings = "".join(self.tr(S.FIX_WARNINGS[w]) + "\n\n" for w in fix.warnings)
+        if not messagebox.askyesno(S.APP_NAME, S.CONFIRM_APPLY.format(self.language, path=out, warnings=warnings),
+                                   icon="warning"):
+            return
+        self._begin("apply", settings, None,
+                    lambda: apply_fix(fix, rom, out, update_path=update, progress=self._post_progress,
+                                      stage=self._post_stage))
+
+    def _preview_key(self, settings: Settings):
+        return settings.to_dict(), self.rom_var.get().strip(), self.out_var.get().strip()
+
+    def _preview_is_current(self) -> bool:
+        """A preview exists and nothing changed since it was made."""
+        return (self.fix_preview is not None
+                and self._preview_key(self.current_settings()) == self.fix_preview_key)
+
+    def _begin(self, kind: str, settings: Settings, message: str | None, work):
+        self.work_kind = kind
         self._remember(settings)
         self._set_running(True)
         self.progress.set(0)
         self.animator = ProgressAnimator(time.monotonic())
         self.after(ANIMATION_MS, self._animate)
         self.status.configure(text_color=theme.TEXT_MUTED)
-        self._log(S.LOG_START.format(self.language, name=rom.name, seed=settings.seed))
-        self.worker = threading.Thread(target=self._work, args=(rom, out, settings, update), daemon=True)
+        if message:
+            self._log(message)
+        self.worker = threading.Thread(target=self._work, args=(work,), daemon=True)
         self.worker.start()
 
-    def _work(self, rom: Path, out: Path, settings: Settings, update: Path | None = None):
+    def _post_progress(self, done, total, report):
+        self.events.put(("progress", done, total, report))
+
+    def _post_stage(self, name):
+        self.events.put(("stage", name))
+
+    def _work(self, work):
         """Background thread: never touches widgets, only posts events."""
         try:
-            result = run(rom, out, settings,
-                         progress=lambda done, total, report: self.events.put(("progress", done, total, report)),
-                         stage=lambda name: self.events.put(("stage", name)), update_path=update)
-            self.events.put(("done", result))
+            self.events.put(("done", work()))
         except Exception as error:  # report any failure instead of dying silently
             self.events.put(("error", error, traceback.format_exc()))
 
@@ -421,6 +657,8 @@ class RandomizerApp(ctk.CTk):
                 getattr(self, f"_on_{event[0]}")(*event[1:])
         except queue.Empty:
             pass
+        if self.mode == "fix" and not self._busy():
+            self._set_running(False)  # an edit turns "Apply fix" back into "Preview"
         self.after(POLL_MS, self._poll_events)
 
     def _animate(self):
@@ -452,6 +690,12 @@ class RandomizerApp(ctk.CTk):
             self._finish(result)
 
     def _finish(self, result):
+        if self.work_kind == "preview":
+            self._finish_preview(result)
+            return
+        if self.work_kind == "apply":
+            self._finish_fix(result)
+            return
         self._set_running(False)
         self.progress.set(1)
         self.status.configure(text=S.FINISHED.format(self.language, seed=result.seed), text_color=theme.SUCCESS)
@@ -482,16 +726,81 @@ class RandomizerApp(ctk.CTk):
                                S.DONE_MESSAGE.format(self.language, seed=result.seed, path=result.output_dir)):
             _open_folder(result.output_dir)
 
+    def _finish_preview(self, fix: FixPreview):
+        self.fix_preview = fix
+        self.progress.set(1)
+        record = fix.record
+        line = S.LOG_FIX_RECEIVED if fix.received else S.LOG_FIX_NEW
+        message = line.format(self.language, revision=record.revision, code=record.checksum.code)
+        self.status.configure(text=message, text_color=theme.SUCCESS)
+        self._log(message)
+        for warning in fix.warnings:
+            self._log(f"{self.tr(S.LOG_WARNING)}: {self.tr(S.FIX_WARNINGS[warning])}")
+        if fix.changes:
+            self._log(self.tr(S.LOG_FIX_CHANGES))
+            self._log("\n".join(f"  - {change}" for change in fix.changes))
+        if fix.quests:
+            data = load_game_data()
+
+            def lineup(waves):
+                return " / ".join(" + ".join(data.monster_name(m) for m in wave) for wave in waves if wave) or "-"
+
+            self._log(S.LOG_FIX_QUESTS.format(self.language, count=len(fix.quests)))
+            self._log("\n".join(
+                S.LOG_FIX_QUEST.format(self.language, id=q.quest_id, title=q.title, old=lineup(q.old_waves),
+                                       new=lineup(q.new_waves)) + (self.tr(S.LOG_FIX_MAP) if q.old_map != q.new_map
+                                                                   else "")
+                for q in fix.quests))
+        if fix.equipment:
+            groups = ", ".join(f"{self.tr(S.EQUIPMENT_GROUPS[group])} {count}"
+                               for group, count in fix.equipment.items())
+            self._log(S.LOG_FIX_EQUIPMENT.format(self.language, groups=groups))
+        if not fix.changes_anything:
+            self._log(self.tr(S.LOG_FIX_NOTHING))
+        self._log(self.tr(S.LOG_FIX_READY))
+        self._set_running(False)
+
+    def _finish_fix(self, result):
+        self.fix_preview = None
+        self._open_game(result.settings_path, self.current_settings())  # rebuilds: new revision and history
+        self._set_running(False)
+        self.progress.set(1)
+        record = self.fix_game[2]
+        message = S.LOG_FIX_DONE.format(self.language, revision=record.revision, code=result.checksum.code,
+                                        file=result.settings_path.name)
+        self.status.configure(text=message, text_color=theme.SUCCESS)
+        self._log(message)
+        for warning in result.warnings:
+            self._log(f"{self.tr(S.LOG_WARNING)}: {warning}")
+        if messagebox.askyesno(self.tr(S.FIX_DONE_TITLE),
+                               S.FIX_DONE_MESSAGE.format(self.language, revision=record.revision,
+                                                         code=result.checksum.code, file=result.settings_path)):
+            _open_folder(result.output_dir)
+
     def _on_error(self, error, details):
         self.animator = None
+        if self.work_kind == "preview":
+            self.fix_preview = None
         self._set_running(False)
         self.status.configure(text=self.tr(S.FAILED), text_color=theme.HEADING)
+        if isinstance(error, FixError):
+            message = S.FIX_ERRORS[error.kind].format(self.language, **error.values)
+            self._log(f"{self.tr(S.LOG_WARNING)}: {message}")
+            messagebox.showerror(S.APP_NAME, S.ERROR_FIX.format(self.language, error=message))
+            return
         self._log(details)
         messagebox.showerror(S.APP_NAME, S.ERROR_RUN.format(self.language, error=error))
 
     def _set_running(self, running: bool):
-        self.run_button.configure(state="disabled" if running else "normal",
-                                  text=self.tr(S.RANDOMIZING if running else S.RANDOMIZE))
+        if self.mode == "fix":
+            label = (S.APPLYING if self.work_kind == "apply" else S.PREVIEWING) if running else \
+                S.APPLY_FIX if self._preview_is_current() else S.PREVIEW
+        else:
+            label = S.RANDOMIZING if running else S.RANDOMIZE
+        text = self.tr(label)
+        state = "disabled" if running or self.platform == "console" else "normal"
+        if self.run_button.cget("text") != text or self.run_button.cget("state") != state:
+            self.run_button.configure(state=state, text=text)
 
     # ----- misc ---------------------------------------------------------------
 

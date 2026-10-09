@@ -38,6 +38,7 @@ class Option:
     requires: str | None = None      # Settings field that must be on (bool) or not on its first choice (enum)
     compact: bool = False            # enum shown as a labelled drop-down instead of radio buttons
     range_to: str | None = None      # int pair "between N and M": `field` is N, this Settings field is M
+    emulator_only: bool = False      # not available on a real 3DS (disabled on the "3DS" platform)
 
 
 @dataclass(frozen=True)
@@ -571,7 +572,7 @@ INTERFACE_SECTIONS: tuple[Section, ...] = (
                      "one, like a tap on the target camera panel. The item selector shows a D-pad hint while L is "
                      "held, and the D-pad no longer moves the camera then (the C-stick still does). The locked "
                      "monster's face is also shown on the top screen, left of the item selector, with its lock "
-                     "mark.")),
+                     "mark."), emulator_only=True),
         ), T("Pensado para jugar solo con la pantalla superior (por ejemplo, en un monitor). Necesita el panel de "
              "la cámara de objetivo puesto en la pantalla táctil, y solo funciona una vez que el monstruo ya se ha "
              "encontrado (como el panel). Modifica el ejecutable de la actualización, así que necesita la ROM y "

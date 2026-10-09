@@ -13,7 +13,7 @@ Output layout (copy its contents into load/mods/0004000000126100/):
                                    executable when there is one for these options, from the ROM's otherwise
     spoiler_<seed>.txt/.json       quest log
     equipment_<seed>.txt/.json     equipment log
-    settings_<seed>.json           preset used
+    settings_<seed>.json           preset used, with the run's record (checksum, fix history: record.py)
 
 The original files are never modified; every run starts from them.
 """
@@ -35,6 +35,7 @@ from .randomizer import (
     HudScale, QuestReport, Settings, randomize_quests, unrandomized_quests, write_spoiler_json, write_spoiler_text,
 )
 from .randomizer.equipment import EquipmentReport, randomize_equipment, write_equipment_json, write_equipment_text
+from .record import Checksum, RunRecord, compute_checksum, save_run
 
 ARC_NAME = "quest01.arc"
 ROMFS_ARC_PATH = "loc/data/quest01.arc"
@@ -74,6 +75,8 @@ class RunResult:
     hud_update: Path | None = None  # update .app used for the HUD (prompts over the characters need it)
     interface_patched: bool = False  # code.ips carries the interface patches (built from the update's executable)
     notices: list[str] = field(default_factory=list)  # options left out (e.g. the icons without the update)
+    checksum: Checksum | None = None  # of the quests and equipment (record.py)
+    settings_path: Path | None = None  # settings_<seed>.json, with the run's record
 
     @property
     def output_dir(self) -> Path:
@@ -172,10 +175,35 @@ def write_interface_files(result: "RunResult", rom: RomFS | None, update: RomFS 
         result.hud_scale = HudScale(settings.hud_scale)
 
 
+@dataclass
+class Gameplay:
+    """What a run plays (quests and equipment), computed in memory: nothing is written."""
+    quests: dict[str, Quest]
+    reports: list[QuestReport]
+    equipment_code: bytes | None  # the executable after randomize_equipment; None if the equipment is not randomized
+    checksum: Checksum
+
+
+def generate(game: Path, settings: Settings, code_path: Path | None = None, data: GameData | None = None,
+             progress: Callable[[int, int, QuestReport], None] | None = None) -> Gameplay:
+    """The quests and equipment of `run` without writing anything (fix previews, mh4u_rando/fix.py). The
+    executable comes from `code_path` or the ROM: the equipment tables are the same in the update's."""
+    data = data or load_game_data()
+    code = None
+    if settings.randomizes_equipment:
+        if code_path is None and not is_container(game):
+            raise ValueError("equipment randomization needs the game ROM (or its code.bin)")
+        code = load_code(code_path or game)
+    _, _, quests = read_quests(game)
+    reports = randomize_quests(quests, settings, data, progress)
+    equipment_code = randomize_equipment(code, settings, data).code if code is not None else None
+    return Gameplay(quests, reports, equipment_code, compute_checksum(quests, equipment_code, settings))
+
+
 def run(game: Path, output_dir: Path, settings: Settings,
         progress: Callable[[int, int, QuestReport], None] | None = None,
         code_path: Path | None = None, stage: Callable[[str], None] | None = None,
-        update_path: Path | None = None) -> RunResult:
+        update_path: Path | None = None, record: RunRecord | None = None) -> RunResult:
     """`game` is the ROM or a loose quest01.arc. The executable for equipment comes from `code_path`
     (code.bin, .3ds or update .app) or, by default, from the ROM. The interface options also need the ROM,
     plus the update's 00000000.app (`update_path`, or the one installed in Citra/Azahar/Lime3DS): their
@@ -184,7 +212,8 @@ def run(game: Path, output_dir: Path, settings: Settings,
     the mount gauge and the prompts over the characters keep their size); the target options require it; the
     monster icons (on by default) are left out with a notice, only their quest picture fixes being kept.
     The starting items patch the update's executable if there is one, else the ROM's (same table in both).
-    `stage` is told when each of STAGES starts (for progress displays)."""
+    `stage` is told when each of STAGES starts (for progress displays). The settings file gets `record` (a new
+    one, revision 0, by default) with the run's checksum."""
     announce = stage or (lambda _name: None)
     announce("rom")
     data = load_game_data()
@@ -246,7 +275,6 @@ def run(game: Path, output_dir: Path, settings: Settings,
     spoiler_path = output_dir / f"spoiler_{settings.seed}.txt"
     spoiler_path.write_text(write_spoiler_text(reports, data, settings.seed, settings.to_dict()), encoding="utf-8")
     (output_dir / f"spoiler_{settings.seed}.json").write_text(write_spoiler_json(reports), encoding="utf-8")
-    settings.save(output_dir / f"settings_{settings.seed}.json")
     result = RunResult(arc_path=arc_path, spoiler_path=spoiler_path, reports=reports, seed=settings.seed,
                        input_check=input_check, unrandomized=unrandomized_quests(reports, settings),
                        notices=notices)
@@ -255,32 +283,37 @@ def run(game: Path, output_dir: Path, settings: Settings,
     result.hud_update = update_used
 
     ips_path = output_dir / IPS_PATH
+    equipment = None
     if code is None:
         ips_path.unlink(missing_ok=True)  # a patch left by an earlier run would still be applied
-        return result
-    patched = code
-    if settings.randomizes_equipment:
-        announce("equipment")
-        equipment = randomize_equipment(code, settings, data)
-        patched = equipment.code
-        result.notices.extend(equipment.notices)
-    if starting_items:
-        patched = patch_starting_items(patched, starting_items)
-    if patch_interface_code:
-        patched = patch_interface(patched, settings.hud_scale.factor, settings.touchless_target,
-                                  settings.touchless_target)
-        if new_icons:
-            patched = patch_monster_icons(patched)
-        result.interface_patched = True
-    ips_path.parent.mkdir(parents=True, exist_ok=True)
-    ips_path.write_bytes(make_ips(code, patched))
-    result.ips_path = ips_path
-    if not settings.randomizes_equipment:
-        return result
-    result.equipment_report = equipment.report
-    result.equipment_spoiler_path = output_dir / f"equipment_{settings.seed}.txt"
-    result.equipment_spoiler_path.write_text(
-        write_equipment_text(equipment.report, equipment.catalog, data, settings.seed), encoding="utf-8")
-    (output_dir / f"equipment_{settings.seed}.json").write_text(write_equipment_json(equipment.report),
-                                                                encoding="utf-8")
+    else:
+        patched = code
+        if settings.randomizes_equipment:
+            announce("equipment")
+            equipment = randomize_equipment(code, settings, data)
+            patched = equipment.code
+            result.notices.extend(equipment.notices)
+        if starting_items:
+            patched = patch_starting_items(patched, starting_items)
+        if patch_interface_code:
+            patched = patch_interface(patched, settings.hud_scale.factor, settings.touchless_target,
+                                      settings.touchless_target)
+            if new_icons:
+                patched = patch_monster_icons(patched)
+            result.interface_patched = True
+        ips_path.parent.mkdir(parents=True, exist_ok=True)
+        ips_path.write_bytes(make_ips(code, patched))
+        result.ips_path = ips_path
+    if equipment is not None:
+        result.equipment_report = equipment.report
+        result.equipment_spoiler_path = output_dir / f"equipment_{settings.seed}.txt"
+        result.equipment_spoiler_path.write_text(
+            write_equipment_text(equipment.report, equipment.catalog, data, settings.seed), encoding="utf-8")
+        (output_dir / f"equipment_{settings.seed}.json").write_text(write_equipment_json(equipment.report),
+                                                                    encoding="utf-8")
+    result.checksum = compute_checksum(quests, equipment.code if equipment else None, settings)
+    record = record or RunRecord()
+    record.checksum = result.checksum
+    result.settings_path = output_dir / f"settings_{settings.seed}.json"
+    save_run(result.settings_path, settings, record)
     return result

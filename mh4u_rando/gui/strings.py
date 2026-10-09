@@ -115,6 +115,135 @@ ITEM_REMOVE = T("Quitar", "Remove")
 ITEM_SEARCH_TIP = T("Escribe para filtrar por nombre (en inglés) y elige uno de la lista.",
                     "Type to filter by name and pick one from the list.")
 
+PLATFORMS ={"emulator": T("Emulador", "Emulator"), "console": T("3DS", "3DS")}
+PLATFORM_TIP = T("Emulador: Citra, Azahar o Lime3DS. 3DS: una consola real con Luma3DS (próximamente; no tendrá "
+                 "algunas opciones, como fijar monstruos sin pantalla táctil).",
+                 "Emulator: Citra, Azahar or Lime3DS. 3DS: a real console with Luma3DS (coming soon; some options, "
+                 "such as locking on without the touch screen, will not be available).")
+CONSOLE_SOON = T("Modo 3DS: próximamente. Elige «Emulador» para randomizar.",
+                 "3DS mode: coming soon. Choose \"Emulator\" to randomize.")
+MODES ={"randomize": T("Randomizar", "Randomize"), "fix": T("Arreglar", "Fix")}
+MODE_TIP = T("Randomizar: una partida nueva. Arreglar: cambia ajustes o re-sortea misiones de una partida que ya "
+             "estáis jugando, sin tocar lo demás y con el mismo resultado para todos los que la juegan.",
+             "Randomize: a new game. Fix: change settings or reroll quests of a game you are already playing, "
+             "leaving the rest untouched, with the same result for everyone playing it.")
+
+GAME = T("PARTIDA", "GAME")
+LOAD_GAME = T("Cargar partida…", "Load game…")
+LOAD_GAME_TIP = T("El settings_<semilla>.json de la partida: el de tu carpeta del mod o el que te envíe tu amigo "
+                  "después de un arreglo.",
+                  "The game's settings_<seed>.json: the one in your mod folder, or the one your friend sends you "
+                  "after a fix.")
+FROM_MOD = T("De la carpeta", "From folder")
+FROM_MOD_TIP = T("Carga el settings_<semilla>.json de la carpeta de salida.",
+                 "Loads the settings_<seed>.json of the output folder.")
+NO_GAME = T("Ninguna partida cargada.", "No game loaded.")
+GAME_INFO = T("Semilla {seed}\nRevisión {revision} · código {code}\nVersión {version}",
+              "Seed {seed}\nRevision {revision} · code {code}\nVersion {version}")
+NO_CODE = T("sin código", "no code")
+PREVIEW = T("PREVISUALIZAR", "PREVIEW")
+PREVIEWING = T("Comprobando…", "Checking…")
+APPLY_FIX = T("APLICAR ARREGLO", "APPLY FIX")
+APPLYING = T("Aplicando…", "Applying…")
+READY_FIX = T("Carga una partida, cambia lo que quieras y pulsa «Previsualizar».",
+              "Load a game, change what you want and press \"Preview\".")
+
+FIXES = T("Arreglos", "Fixes")
+REROLL_ALL = T("Re-sortear todas las misiones", "Reroll every quest")
+REROLL_ALL_TIP = T("Cada vez que sumas uno, todas las misiones salen de nuevo (el equipo no cambia). Volver al número "
+                   "anterior recupera las misiones de antes.",
+                   "Each step draws every quest again (the equipment does not change). Going back to the previous "
+                   "number brings the previous quests back.")
+REROLL_ALL_DESCRIPTION = T("Si las misiones en general no os gustan.", "If you do not like the quests in general.")
+REROLL_TIMES = T("Veces", "Times")
+REROLL_QUEST = T("Re-sortear una misión", "Reroll one quest")
+REROLL_QUEST_DESCRIPTION = T(
+    "Para una misión imposible o que no os gusta: solo esa misión sale de nuevo; las demás y el equipo quedan "
+    "igual. Se puede repetir (cada vez sale distinta) y deshacer.",
+    "For an impossible quest, or one you do not like: only that quest is drawn again; the others and the equipment "
+    "stay the same. It can be repeated (a different result each time) and undone.")
+QUEST_SEARCH_TIP = T("Escribe el número o parte del nombre (en inglés) de la misión y elige una de la lista.",
+                     "Type the quest's number or part of its name and pick one from the list.")
+REROLL = T("Re-sortear", "Reroll")
+NO_REROLLS = T("Ninguna misión re-sorteada.", "No quest rerolled.")
+KEY_QUEST = T("obligatoria", "required")
+HISTORY = T("Historial", "History")
+HISTORY_DESCRIPTION = T("Los arreglos aplicados a esta partida.", "The fixes applied to this game.")
+NO_HISTORY = T("Sin arreglos todavía.", "No fixes yet.")
+FIX_NOTE = T("Los demás ajustes (misiones, equipo) también se pueden cambiar: «Previsualizar» dice qué cambia antes "
+             "de tocar nada. Las opciones de «Interfaz» y «Partida nueva» son de cada jugador.",
+             "The other settings (quests, equipment) can be changed too: \"Preview\" tells what changes before "
+             "anything is touched. The \"Interface\" and \"New game\" options are each player's own.")
+
+LOG_GAME_LOADED = T("Partida cargada: {path}", "Game loaded: {path}")
+LOG_PRESET_HAS_FIXES = T("El preset trae arreglos (misiones re-sorteadas): se aplican en el modo «Arreglar».",
+                         "The preset has fixes (rerolled quests): they are applied in \"Fix\" mode.")
+LOG_FIX_START = T("Comprobando el arreglo de la semilla {seed}…", "Checking the fix of seed {seed}…")
+LOG_FIX_RECEIVED = T("Revisión {revision} verificada: este PC produce el mismo código ({code}).",
+                     "Revision {revision} verified: this PC produces the same code ({code}).")
+LOG_FIX_NEW = T("Revisión nueva {revision}, código {code}.", "New revision {revision}, code {code}.")
+LOG_FIX_CHANGES = T("Ajustes que cambian:", "Settings that change:")
+LOG_FIX_QUESTS = T("Misiones que cambian ({count}):", "Quests that change ({count}):")
+LOG_FIX_QUEST = T("  {id} {title}: {old} → {new}", "  {id} {title}: {old} → {new}")
+LOG_FIX_MAP = T(" (otro mapa)", " (another map)")
+LOG_FIX_EQUIPMENT = T("Equipo que cambia: {groups}", "Equipment that changes: {groups}")
+LOG_FIX_NOTHING = T("No cambia nada respecto al mod de la carpeta.", "Nothing changes from the mod in the folder.")
+LOG_FIX_READY = T("Pulsa «Aplicar arreglo» para escribirlo (el mod actual se copia antes en backups/).",
+                  "Press \"Apply fix\" to write it (the current mod is copied to backups/ first).")
+LOG_FIX_DONE = T("Arreglo aplicado: revisión {revision}, código {code}. Envía {file} a quien juegue contigo.",
+                 "Fix applied: revision {revision}, code {code}. Send {file} to whoever plays with you.")
+EQUIPMENT_GROUPS = {"weapons": T("armas", "weapons"), "weapon upgrades": T("mejoras de armas", "weapon upgrades"),
+                    "armor": T("armaduras", "armor"), "recipes": T("recetas", "recipes"),
+                    "sharpness": T("filos", "sharpness"), "felyne": T("Felyne", "Felyne")}
+FIX_WARNINGS = {
+    "no_checksum": T("La partida de la carpeta se hizo antes de que existieran los códigos de comprobación: no se "
+                     "puede garantizar que solo cambie el arreglo.",
+                     "The game in the folder was made before checksums existed: it cannot be guaranteed that only "
+                     "the fix changes."),
+    "no_base": T("No hay partida en la carpeta del mod: se escribe el mod completo.",
+                 "There is no game in the mod folder: the whole mod is written."),
+}
+FIX_ERRORS = {
+    "seed": T("La carpeta del mod tiene la semilla {base} y el archivo la {target}. Un arreglo conserva la semilla: "
+              "elige la carpeta de esa partida.",
+              "The mod folder holds seed {base} and the file seed {target}. A fix keeps the seed: choose that "
+              "game's folder."),
+    "op_equipment": T("«Permitir equipo OP» no se puede quitar en una partida empezada: el equipo fabricado con él "
+                      "puede superar los límites del juego, y el juego rechazaría todas las misiones.",
+                      "\"Allow OP equipment\" cannot be switched off in a game in progress: gear made with it may "
+                      "break the game's limits and the game would refuse every quest."),
+    "base_mismatch": T("Esta versión del randomizer ({version}) no reproduce la partida de la carpeta (hecha con la "
+                       "{base_version}). Usa esa versión para arreglarla; no se ha cambiado nada.",
+                       "This randomizer version ({version}) does not reproduce the game in the folder (made with "
+                       "{base_version}). Use that version to fix it; nothing was changed."),
+    "target_mismatch": T("Este PC no produce lo mismo que el archivo (código {expected}, aquí {actual}). El archivo "
+                         "se hizo con la versión {target_version} y esta es la {version}; usad la misma versión y "
+                         "la misma ROM. No se ha cambiado nada.",
+                         "This PC does not produce the same as the file (code {expected}, here {actual}). The file "
+                         "was made with version {target_version} and this is {version}; use the same version and "
+                         "ROM. Nothing was changed."),
+    "apply_mismatch": T("El mod escrito no coincide con la vista previa (código {expected}, escrito {actual}). Se ha "
+                        "restaurado el mod anterior.",
+                        "The written mod does not match the preview (code {expected}, written {actual}). The "
+                        "previous mod was restored."),
+}
+ERROR_NO_GAME = T("Carga primero la partida (su settings_<semilla>.json).",
+                  "Load the game first (its settings_<seed>.json).")
+ERROR_NO_RUN_IN_FOLDER = T("No hay ningún settings_<semilla>.json en la carpeta de salida.",
+                           "There is no settings_<seed>.json in the output folder.")
+ERROR_FIX = T("No se puede aplicar el arreglo:\n{error}", "The fix cannot be applied:\n{error}")
+CONFIRM_APPLY = T("Se va a modificar la carpeta del mod:\n{path}\n\nAntes se copia el mod actual en backups/. Cierra "
+                  "el juego en el emulador y vuelve a abrirlo después. Tu partida guardada no se toca.\n\n"
+                  "{warnings}¿Aplicar el arreglo?",
+                  "The mod folder will be changed:\n{path}\n\nThe current mod is copied to backups/ first. Close "
+                  "the game in the emulator and start it again afterwards. Your save is not touched.\n\n"
+                  "{warnings}Apply the fix?")
+FIX_DONE_TITLE = T("Arreglo aplicado", "Fix applied")
+FIX_DONE_MESSAGE = T("Revisión {revision} · código {code}\n\nEnvía este archivo a quien juegue contigo; lo carga en "
+                     "«Arreglar» y debe ver el mismo código:\n{file}\n\n¿Abrir la carpeta?",
+                     "Revision {revision} · code {code}\n\nSend this file to whoever plays with you; they load it "
+                     "in \"Fix\" and must see the same code:\n{file}\n\nOpen the folder?")
+
 PRESET_FILES = T("Preset", "Preset")
 ROM_FILES = T("ROM de 3DS", "3DS ROM")
 UPDATE_FILES = T("Contenido de 3DS", "3DS content")

@@ -6,7 +6,7 @@ from mh4u_rando.gui.i18n import T
 from mh4u_rando.gui.options import AREAS, all_options, all_texts, area_options
 from mh4u_rando.randomizer import Settings
 
-NOT_IN_PANELS = {"seed"}  # shown in the sidebar
+NOT_IN_PANELS = {"seed", "quest_reroll", "quest_rerolls"}  # the sidebar; the fixes area (fix mode)
 
 
 def test_every_setting_has_exactly_one_option():
@@ -70,16 +70,31 @@ def test_requirements_point_at_boolean_settings():
             assert isinstance(master, bool) or master is type(master)(list(type(master))[0]), option.field
 
 
+def window_texts() -> list[T]:
+    """The T strings of strings.py, including those inside dicts (e.g. APPEARANCE_MODES)."""
+    texts = []
+    for value in vars(strings).values():
+        if isinstance(value, T):
+            texts.append(value)
+        elif isinstance(value, dict):
+            texts += [v for v in value.values() if isinstance(v, T)]
+    return texts
+
+
 def test_every_text_is_translated():
-    texts = all_texts() + [v for v in vars(strings).values() if isinstance(v, T)] + \
-        list(strings.APPEARANCE_MODES.values())
-    incomplete = [t for t in texts if not t.is_complete()]
+    incomplete = [t for t in all_texts() + window_texts() if not t.is_complete()]
     assert not incomplete, incomplete
 
 
 def test_formatted_strings_have_the_same_placeholders():
     import string
-    for value in vars(strings).values():
-        if isinstance(value, T):
-            names = [{f[1] for f in string.Formatter().parse(value(lang)) if f[1]} for lang in ("es", "en")]
-            assert names[0] == names[1], value
+    for value in window_texts():
+        names = [{f[1] for f in string.Formatter().parse(value(lang)) if f[1]} for lang in ("es", "en")]
+        assert names[0] == names[1], value
+
+
+def test_fix_messages_are_translated():
+    from mh4u_rando.fix import EQUIPMENT_GROUPS, MESSAGES, WARNINGS
+    assert set(strings.FIX_ERRORS) == set(MESSAGES)
+    assert set(strings.FIX_WARNINGS) == set(WARNINGS)
+    assert set(strings.EQUIPMENT_GROUPS) == set(EQUIPMENT_GROUPS)

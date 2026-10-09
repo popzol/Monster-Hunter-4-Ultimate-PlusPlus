@@ -269,6 +269,10 @@ Without that option the randomizer keeps generated armor under these limits
 (`randomizer/equipment/stats.py`, `_armor_limits`). Before that fix, "Random"
 (range) armor stats broke them for about 300 of the 3039 craftable pieces.
 
+So the option cannot be switched off in a game in progress: the gear already
+crafted with it may be past the limits, and the save would then be refused
+every quest. Fixes (`mh4u_rando/fix.py`) refuse that change.
+
 ## Maps
 
 `curated/map_rules.json`:

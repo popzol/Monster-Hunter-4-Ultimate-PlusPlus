@@ -173,6 +173,19 @@ its public classes and functions with their signatures.
 - `read_starting_items(code: bytes) -> list[list[list[int]]]` - The loadouts of `code`, each a list of [item id, quantity] of its used slots.
 - `patch_starting_items(code: bytes, items: Sequence[Sequence[int]]) -> bytes` - `code` (base game or update) with `items` as the only starting items, in loadout 0 from its first...
 
+### `mh4u_rando/fix.py` - Fix a game in progress: change settings or reroll quests of a seed that is already being played, ...
+- class `FixError(ValueError)` - A fix that would not be safe or would not be identical for everyone; nothing was changed.
+- class `QuestChange`
+- class `FixPreview`
+  - `changes_anything() -> bool`
+- `find_run(mod_dir: Path) -> Path | None` - The settings_<seed>.json of the mod folder (the newest if there are several).
+- `safety_errors(base: Settings, target: Settings) -> list[FixError]`
+- `describe_changes(old: Settings, new: Settings) -> list[str]` - The gameplay settings that differ, for the fix history.
+- `preview(game: Path, mod_dir: Path, target: Settings, loaded: RunRecord | None=None, loaded_settings: Settings | None=None, code_path: Path | None=None, data: GameData | None=None, progress: Callable[[int, int, QuestReport], None] | None=None) -> FixPreview` - What applying `target` to the mod folder would change. `loaded`/`loaded_settings`: the settings file
+- `apply(fix: FixPreview, game: Path, mod_dir: Path, code_path: Path | None=None, update_path: Path | None=None, progress: Callable[[int, int, QuestReport], None] | None=None, stage: Callable[[str], None] | None=None) -> RunResult` - Write the previewed fix into the mod folder, after copying it to backups/. Raises FixError (and p...
+- `quest_changes(old: dict[str, Quest], new: dict[str, Quest], data: GameData) -> list[QuestChange]`
+- `equipment_changes(old: bytes, new: bytes) -> dict[str, int]` - Equipment group -> number of records that differ between two executables.
+
 ### `mh4u_rando/gui/__init__.py` - Graphical interface (customtkinter). Start with `python -m mh4u_rando.gui`.
 
 ### `mh4u_rando/gui/__main__.py`
@@ -183,6 +196,13 @@ its public classes and functions with their signatures.
   - `current_settings() -> Settings`
   - `apply_settings(settings: Settings)`
 - `main()`
+
+### `mh4u_rando/gui/fixes.py` - The "Fixes" area of the fix mode: reroll every quest or single quests (Settings.quest_reroll / qu...
+- `rank_label(rank: int) -> str`
+- class `FixesPanel` - Behaves like two OptionWidgets for the window: `widgets` maps quest_reroll and quest_rerolls to a...
+  - `step_all(delta: int) -> None`
+  - `reroll(name: str) -> bool` - Reroll the quest called `name` once more; False if there is no such quest.
+  - `step(quest_id: int, delta: int) -> None`
 
 ### `mh4u_rando/gui/i18n.py` - Interface languages.
 - class `T`
@@ -424,7 +444,9 @@ its public classes and functions with their signatures.
 - `inspect_game(game: Path) -> InputCheck`
 - `open_update(update_path: Path | None) -> tuple[RomFS | None, Path | None]` - The update's RomFS for the HUD: `update_path`, or else the one installed in an emulator (if reada...
 - `write_interface_files(result: 'RunResult', rom: RomFS | None, update: RomFS | None, settings: Settings, with_code_patch: bool, new_icons: bool) -> None` - The HUD size's and the new icons' RomFS files. Both may change the same ARCs (core_quest, core_co...
-- `run(game: Path, output_dir: Path, settings: Settings, progress: Callable[[int, int, QuestReport], None] | None=None, code_path: Path | None=None, stage: Callable[[str], None] | None=None, update_path: Path | None=None) -> RunResult` - `game` is the ROM or a loose quest01.arc. The executable for equipment comes from `code_path`
+- class `Gameplay` - What a run plays (quests and equipment), computed in memory: nothing is written.
+- `generate(game: Path, settings: Settings, code_path: Path | None=None, data: GameData | None=None, progress: Callable[[int, int, QuestReport], None] | None=None) -> Gameplay` - The quests and equipment of `run` without writing anything (fix previews, mh4u_rando/fix.py). The
+- `run(game: Path, output_dir: Path, settings: Settings, progress: Callable[[int, int, QuestReport], None] | None=None, code_path: Path | None=None, stage: Callable[[str], None] | None=None, update_path: Path | None=None, record: RunRecord | None=None) -> RunResult` - `game` is the ROM or a loose quest01.arc. The executable for equipment comes from `code_path`
 
 ### `mh4u_rando/randomizer/__init__.py` - Quest randomization logic, independent of file formats and user interface.
 
@@ -602,7 +624,9 @@ its public classes and functions with their signatures.
   - `needs_update() -> bool` - Interface options that cannot work without the update's 00000000.app (the HUD size can; the monster
   - `randomizes_equipment() -> bool`
   - `allows_op_equipment() -> bool` - allow_op_equipment, unless the equipment master switch is off.
+  - `quest_seed(quest_id: int) -> str` - Seed of one quest's random streams: the seed itself unless the quest was rerolled.
   - `to_dict() -> dict`
+  - `gameplay_dict() -> dict` - to_dict() without the options each player chooses for themselves (PERSONAL_FIELDS).
   - `from_dict(values: dict) -> 'Settings'`
   - `save(path: Path) -> None`
   - `load(path: Path) -> 'Settings'`
@@ -649,6 +673,17 @@ its public classes and functions with their signatures.
 
 ### `mh4u_rando/randomizer/validation.py` - Check a randomized quest against every known engine rule.
 - `validate_quest(quest: Quest, data: GameData, settings: Settings) -> list[str]`
+
+### `mh4u_rando/record.py` - The record of a run, saved with its settings in settings_<seed>.json: randomizer version, fix rev...
+- class `Checksum`
+- class `Revision` - One entry of the fix history.
+- class `RunRecord`
+  - `to_dict() -> dict`
+  - `from_dict(values: dict) -> 'RunRecord'`
+- `quests_digest(quests: dict[str, Quest]) -> str`
+- `compute_checksum(quests: dict[str, Quest], equipment_code: bytes | None, settings: Settings) -> Checksum` - `equipment_code`: the executable after randomize_equipment, None if the equipment is not randomized.
+- `save_run(path: Path, settings: Settings, record: RunRecord) -> None`
+- `load_run(path: Path) -> tuple[Settings, RunRecord | None]` - The settings of a settings_<seed>.json (or any preset) and its record, None if it has none (prese...
 
 ### `tools/bisect_mod.py` - Find which part of a mod breaks the game (hang, crash, refused quests): build it in steps, instal...
 - `variant_settings(full: Settings, variant: str) -> Settings` - `full` with only the pieces up to `variant` (see the module docstring).

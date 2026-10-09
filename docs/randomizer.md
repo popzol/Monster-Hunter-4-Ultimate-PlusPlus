@@ -58,6 +58,12 @@ With the defaults, quests only get the safety repairs listed below.
 | `randomize_models` | bool | Equipment looks |
 | `model_mode` | families / chaotic | See below |
 | `models_use_each_once` | bool | Every model used, none repeated while possible |
+| `quest_reroll` | int (default 0) | Fix mode: every quest drawn again N times (equipment unchanged). Not in the option panels |
+| `quest_rerolls` | {quest id: int} | Fix mode: that quest drawn again N times, nothing else changes. Not in the option panels |
+
+A quest's random streams use `Settings.quest_seed(id)`: the seed itself, or
+`<seed>~<quest_reroll>.<quest_rerolls[id]>` once either is above 0. Going back
+to an earlier number gives the earlier quests back.
 
 ## Equipment
 
@@ -172,6 +178,54 @@ unused slots. Rank comes from rarity: 1-3 low, 4-7 high, 8-10 G.
   pouch limit. It is written as the starting items (same table, same rules): a
   custom `starting_items` list is merged on top (its quantity wins, its other
   items are added, 32 in total at most).
+
+## Fixing a game in progress
+
+Code: `mh4u_rando/fix.py`, `mh4u_rando/record.py`; GUI mode "Arreglar" / "Fix",
+CLI `--fix`. For friends playing the same seed who meet an impossible quest or
+a setting they do not like: they change only that, without losing their saves,
+and all get the same mod.
+
+Why it works: every quest and every equipment block has its own random stream
+(`rng.py`), and quests share no state, so rerolling one quest or changing one
+setting changes nothing else. Saves keep quests by id and gear by index, so a
+regenerated mod keeps all progress (restart the game after installing it).
+
+* **Run record**: every run saves `settings_<seed>.json` with a `"run"` block:
+  randomizer version, revision (0 for the original run, +1 per fix), the
+  checksum and the fix history. The checksum is a sha256 of the quest files
+  and one of the equipment tables (`tables_digest`; empty when the equipment
+  is not randomized), plus a short code `XXXX-XXXX` over both and the gameplay
+  settings, to compare by eye. Left out: the options each player chooses
+  (`PERSONAL_FIELDS`: HUD size, touchless target, monster icons, starting
+  items) and the quest board pictures (they depend on the new icons, which
+  need the update). Old files without the block still load as presets.
+* **Preview** (`fix.preview`, nothing written): the mod folder's run is
+  regenerated in memory and must give its checksum, or the fix is refused
+  (`base_mismatch`: another randomizer version would change more than the
+  fix). Then the safety rules, the new settings generated in memory, and what
+  changes: settings, quests (old and new monsters) and equipment records.
+  If the settings are exactly those of the loaded file's record (a friend's
+  fix), the result must give that record's checksum (`target_mismatch`).
+* **Apply** (`fix.apply`): the mod folder (except `backups/`) is copied to
+  `backups/rev<N>_<date>/` (the last 5 are kept), the run writes into it with
+  the new record, and its checksum must equal the preview's; on any failure
+  the backup is put back.
+* **Safety rules** (refused): changing the seed; switching "Allow OP
+  equipment" off (or the equipment master switch while it is on) once it was
+  on, since gear made with it may break the limits and every quest would be
+  refused (docs/game_rules.md, "Equipment stat limits").
+* **Flow**: one player loads their `settings_<seed>.json`, rerolls a quest or
+  changes a setting, previews, applies, and sends the new file. The other
+  loads it in fix mode (their own personal options are kept), previews (it
+  says "verified" when this PC produces the same code) and applies. Both see
+  the same code.
+
+## Platforms
+
+The GUI has an emulator platform (everything above) and a real 3DS platform,
+shown but not available yet (docs/roadmap.md). Options marked `emulator_only`
+in `gui/options.py` (`touchless_target`) are disabled on the 3DS platform.
 
 ## What is never changed
 

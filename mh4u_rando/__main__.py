@@ -13,6 +13,11 @@ The new game's items (starting_items, expanded_starting_inventory) are set in th
 Advanced: --arc quest01.arc (instead of --rom) plus --code code.bin|game.3ds|update.app.
 The output folder is a mod folder: copy its contents into Citra's
 load/mods/0004000000126100/.
+
+Fixing a game in progress (mh4u_rando/fix.py): --fix applies the preset (by default the
+settings_<seed>.json of --out) to the game in --out, changing only what the settings
+change; --reroll-quest ID (repeatable) and --reroll-all draw quests again. Nothing is
+written unless the game in --out is reproduced exactly (same randomizer version).
 """
 
 import argparse
@@ -21,8 +26,10 @@ from pathlib import Path
 
 from .data import load_game_data
 from .exefs.starting_items import check_starting_items, effective_starting_items
+from .fix import WARNINGS, FixError, apply, find_run, preview
 from .pipeline import run
 from .randomizer import HudScale, Settings
+from .record import load_run
 
 
 def main(argv=None) -> int:
@@ -48,9 +55,23 @@ def main(argv=None) -> int:
                         help="leave the quests as they are (switches randomize_quests off, over the preset)")
     parser.add_argument("--no-equipment", action="store_true",
                         help="leave the equipment as it is (switches randomize_equipment off, over the preset)")
+    parser.add_argument("--fix", action="store_true",
+                        help="fix the game in --out: apply the preset (default: the settings file in --out) "
+                             "changing only what it changes; refused if this version does not reproduce the game")
+    parser.add_argument("--reroll-quest", type=int, action="append", default=[], metavar="ID",
+                        help="with --fix: draw this quest again (repeatable)")
+    parser.add_argument("--reroll-all", action="store_true", help="with --fix: draw every quest again")
     args = parser.parse_args(argv)
 
-    settings = Settings.load(args.preset) if args.preset else Settings()
+    if (args.reroll_quest or args.reroll_all) and not args.fix:
+        parser.error("--reroll-quest and --reroll-all need --fix")
+    preset = args.preset
+    if args.fix and preset is None:
+        preset = find_run(args.out)
+        if preset is None:
+            parser.error(f"--fix: there is no settings_<seed>.json in {args.out}; give --preset")
+    settings, record = load_run(preset) if preset else (Settings(), None)
+    loaded_settings = Settings.from_dict(settings.to_dict())
     if args.no_quests:
         settings.randomize_quests = False
     if args.no_equipment:
@@ -60,6 +81,10 @@ def main(argv=None) -> int:
     if args.hud_scale:
         settings.hud_scale = HudScale(args.hud_scale)
     settings.touchless_target = settings.touchless_target or args.touchless_target
+    for quest_id in args.reroll_quest:
+        settings.quest_rerolls[quest_id] = settings.quest_rerolls.get(quest_id, 0) + 1
+    if args.reroll_all:
+        settings.quest_reroll += 1
     if settings.randomizes_equipment and args.arc and args.code is None:
         parser.error("the preset randomizes equipment: use --rom, or add --code to --arc")
     if settings.patches_interface_code and args.arc:
@@ -74,8 +99,33 @@ def main(argv=None) -> int:
     def progress(done, total, report):
         print(f"\r[{done}/{total}] {report.title or report.quest_id}"[:79].ljust(79), end="", flush=True)
 
-    result = run(args.rom or args.arc, args.out, settings, progress, code_path=args.code, update_path=args.update)
-    print()
+    game = args.rom or args.arc
+    if args.fix:
+        try:
+            fix = preview(game, args.out, settings, record, loaded_settings, code_path=args.code)
+            for warning in fix.warnings:
+                print(f"WARNING {WARNINGS[warning]}")
+            for change in fix.changes:
+                print(f"Change: {change}")
+            print(f"Quests that change: {', '.join(str(q.quest_id) for q in fix.quests) or 'none'}")
+            if fix.equipment:
+                print("Equipment that changes: " + ", ".join(f"{group} {count}" for group, count in
+                                                             fix.equipment.items()))
+            result = apply(fix, game, args.out, code_path=args.code, update_path=args.update, progress=progress)
+        except FixError as error:
+            print(f"Fix refused: {error}", file=sys.stderr)
+            return 1
+        print()
+        print(f"Revision {fix.record.revision}, code {result.checksum.code}: send {result.settings_path} to whoever "
+              "plays this seed with you")
+    else:
+        result = run(game, args.out, settings, progress, code_path=args.code, update_path=args.update)
+        print()
+        if record and record.checksum and loaded_settings.gameplay_dict() == settings.gameplay_dict():
+            same = result.checksum == record.checksum
+            print(f"Code {result.checksum.code}: " + ("the same as the preset's" if same else
+                                                       f"WARNING not the preset's ({record.checksum.code}; made with "
+                                                       f"version {record.version})"))
     print(f"Seed: {result.seed}")
     print(f"Quests: {result.arc_path or 'not randomized, no archive written'}")
     print(f"Spoiler log: {result.spoiler_path}")

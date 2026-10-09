@@ -18,6 +18,7 @@ monitor (`romfs/<language>/data`).
 | `mh4u_rando/exefs/` | Executable extraction (.3ds / update .app) and IPS patches |
 | `mh4u_rando/hud/` | GUI layouts (`lyt`, `lanl`) and the HUD size option |
 | `mh4u_rando/pipeline.py`, `__main__.py` | Archive-to-archive run and command line |
+| `mh4u_rando/fix.py`, `record.py` | Fixing a game in progress; the run's checksum and fix history |
 | `mh4u_rando/gui/` | Graphical interface; panels generated from `gui/options.py` |
 | `tools/` | Maintenance and research scripts (`build_gamedata.py`, `build_equipment_data.py`, ...) |
 | `tests/` | `pytest` suite |
@@ -95,6 +96,31 @@ Copy the `romfs` and `exefs` folders of `output_folder` into the emulator's
 mod folder for the game (Citra: right click the game > Open Mods Location,
 `load/mods/0004000000126100/`). The spoiler logs and the settings used are
 written next to them.
+
+### Fixing a game in progress
+
+Playing a seed with a friend and stuck on an impossible quest, or tired of a
+setting? The GUI's "Fix" mode (or `--fix`) changes only that, keeps your saves
+and gives both of you the same mod:
+
+1. Load your `settings_<seed>.json` (button "From folder" for the output
+   folder's), reroll the quest in the "Fixes" tab or change a setting,
+   press "Preview" to see what changes, then "Apply fix" (the previous mod is
+   copied to `backups/`).
+2. Send the new `settings_<seed>.json` to your friend: they load it in "Fix"
+   mode, preview (it must say "verified") and apply. You both see the same
+   code, e.g. `A1B2-C3D4`.
+3. Copy `romfs` and `exefs` to the emulator again and restart the game.
+
+Use the same randomizer version as when the game was made: another version
+is refused rather than changing more than the fix.
+
+```
+python -m mh4u_rando --rom game.3ds --out output_folder --fix --reroll-quest 10203
+python -m mh4u_rando --rom game.3ds --out friends_folder --fix --preset settings_SEED.json
+```
+
+Details: [docs/randomizer.md](docs/randomizer.md), "Fixing a game in progress".
 
 ## Development
 
